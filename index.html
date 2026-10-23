@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Upload Foto Properti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f1ec; --card:#ffffff; --ink:#1d2a2b; --muted:#667476; --line:#e2ded5;
+  --brand:#0f3d3e; --brand2:#14595b; --accent:#e0a526; --ok:#1f8a4c; --ok-bg:#e3f4ea; --err:#c62f2f; --err-bg:#fbe3e1;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%;padding-bottom:96px}
+button,input,select,textarea{font:inherit;color:inherit}
+header{background:var(--brand);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px}
+header .judul{flex:1;min-width:0;font-weight:800;font-size:17px;line-height:1.2}
+header .judul small{display:block;font-weight:500;font-size:12px;opacity:.75}
+.chip-nama{background:rgba(255,255,255,.14);border:0;color:#fff;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;max-width:45vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+main{max-width:620px;margin:0 auto;padding:14px 16px}
+.kartu{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.kartu h2{margin:0 0 10px;font-size:15px;display:flex;align-items:center;gap:8px}
+.kartu h2 .no{background:var(--brand);color:#fff;border-radius:999px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+.kartu h2 .ok{margin-left:auto;color:var(--ok);font-size:13px;font-weight:700}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:#3d4a4b;margin-bottom:10px}
+label em{font-style:normal;font-weight:400;color:var(--muted);font-size:12px}
+input,select,textarea{background:#fff;border:1px solid #cfcac0;border-radius:10px;padding:11px 12px;width:100%;min-width:0;font-size:16px}
+textarea{min-height:76px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand2);outline-offset:0;border-color:var(--brand2)}
+.btn{border:0;border-radius:12px;padding:12px 14px;font-weight:700;cursor:pointer;background:var(--brand);color:#fff;font-size:15px}
+.btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.btn.blok{width:100%}
+.btn:disabled{opacity:.5;cursor:default}
+.info{font-size:13px;color:var(--muted);margin:6px 0 0}
+.hasil{list-style:none;margin:6px 0 0;padding:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.hasil li button{display:block;width:100%;text-align:left;background:#fff;border:0;border-bottom:1px solid var(--line);padding:10px 12px;cursor:pointer}
+.hasil li:last-child button{border-bottom:0}
+.hasil li button b{display:block;font-size:14px}
+.hasil li button span{font-size:12px;color:var(--muted)}
+.terpilih{display:flex;gap:10px;align-items:flex-start;background:#eef5f4;border:1px solid #bcd6d3;border-radius:12px;padding:10px 12px}
+.terpilih div{flex:1;min-width:0}
+.terpilih b{display:block}
+.terpilih span{font-size:12px;color:var(--muted)}
+.terpilih button{background:none;border:0;color:var(--brand);font-weight:700;cursor:pointer;padding:0;white-space:nowrap}
+.pil{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.pil button{background:#fff;border:1px solid #cfcac0;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer}
+.pil button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.tautan{background:none;border:0;color:var(--brand);font-weight:700;padding:0;cursor:pointer;font-size:13px;text-decoration:underline}
+.peta{border-radius:12px;overflow:hidden;border:1px solid var(--line);margin-top:10px}
+.peta iframe{width:100%;height:190px;border:0;display:block}
+.status{font-size:13px;margin-top:8px;padding:8px 10px;border-radius:10px}
+.status.ok{background:var(--ok-bg);color:var(--ok)}
+.status.err{background:var(--err-bg);color:var(--err)}
+.status.tunggu{background:#f1efe9;color:var(--muted)}
+.tombol3{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tombol3 .lebar{grid-column:1/-1}
+.ambil{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:#fff;border:1.5px dashed var(--brand2);border-radius:14px;padding:14px 8px;cursor:pointer;color:var(--brand);font-weight:700;font-size:14px;text-align:center;margin:0}
+.ambil i{font-style:normal;font-size:24px;line-height:1}
+.ambil small{font-weight:500;color:var(--muted);font-size:11px}
+.ambil input{display:none}
+.daftar-file{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:10px}
+.f{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:#1d2a2b;border:1px solid var(--line)}
+.f img,.f video{width:100%;height:100%;object-fit:cover;display:block}
+.f .lbl{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);color:#fff;font-size:11px;padding:3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f .x{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:0;border-radius:999px;width:26px;height:26px;cursor:pointer;font-size:15px;line-height:1}
+.f .bar{position:absolute;left:0;top:0;height:4px;background:var(--accent);width:0;transition:width .3s}
+.f.selesai .bar{background:var(--ok);width:100%}
+.f.gagal{outline:3px solid var(--err)}
+.f .tanda{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:30px;background:rgba(0,0,0,.35);color:#fff}
+.f.selesai .tanda,.f.gagal .tanda{display:flex}
+.kaki{position:fixed;left:0;right:0;bottom:0;background:rgba(243,241,236,.96);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom));z-index:30}
+.kaki .isi{max-width:620px;margin:0 auto}
+.kaki p{margin:0 0 6px;font-size:13px;color:var(--muted);text-align:center}
+.sukses{text-align:center;padding:26px 14px}
+.sukses .ikon{font-size:48px}
+.sukses h2{justify-content:center;font-size:18px}
+.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#1d2a2b;color:#fff;padding:10px 16px;border-radius:10px;z-index:90;display:none;max-width:90vw;font-size:14px}
+.toast.err{background:var(--err)}
+.memuat{padding:40px 16px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <div class="judul">UPLOAD FOTO PROPERTI<small>PT Satelit Komunika Nusantara</small></div>
+</header>
+<main id="isi"><div class="memuat">Memuat daftar properti...</div></main>
+<div class="kaki" id="kaki" style="display:none"><div class="isi"><p id="ringkas"></p><button class="btn blok" id="btnKirim" onclick="kirim()">Kirim</button></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+var D = {aset: []};
+var JENIS = ['RUKO', 'TANAH', 'RUMAH', 'GUDANG', 'APARTEMEN', 'KIOS MP'];
+var st = {aset: null, baru: false, nama: '', jenis: '', lokasi: '', gmaps: '', akurasi: null, ket: '', files: []};
+var sedangKirim = false;
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function lsGet(k){ try { return localStorage.getItem(k) || ''; } catch(e){ return ''; } }
+function lsSet(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+function toast(m, err){ var t = $('toast'); t.textContent = m; t.className = 'toast' + (err ? ' err' : ''); t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(function(){ t.style.display = 'none'; }, err ? 6000 : 3000); }
+// tanpa isian nama: semua upload dari halaman ini tercatat sebagai 'Link upload'
+function namaSaya(){ return 'Link upload'; }
+window.addEventListener('beforeunload', function(e){ if (sedangKirim) { e.preventDefault(); e.returnValue = ''; } });
+
+// Alamat server (diisi oleh doGet). Panggilan lewat fetch POST tanpa cookie, jadi tidak terpengaruh
+// HP yang login banyak akun Google. Kosong (uji lokal) -> pakai google.script.run.
+var URL_EXEC = 'https://script.google.com/macros/s/AKfycbwuGs1uq43pDFQpdJhdSdDC_Py4OJ5v-gKQsxgx1JLNSK3jEW-Ihgxfi9QOcywA85-W/exec';
+function jalan(fn, args){
+  if (URL_EXEC) {
+    return fetch(URL_EXEC, {method: 'POST', credentials: 'omit', redirect: 'follow', body: JSON.stringify({fn: fn, args: args || []})})
+      .then(function(r){ if (!r.ok) throw new Error('Server tidak bisa dihubungi (' + r.status + ')'); return r.json(); })
+      .then(function(d){ if (!d.ok) throw new Error(d.error || 'Gagal'); return d.hasil; },
+        function(e){ throw (e && /Server tidak bisa|Gagal/.test(e.message)) ? e : new Error('Koneksi terputus. Cek sinyal lalu coba lagi.'); });
+  }
+  return new Promise(function(ok, gagal){
+    var r = google.script.run.withSuccessHandler(ok).withFailureHandler(function(e){ gagal(e && e.message ? e : new Error(String(e))); });
+    r[fn].apply(r, args || []);
+  });
+}
+async function jalanUlang(fn, args, kali){
+  for (var i = 0; ; i++) {
+    try { return await jalan(fn, args); }
+    catch (e) { if (i >= (kali || 3) || /kedaluwarsa|gagal \(4|wajib|bukan foto|lebih dari/i.test(e.message)) throw e; await new Promise(function(r){ setTimeout(r, 2000 * (i + 1)); }); }
+  }
+}
+function bacaBase64(blob){
+  return new Promise(function(ok, gagal){
+    var fr = new FileReader();
+    fr.onload = function(){ ok(String(fr.result).split(',')[1] || ''); };
+    fr.onerror = function(){ gagal(new Error('File tidak bisa dibaca')); };
+    fr.readAsDataURL(blob);
+  });
+}
+var MIME_EXT = {jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif', gif: 'image/gif',
+  mp4: 'video/mp4', mov: 'video/quicktime', m4v: 'video/x-m4v', '3gp': 'video/3gpp', mkv: 'video/x-matroska', avi: 'video/x-msvideo', webm: 'video/webm'};
+function mimeFile(f){
+  if (/^(image|video)\//.test(f.type)) return f.type;
+  return MIME_EXT[String(f.name).split('.').pop().toLowerCase()] || f.type || '';
+}
+function rapikanGmaps(s){
+  s = String(s || '').trim();
+  if (!s) return '';
+  var m = s.match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+  if (m) return 'https://www.google.com/maps?q=' + m[1] + ',' + m[2];
+  return /^https?:\/\//i.test(s) ? s : null;
+}
+function koordinat(link){ var m = String(link || '').match(/[?&]q=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/); return m ? m[1] + ',' + m[2] : ''; }
+function mb(n){ return n >= 1048576 ? (n / 1048576).toLocaleString('id-ID', {maximumFractionDigits: 1}) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+function cocok(q, t){ q = q.toLowerCase().trim(); t = t.toLowerCase(); return !q || q.split(/\s+/).every(function(w){ return t.indexOf(w) >= 0; }); }
+
+/* ---------- tampilan ---------- */
+function gambar(){
+  $('isi').innerHTML =
+    '<div class="kartu" id="kProp"></div>' +
+    '<div class="kartu" id="kPeta"></div>' +
+    '<div class="kartu" id="kFile"></div>' +
+    '<div class="kartu"><h2><span class="no">4</span>Keterangan <em style="font-weight:400;color:var(--muted);font-size:12px">(opsional)</em></h2>' +
+    '<textarea id="inKet" maxlength="300" placeholder="mis. tampak depan, kondisi atap bocor, papan &quot;disewakan&quot; sudah dipasang">' + esc(st.ket) + '</textarea></div>';
+  $('inKet').oninput = function(){ st.ket = this.value; };
+  $('kaki').style.display = '';
+  gambarProp(); gambarPeta(); gambarFile(); ringkas();
+}
+
+function gambarProp(){
+  var k = $('kProp'), siap = st.aset || (st.baru && st.nama && st.jenis && st.lokasi);
+  var h = '<h2><span class="no">1</span>Properti' + (siap ? '<span class="ok">✔</span>' : '') + '</h2>';
+  if (st.aset) {
+    var a = st.aset;
+    h += '<div class="terpilih"><div><b>' + esc(a.NAMA) + '</b><span>' + esc([a.JENIS, a.LOKASI, a.ALAMAT].filter(Boolean).join(' • ')) + '</span></div><button onclick="gantiProp()">Ganti</button></div>';
+  } else if (st.baru) {
+    h += '<label>Nama properti *<input id="inNamaProp" maxlength="150" value="' + esc(st.nama) + '" placeholder="mis. Ruko Jl. Sudirman No. 10"></label>' +
+      '<div style="font-size:13px;font-weight:600;color:#3d4a4b;margin-bottom:6px">Jenis *</div><div class="pil" id="pilJenis">' +
+      JENIS.map(function(j){ return '<button type="button" class="' + (st.jenis === j ? 'on' : '') + '" data-j="' + esc(j) + '">' + esc(j) + '</button>'; }).join('') + '</div>' +
+      '<label>Lokasi (kota/kabupaten) *<input id="inLokasi" list="dlLok" value="' + esc(st.lokasi) + '" placeholder="mis. PEKANBARU"></label>' +
+      '<datalist id="dlLok">' + unikLokasi().map(function(l){ return '<option value="' + esc(l) + '">'; }).join('') + '</datalist>' +
+      '<button class="tautan" onclick="st.baru=false;gambarProp();ringkas()">← Cari di daftar properti</button>';
+  } else {
+    h += '<label>Cari properti terdaftar<input id="inCari" type="search" placeholder="ketik nama jalan / ruko / tanah..." autocomplete="off"></label>' +
+      '<ul class="hasil" id="hasilCari"></ul>' +
+      '<p class="info">Tidak ada di daftar? <button class="tautan" onclick="propBaru()">Isi sebagai properti baru</button></p>';
+  }
+  k.innerHTML = h;
+  if (!st.aset && !st.baru) {
+    var cari = function(){
+      var q = $('inCari').value;
+      var l = D.aset.filter(function(a){ return cocok(q, [a.NAMA, a.LOKASI, a.JENIS, a.ALAMAT, a.ID].join(' ')); }).slice(0, q ? 8 : 5);
+      $('hasilCari').innerHTML = l.map(function(a){ return '<li><button data-id="' + esc(a.ID) + '"><b>' + esc(a.NAMA) + '</b><span>' + esc([a.JENIS, a.LOKASI, a.ALAMAT].filter(Boolean).join(' • ')) + '</span></button></li>'; }).join('') ||
+        '<li><button onclick="propBaru()"><b>Tidak ketemu</b><span>Ketuk untuk isi sebagai properti baru</span></button></li>';
+      $('hasilCari').querySelectorAll('[data-id]').forEach(function(b){ b.onclick = function(){ pilihAset(b.dataset.id); }; });
+    };
+    $('inCari').oninput = cari; cari();
+  }
+  if (st.baru) {
+    $('inNamaProp').oninput = function(){ st.nama = this.value; ringkas(); };
+    $('inLokasi').oninput = function(){ st.lokasi = this.value; ringkas(); };
+    $('pilJenis').querySelectorAll('button').forEach(function(b){ b.onclick = function(){ st.jenis = b.dataset.j; gambarProp(); ringkas(); }; });
+  }
+}
+function unikLokasi(){ var o = {}; D.aset.forEach(function(a){ if (a.LOKASI) o[a.LOKASI] = 1; }); return Object.keys(o).sort(); }
+function pilihAset(id){
+  st.aset = D.aset.filter(function(a){ return a.ID === id; })[0] || null;
+  if (st.aset && st.aset.GMAPS && !st.gmaps) { st.gmaps = st.aset.GMAPS; st.akurasi = null; st.dariLama = true; }
+  gambarProp(); gambarPeta(); ringkas();
+}
+function gantiProp(){ st.aset = null; if (st.dariLama) { st.gmaps = ''; st.dariLama = false; } gambarProp(); gambarPeta(); ringkas(); }
+function propBaru(){ st.baru = true; st.aset = null; gambarProp(); ringkas(); }
+
+function gambarPeta(){
+  var k = $('kPeta');
+  var h = '<h2><span class="no">2</span>Lokasi di peta <em style="font-weight:400;color:var(--muted);font-size:12px">(disarankan)</em>' + (st.gmaps ? '<span class="ok">✔</span>' : '') + '</h2>';
+  h += '<button class="btn blok" id="btnLokasi">📍 ' + (st.gmaps ? 'Ambil ulang lokasi saya' : 'Ambil lokasi saya sekarang') + '</button>' +
+    '<p class="info">Berdiri di depan properti, lalu ketuk. Saat ditanya, pilih <b>Izinkan</b> lokasi.</p>' +
+    '<div id="stLokasi"></div>';
+  if (st.gmaps) {
+    var kor = koordinat(st.gmaps);
+    if (st.dariLama) h += '<div class="status tunggu">Memakai lokasi yang pernah disimpan untuk properti ini.</div>';
+    h += (kor ? '<div class="peta"><iframe loading="lazy" src="https://maps.google.com/maps?q=' + esc(kor) + '&z=17&output=embed"></iframe></div>' : '') +
+      '<p class="info"><a href="' + esc(st.gmaps) + '" target="_blank" rel="noopener">Buka di Google Maps</a>' + (st.akurasi ? ' • akurasi ±' + st.akurasi + ' m' : '') +
+      ' • <button class="tautan" onclick="st.gmaps=\'\';st.akurasi=null;st.dariLama=false;gambarPeta();ringkas()">hapus</button></p>';
+  }
+  h += '<p class="info">Dari kantor / lokasi lain? <button class="tautan" id="btnTempel">Tempel link Google Maps</button></p><div id="kotakTempel" style="display:none"><input id="inGmaps" placeholder="https://maps.app.goo.gl/... atau -0.5071,101.4478"><button class="btn ghost blok" style="margin-top:6px" id="btnPakai">Pakai link ini</button></div>';
+  k.innerHTML = h;
+  $('btnLokasi').onclick = ambilLokasi;
+  $('btnTempel').onclick = function(){ $('kotakTempel').style.display = ''; $('inGmaps').focus(); };
+  $('btnPakai').onclick = function(){
+    var g = rapikanGmaps($('inGmaps').value);
+    if (!g) { toast('Link harus diawali https:// (dari tombol Bagikan di Google Maps) atau koordinat "lat,lng"', true); return; }
+    st.gmaps = g; st.akurasi = null; st.dariLama = false; gambarPeta(); ringkas();
+  };
+}
+function ambilLokasi(){
+  var s = $('stLokasi');
+  if (!navigator.geolocation) { s.innerHTML = '<div class="status err">HP/browser ini tidak mendukung lokasi. Pakai "Tempel link Google Maps".</div>'; return; }
+  s.innerHTML = '<div class="status tunggu">⏳ Mencari lokasi... (bisa 5–20 detik, pastikan GPS menyala)</div>';
+  $('btnLokasi').disabled = true;
+  navigator.geolocation.getCurrentPosition(function(p){
+    st.gmaps = 'https://www.google.com/maps?q=' + p.coords.latitude.toFixed(6) + ',' + p.coords.longitude.toFixed(6);
+    st.akurasi = Math.round(p.coords.accuracy); st.dariLama = false;
+    gambarPeta(); ringkas();
+    $('stLokasi').innerHTML = '<div class="status ' + (st.akurasi > 100 ? 'err' : 'ok') + '">' + (st.akurasi > 100 ? '⚠ Lokasi kurang akurat (±' + st.akurasi + ' m). Nyalakan GPS / pindah ke tempat terbuka lalu ambil ulang.' : '✔ Lokasi didapat (±' + st.akurasi + ' m).') + '</div>';
+  }, function(e){
+    $('btnLokasi').disabled = false;
+    var pesan = e.code === 1
+      ? 'Izin lokasi ditolak. Buka pengaturan browser: ketuk ikon 🔒/ⓘ di samping alamat web → Izin → Lokasi → Izinkan, lalu ketuk tombol lagi. Pastikan juga GPS/Lokasi HP menyala.'
+      : e.code === 3 ? 'Waktu habis mencari lokasi. Pastikan GPS menyala, coba di tempat terbuka, lalu ketuk lagi.' : 'Lokasi tidak bisa diambil (' + e.message + '). Coba lagi atau tempel link Google Maps.';
+    s.innerHTML = '<div class="status err">' + esc(pesan) + '</div>';
+  }, {enableHighAccuracy: true, timeout: 25000, maximumAge: 0});
+}
+
+function gambarFile(){
+  var k = $('kFile');
+  var h = '<h2><span class="no">3</span>Foto &amp; video' + (st.files.length ? '<span class="ok">' + st.files.length + ' file</span>' : '') + '</h2>' +
+    '<div class="tombol3">' +
+    '<label class="ambil"><i>📷</i>Ambil foto<small>kamera</small><input type="file" accept="image/*" capture="environment" data-in></label>' +
+    '<label class="ambil"><i>🎥</i>Rekam video<small>kamera</small><input type="file" accept="video/*" capture="environment" data-in></label>' +
+    '<label class="ambil lebar"><i>🖼</i>Pilih dari galeri / file<small>boleh banyak sekaligus • maks 500 MB per file</small><input type="file" accept="image/*,video/*" multiple data-in></label>' +
+    '</div><div class="daftar-file" id="daftarFile"></div>';
+  k.innerHTML = h;
+  k.querySelectorAll('[data-in]').forEach(function(inp){ inp.onchange = function(){ tambahFile(inp.files); inp.value = ''; }; });
+  gambarDaftar();
+}
+function tambahFile(list){
+  var tolak = [];
+  [].slice.call(list || []).forEach(function(f){
+    var mime = mimeFile(f);
+    if (!/^(image|video)\//.test(mime)) { tolak.push(f.name + ' (bukan foto/video)'); return; }
+    if (f.size > 500 * 1024 * 1024) { tolak.push(f.name + ' (lebih dari 500 MB)'); return; }
+    if (!f.size) { tolak.push(f.name + ' (kosong)'); return; }
+    st.files.push({file: f, mime: mime, url: URL.createObjectURL(f), status: ''});
+  });
+  if (tolak.length) toast('Dilewati: ' + tolak.join(', '), true);
+  gambarFile(); ringkas();
+}
+function gambarDaftar(){
+  $('daftarFile').innerHTML = st.files.map(function(x, i){
+    var vid = /^video\//.test(x.mime);
+    return '<div class="f ' + x.status + '" id="f' + i + '">' +
+      (vid ? '<video src="' + x.url + '#t=0.5" muted playsinline preload="metadata"></video>' : '<img src="' + x.url + '" alt="">') +
+      '<div class="bar"></div><div class="tanda">' + (x.status === 'selesai' ? '✔' : x.status === 'gagal' ? '✖' : '') + '</div>' +
+      '<div class="lbl">' + (vid ? '🎥 ' : '') + esc(mb(x.file.size)) + '</div>' +
+      (sedangKirim || x.status === 'selesai' ? '' : '<button class="x" data-hapus="' + i + '" aria-label="Hapus">✕</button>') + '</div>';
+  }).join('');
+  $('daftarFile').querySelectorAll('[data-hapus]').forEach(function(b){ b.onclick = function(){
+    var i = +b.dataset.hapus; URL.revokeObjectURL(st.files[i].url); st.files.splice(i, 1); gambarFile(); ringkas();
+  }; });
+}
+
+function propSiap(){ return !!(st.aset || (st.baru && st.nama.trim() && st.jenis && st.lokasi.trim())); }
+function ringkas(){
+  var kurang = [];
+  if (!propSiap()) kurang.push('pilih/isi properti');
+  var sisa = st.files.filter(function(x){ return x.status !== 'selesai'; });
+  if (!sisa.length) kurang.push('tambah foto/video');
+  var total = sisa.reduce(function(s, x){ return s + x.file.size; }, 0);
+  $('ringkas').textContent = kurang.length ? 'Belum lengkap: ' + kurang.join(', ') : sisa.length + ' file • ' + mb(total) + (st.gmaps ? ' • lokasi ✔' : ' • tanpa lokasi peta');
+  $('btnKirim').disabled = !!kurang.length || sedangKirim;
+  $('btnKirim').textContent = sedangKirim ? 'Mengirim...' : 'Kirim ' + (sisa.length ? sisa.length + ' file' : '');
+}
+
+async function kirim(){
+  if (!propSiap() || sedangKirim) return;
+  if (!st.gmaps && !confirm('Lokasi peta belum diambil. Tetap kirim tanpa lokasi?')) return;
+  var meta = st.aset ? {ID_ASET: st.aset.ID, NAMA_PROPERTI: st.aset.NAMA, JENIS: st.aset.JENIS, LOKASI: st.aset.LOKASI}
+    : {ID_ASET: '', NAMA_PROPERTI: st.nama.trim(), JENIS: st.jenis, LOKASI: st.lokasi.trim()};
+  meta.GMAPS = st.gmaps; meta.KETERANGAN = (st.ket || '').trim();
+  sedangKirim = true; ringkas(); gambarDaftar();
+  var gagal = [];
+  for (var i = 0; i < st.files.length; i++) {
+    var x = st.files[i];
+    if (x.status === 'selesai') continue;
+    x.status = ''; var el = $('f' + i); el.className = 'f'; var bar = el.querySelector('.bar');
+    try {
+      var mulai = await jalanUlang('apiMulaiUpload', [Object.assign({}, meta, {NAMA_FILE: x.file.name || ('kamera-' + Date.now() + (/^video/.test(x.mime) ? '.mp4' : '.jpg')), MIME: x.mime, UKURAN: x.file.size}), namaSaya()], 2);
+      var pos = 0, hasil = null;
+      while (pos < x.file.size) {
+        var ujung = Math.min(pos + mulai.potongan, x.file.size);
+        var r = await jalanUlang('apiKirimPotongan', [mulai.uploadId, pos, await bacaBase64(x.file.slice(pos, ujung))]);
+        pos = ujung; bar.style.width = Math.round(pos / x.file.size * 100) + '%';
+        if (r.selesai) { hasil = r.media; break; }
+      }
+      if (!hasil) throw new Error('Drive belum mengonfirmasi file selesai');
+      x.status = 'selesai'; el.className = 'f selesai'; el.querySelector('.tanda').textContent = '✔';
+    } catch (e) {
+      x.status = 'gagal'; el.className = 'f gagal'; el.querySelector('.tanda').textContent = '✖';
+      gagal.push((x.file.name || 'file') + ': ' + e.message);
+    }
+    $('ringkas').textContent = 'Mengirim ' + (i + 1) + ' dari ' + st.files.length + '... jangan tutup halaman';
+  }
+  sedangKirim = false;
+  if (gagal.length) {
+    gambarDaftar(); ringkas();
+    toast(gagal.length + ' file gagal. Ketuk Kirim lagi untuk mengulang yang gagal.', true);
+    return;
+  }
+  var n = st.files.length;
+  st.files.forEach(function(x){ URL.revokeObjectURL(x.url); });
+  $('kaki').style.display = 'none';
+  $('isi').innerHTML = '<div class="kartu sukses"><div class="ikon">✅</div><h2>' + n + ' file terkirim</h2>' +
+    '<p class="info" style="margin-bottom:16px">' + esc(meta.NAMA_PROPERTI) + ' • tersimpan di Google Drive & tercatat di aplikasi Property SKN.</p>' +
+    '<button class="btn blok" onclick="lagiSama()">+ Tambah foto/video properti ini</button>' +
+    '<button class="btn ghost blok" style="margin-top:8px" onclick="propLain()">Properti lain</button></div>';
+}
+function lagiSama(){ st.files = []; st.ket = ''; gambar(); window.scrollTo(0, 0); }
+function propLain(){ st = {aset: null, baru: false, nama: '', jenis: '', lokasi: '', gmaps: '', akurasi: null, ket: '', files: []}; gambar(); window.scrollTo(0, 0); }
+
+/* ---------- mulai ---------- */
+function muatAwal(){
+  $('isi').innerHTML = '<div class="memuat">Memuat daftar properti...</div>';
+  jalanUlang('apiDataUpload', [], 2).then(function(d){ D = d || {aset: []}; gambar(); }, function(e){
+    $('isi').innerHTML = '<div class="kartu"><div class="status err">Gagal memuat: ' + esc(e.message || e) + '</div><button class="btn blok" style="margin-top:10px" onclick="muatAwal()">Coba lagi</button></div>';
+  });
+}
+muatAwal();
+</script>
+</body>
+</html>
