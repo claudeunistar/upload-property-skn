@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Property SKN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f1ec; --card:#ffffff; --ink:#1d2a2b; --muted:#667476; --line:#e2ded5;
+  --brand:#0f3d3e; --brand2:#14595b; --accent:#e0a526;
+  --sewa:#1f8a4c; --sewa-bg:#e3f4ea; --tempo:#c77700; --tempo-bg:#fdf0d9;
+  --lewat:#c62f2f; --lewat-bg:#fbe3e1; --kosong:#2f5d9e; --kosong-bg:#e3ecf8;
+  --pakai:#6b4fa0; --pakai-bg:#eee8f7; --jual:#7a7a7a; --jual-bg:#ececec;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+header{background:var(--brand);color:#fff;padding:12px 16px 0;position:sticky;top:0;z-index:20}
+.top{display:flex;align-items:center;gap:10px}
+.logo{font-weight:800;letter-spacing:.3px;font-size:18px;flex:1;min-width:0}
+.logo small{display:block;font-weight:500;font-size:12px;opacity:.75;letter-spacing:0}
+.chip-nama{background:rgba(255,255,255,.14);border:0;color:#fff;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;max-width:45vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn-ikon{background:rgba(255,255,255,.14);border:0;color:#fff;border-radius:999px;width:34px;height:34px;cursor:pointer;font-size:16px;flex:none}
+nav{display:flex;gap:2px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+@media(max-width:420px){nav{gap:0;justify-content:space-between}nav button{padding:10px 2px!important;font-size:12.5px!important}}
+nav button{background:none;border:0;color:rgba(255,255,255,.7);padding:10px 7px;font-size:14px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav button.on{color:#fff;border-bottom-color:var(--accent)}
+main{max-width:980px;margin:0 auto;padding:16px}
+main.lebar{max-width:none}
+main.sedang{max-width:1200px}
+.view{display:none}.view.on{display:block}
+h2{font-size:17px;margin:20px 0 10px}
+h2:first-child{margin-top:4px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tile{background:var(--card);border-radius:14px;padding:12px 14px;border:1px solid var(--line);cursor:pointer;text-align:left}
+.tile b{display:block;font-size:26px;line-height:1.1;font-weight:800}
+.tile span{font-size:13px;color:var(--muted)}
+.tile.sewa b{color:var(--sewa)}.tile.tempo b{color:var(--tempo)}.tile.lewat b{color:var(--lewat)}.tile.kosong b{color:var(--kosong)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:12px;color:var(--muted);font-weight:600;background:#faf9f6}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.alat{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.alat input[type=search]{flex:1 1 220px}
+input,select,textarea{background:#fff;border:1px solid #cfcac0;border-radius:10px;padding:9px 11px;min-width:0;width:100%}
+.alat select{width:auto;flex:1 1 130px}
+textarea{min-height:64px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand2);outline-offset:0;border-color:var(--brand2)}
+.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;background:var(--brand);color:#fff}
+.btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.btn.merah{background:var(--lewat)}
+.btn.kecil{padding:7px 11px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+.info{font-size:13px;color:var(--muted);margin:0 0 10px}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;cursor:pointer;text-align:left;width:100%;display:block}
+.item:hover{border-color:#bdb7aa}
+.item .t{display:flex;gap:8px;align-items:flex-start}
+.item .t b{flex:1;min-width:0;font-weight:700}
+.item .s{font-size:13px;color:var(--muted);margin-top:2px}
+.badge{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap;flex:none}
+.b-sewa{background:var(--sewa-bg);color:var(--sewa)}.b-tempo{background:var(--tempo-bg);color:var(--tempo)}
+.b-lewat{background:var(--lewat-bg);color:var(--lewat)}.b-kosong{background:var(--kosong-bg);color:var(--kosong)}
+.b-pakai{background:var(--pakai-bg);color:var(--pakai)}.b-jual{background:var(--jual-bg);color:var(--jual)}
+.b-selesai{background:var(--jual-bg);color:var(--jual)}
+.kosong-teks{padding:20px;text-align:center;color:var(--muted)}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(10,25,25,.45);display:none;z-index:50;align-items:flex-end;justify-content:center}
+.modal.on{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:680px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px 24px}
+@media(min-width:700px){.modal{align-items:center}.sheet{border-radius:18px}}
+.sheet-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+.sheet-head h3{flex:1;margin:0;font-size:17px}
+.tutup{background:#fff;border:1px solid var(--line);border-radius:999px;width:34px;height:34px;cursor:pointer;flex:none}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:#3d4a4b}
+.form label.full{grid-column:1/-1}
+.form label em{font-style:normal;font-weight:400;color:var(--muted);font-size:12px}
+@media(max-width:520px){.form{grid-template-columns:1fr}}
+.aksi{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.dl{display:grid;grid-template-columns:140px 1fr;gap:6px 12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px}
+.dl dt{color:var(--muted)}.dl dd{margin:0;word-break:break-word}
+@media(max-width:520px){.dl{grid-template-columns:110px 1fr}}
+.cek-list{max-height:220px;overflow:auto;background:#fff;border:1px solid #cfcac0;border-radius:10px;padding:4px 8px}
+.cek-list label{flex-direction:row;align-items:flex-start;gap:8px;font-weight:400;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.cek-list label:last-child{border-bottom:0}
+.cek-list input{width:auto;margin-top:3px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#1d2a2b;color:#fff;padding:10px 16px;border-radius:10px;z-index:90;display:none;max-width:90vw;font-size:14px}
+.toast.err{background:var(--lewat)}
+.memuat{position:fixed;inset:0;background:rgba(243,241,236,.7);display:none;align-items:center;justify-content:center;z-index:80;font-weight:700}
+.memuat.on{display:flex}
+/* laporan */
+.pilih-lap{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:12px}
+.pilih-lap button{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-align:left;cursor:pointer}
+.pilih-lap button b{display:block}
+.pilih-lap button span{font-size:12px;color:var(--muted)}
+.pilih-lap button.on{border:2px solid var(--brand);background:#eef5f4}
+.hasil-kartu{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:14px}
+.kartu-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px}
+.kartu-box img{width:100%;display:block;border-radius:6px}
+.kartu-box .aksi{margin-top:8px}
+.chips-jenis{align-items:center;gap:6px}
+.chips-jenis .lbl{font-size:13px;font-weight:700;color:var(--muted)}
+.chip-j{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid #cfcac0;border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;cursor:pointer}
+.chip-j input{width:auto;margin:0}
+.chip-j.on{background:#eef5f4;border-color:var(--brand);color:var(--brand)}
+.hasil-kartu.lebar{grid-template-columns:1fr}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;margin-top:8px}
+.thumb{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;overflow:hidden;padding:0;background:#e9e5dc;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .vid{font-size:26px;color:#fff;background:#1d2a2b;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.thumb .vid small{font-size:11px;opacity:.8}
+.pratinjau{background:#111;border-radius:12px;overflow:hidden}
+.pratinjau img{width:100%;max-height:60vh;object-fit:contain;display:block}
+.pratinjau iframe{width:100%;aspect-ratio:16/9;border:0;display:block}
+.prog{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px}
+.prog .pt{display:flex;gap:8px;justify-content:space-between}
+.prog .pt span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prog .pb{height:6px;background:#eee;border-radius:3px;margin-top:6px;overflow:hidden}
+.prog .pb i{display:block;height:100%;background:var(--brand2);transition:width .3s}
+.prog.ok .pb i{background:var(--sewa)}.prog.gagal .pb i{background:var(--lewat)}.prog.gagal b{color:var(--lewat)}.prog.ok b{color:var(--sewa)}
+details.rinci{margin-top:6px;font-size:14px}
+details.rinci summary{cursor:pointer;padding:4px 0}
+details.rinci ul{margin:4px 0 0;padding-left:18px;max-height:260px;overflow:auto}
+details.rinci li{margin-bottom:6px}
+details.rinci .beda{font-size:12px;color:#4b5758;margin-top:2px;word-break:break-word}
+.seg{display:inline-flex;border:1px solid #cfcac0;border-radius:10px;overflow:hidden;background:#fff}
+.seg button{border:0;background:none;padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted)}
+.seg button.on{background:var(--brand);color:#fff}
+.tabel-excel{overflow:auto;max-height:74vh;background:#fff;border:1px solid #c9c4b8;border-radius:8px}
+.tabel-excel table{border-collapse:separate;border-spacing:0;font-size:12.5px;width:max-content;min-width:100%}
+.tabel-excel th{position:sticky;top:0;z-index:2;background:var(--brand);color:#fff;font-size:11.5px;font-weight:700;text-align:center;padding:8px 8px;border-right:1px solid rgba(255,255,255,.25);white-space:normal;line-height:1.25;vertical-align:middle}
+.tabel-excel td{padding:6px 8px;border-right:1px solid #e3ded4;border-bottom:1px solid #e3ded4;vertical-align:top;white-space:nowrap}
+.tabel-excel th:first-child,.tabel-excel td:first-child{position:sticky;left:0;z-index:1}
+.tabel-excel th:first-child{z-index:3}
+.tabel-excel td:first-child{background:inherit}
+.tabel-excel tbody tr{cursor:pointer;background:#fff}
+.tabel-excel tbody tr:nth-child(even){background:#f8f6f1}
+.tabel-excel tbody tr:hover{background:#e9f2f1}
+.tabel-excel td.n{text-align:center}
+.tabel-excel td.rp{text-align:right}
+.tabel-excel td.tgl{text-align:center}
+.tabel-excel th:first-child,.tabel-excel td:first-child{width:44px;min-width:44px;max-width:44px}
+.tabel-excel td.nama,.tabel-excel th.nama{position:sticky;left:44px;z-index:1;white-space:normal;min-width:230px;max-width:230px;font-weight:600;background:inherit;box-shadow:2px 0 0 #c9c4b8}
+.tabel-excel th.nama{z-index:3;background:var(--brand)}
+.tabel-excel td.bungkus{white-space:normal;min-width:120px;max-width:170px}
+@media(max-width:700px){.tabel-excel td.nama,.tabel-excel th.nama{position:static;min-width:170px;max-width:170px;box-shadow:none}.tabel-excel{max-height:none}}
+.tabel-excel td.lebar{white-space:normal;min-width:180px;max-width:260px}
+.tabel-excel td.st .badge{font-size:11px}
+.tabel-excel td.kode{font-weight:700;text-align:center}
+.judul-detail{margin:12px 0 10px}
+.judul-detail .jd-1{font-size:20px;font-weight:800;color:#8b1538;line-height:1.25}
+.judul-detail .jd-2{font-size:13px;color:var(--muted);margin:2px 0 6px}
+.kd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:820px){.kd-grid{grid-template-columns:1fr 1fr}}
+.kd{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.kd-j{font-size:12px;font-weight:800;color:#8b1538;letter-spacing:.2px}
+.kd-n{font-size:30px;font-weight:800;line-height:1.2;margin:6px 0 2px}
+.kd-n small{font-size:14px;font-weight:600;color:var(--muted)}
+.kd-s{font-size:12px;color:var(--muted)}
+.kd-foto{padding:6px}
+.thumb-besar{border:0;padding:0;background:none;cursor:pointer;width:100%;display:block}
+.thumb-besar img{width:100%;height:130px;object-fit:cover;border-radius:8px;display:block}
+.sub-judul{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:18px}
+.sub-judul h2{margin:0;font-size:15px;color:#8b1538}
+.peta-detail{border-radius:12px;overflow:hidden;border:1px solid var(--line);margin-top:8px}
+.peta-detail iframe{width:100%;height:260px;border:0;display:block}
+.tabel-excel tr.total td{font-weight:800;background:#efefef}
+.tabel-excel.rincian th:first-child,.tabel-excel.rincian td:first-child{width:auto;min-width:80px;max-width:none;white-space:nowrap}
+.unit-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px}
+.unit-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.tautan-hapus{background:none;border:0;color:var(--lewat);font-weight:700;cursor:pointer;font-size:13px}
+.riw{font-size:13px}
+.riw .w{color:var(--muted);font-size:12px}
+.riw .r{color:#4b5758;word-break:break-word}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="logo">PROPERTY SKN<small>Aset &amp; kontrak sewa</small></div>
+    <button class="chip-nama" id="chipNama" onclick="mintaNama(true)">Isi nama</button>
+    <button class="btn-ikon" title="Muat ulang data" onclick="muat()">&#x21bb;</button>
+  </div>
+  <nav id="nav">
+    <button data-v="ringkasan">Ringkasan</button>
+    <button data-v="aset">Aset</button>
+    <button data-v="detail">Detail</button>
+    <button data-v="kontrak">Kontrak</button>
+    <button data-v="media">Foto</button>
+    <button data-v="laporan">Laporan</button>
+    <button data-v="riwayat">Riwayat</button>
+  </nav>
+</header>
+
+<main>
+  <section class="view" id="v-ringkasan"></section>
+
+  <section class="view" id="v-aset">
+    <div class="alat">
+      <input type="search" id="cariAset" placeholder="Cari nama, alamat, penyewa..." oninput="gambarAset()">
+      <button class="btn" onclick="formAset()">+ Tambah aset</button>
+      <button class="btn ghost" onclick="formImpor()">📥 Perbarui dari Excel</button>
+    </div>
+    <div class="alat">
+      <select id="fALokasi" onchange="gambarAset()"></select>
+      <select id="fAJenis" onchange="gambarAset()"></select>
+      <select id="fAPemilik" onchange="gambarAset()"></select>
+      <select id="fAStatus" onchange="gambarAset()">
+        <option value="">Semua status</option>
+        <option value="kosong">Belum disewa</option>
+        <option value="disewa">Disewa (semua)</option>
+        <option value="tempo">Jatuh tempo &le; 90 hari</option>
+        <option value="lewat">Lewat tempo</option>
+        <option value="pakai">Dipakai sendiri</option>
+        <option value="jual">Terjual</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+      <p class="info" id="infoAset" style="margin:0;flex:1"></p>
+      <div class="seg" id="segTampilAset"><button data-t="tabel">▦ Tabel</button><button data-t="kartu">☰ Kartu</button></div>
+    </div>
+    <div class="list" id="listAset"></div>
+  </section>
+
+  <section class="view" id="v-detail"></section>
+
+  <section class="view" id="v-kontrak">
+    <div class="alat">
+      <input type="search" id="cariKontrak" placeholder="Cari kode, aset, penyewa..." oninput="gambarKontrak()">
+      <button class="btn" onclick="formKontrak()">+ Kontrak baru</button>
+    </div>
+    <div class="alat">
+      <select id="fKStatus" onchange="gambarKontrak()">
+        <option value="">Semua kontrak</option>
+        <option value="aktif">Aktif (semua)</option>
+        <option value="tempo">Jatuh tempo &le; 90 hari</option>
+        <option value="lewat">Lewat tempo</option>
+        <option value="selesai">Tidak aktif</option>
+      </select>
+      <select id="fKLokasi" onchange="gambarKontrak()"></select>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+      <p class="info" id="infoKontrak" style="margin:0;flex:1"></p>
+      <div class="seg" id="segTampilKontrak"><button data-t="tabel">▦ Tabel</button><button data-t="kartu">☰ Kartu</button></div>
+    </div>
+    <div class="list" id="listKontrak"></div>
+  </section>
+
+  <section class="view" id="v-media">
+    <div class="panel" id="kotakLinkUpload" style="padding:12px 14px;margin-bottom:12px;display:none"></div>
+    <div class="alat">
+      <input type="search" id="cariMedia" placeholder="Cari nama properti, keterangan, file..." oninput="gambarMedia()">
+      <button class="btn" onclick="formUpload()">+ Upload foto/video</button>
+    </div>
+    <div class="alat">
+      <select id="fMLokasi" onchange="gambarMedia()"></select>
+      <select id="fMJenis" onchange="gambarMedia()"></select>
+      <select id="fMTipe" onchange="gambarMedia()"><option value="">Foto &amp; video</option><option>Foto</option><option>Video</option></select>
+      <button class="btn ghost" id="btnUnduhMedia" onclick="unduhExcelMedia()">Unduh Excel</button>
+    </div>
+    <p class="info" id="infoMedia"></p>
+    <div class="list" id="listMedia"></div>
+  </section>
+
+  <section class="view" id="v-laporan">
+    <p class="info">Pilih laporan, atur filter, lalu tekan <b>Buat kartu</b>. Kartu bisa dibagikan langsung ke WA, diunduh, atau ditekan lama di HP untuk simpan/bagikan.</p>
+    <div class="pilih-lap" id="pilihLap"></div>
+    <div class="alat chips-jenis" id="lJenis"></div>
+    <div class="alat">
+      <select id="lLokasi"></select>
+      <select id="lPemilik"></select>
+      <button class="btn" onclick="buatKartu()">Buat kartu</button>
+    </div>
+    <div id="hasilKartu"></div>
+  </section>
+
+  <section class="view" id="v-riwayat">
+    <p class="info">200 perubahan terakhir (terbaru di atas).</p>
+    <div class="panel"><div id="listRiwayat" class="kosong-teks">Memuat...</div></div>
+  </section>
+</main>
+
+<div class="modal" id="modal" onclick="if(event.target===this)tutupModal()"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<div class="memuat" id="memuat">Memuat...</div>
+
+<script>
+/* ============ VERSI GITHUB PAGES ============
+ * URL_EXEC diisi saat membangun github/aplikasi.html. Semua google.script.run lalu lewat fetch ke doPost (anonim,
+ * tanpa cookie akun Google) supaya aplikasi bisa dibuka di HP/laptop yang login banyak akun Google.
+ * Di Apps Script nilainya kosong -> google.script.run asli yang dipakai. */
+var URL_EXEC = 'https://script.google.com/macros/s/AKfycbwuGs1uq43pDFQpdJhdSdDC_Py4OJ5v-gKQsxgx1JLNSK3jEW-Ihgxfi9QOcywA85-W/exec';
+function pelariFetch(ok, gagal){
+  return new Proxy({}, {get: function(_, fn){
+    if (fn === 'withSuccessHandler') return function(f){ return pelariFetch(f, gagal); };
+    if (fn === 'withFailureHandler') return function(f){ return pelariFetch(ok, f); };
+    return function(){
+      var args = Array.prototype.slice.call(arguments);
+      fetch(URL_EXEC, {method: 'POST', credentials: 'omit', redirect: 'follow', body: JSON.stringify({src: 'app', fn: fn, args: args})})
+        .then(function(r){ if (!r.ok) throw new Error('Server tidak bisa dihubungi (' + r.status + ')'); return r.json(); })
+        .then(function(d){ if (!d.ok) throw new Error(d.error || 'Gagal'); if (ok) ok(d.hasil); })
+        .catch(function(e){
+          var m = e && e.message ? e.message : String(e);
+          if (/failed to fetch|networkerror|load failed/i.test(m)) m = 'Koneksi terputus. Cek sinyal lalu coba lagi.';
+          if (gagal) gagal(new Error(m));
+        });
+    };
+  }});
+}
+if (URL_EXEC) window.google = {script: {get run(){ return pelariFetch(null, null); }}};
+
+/* ============ STATE & UTIL ============ */
+var S = {aset: [], kontrak: [], hariIni: '', batas: 90};
+var BULAN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+var BULAN_PANJANG = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+var JENIS_STD = ['RUKO','TANAH','RUMAH','APARTEMEN','GUDANG','KIOS MP'];
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function ada(v){ return v !== undefined && v !== null && String(v).trim() !== ''; }
+function lsGet(k){ try { return localStorage.getItem(k) || ''; } catch(e){ return ''; } }
+function lsSet(k, v){ try { localStorage.setItem(k, v); } catch(e){} }
+function tglObj(s){ var m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(Date.UTC(+m[1], +m[2]-1, +m[3])) : null; }
+function selisihHari(dari, ke){ var a = tglObj(dari), b = tglObj(ke); return (a && b) ? Math.round((b - a) / 86400000) : null; }
+function fmtTgl(s, panjang){ var d = tglObj(s); if (!d) return '-'; return d.getUTCDate() + ' ' + (panjang ? BULAN_PANJANG : BULAN)[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); }
+function tambahHari(s, n){ var d = tglObj(s); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0,10); }
+function tambahTahun(s, n){ var d = tglObj(s); d.setUTCFullYear(d.getUTCFullYear() + n); return d.toISOString().slice(0,10); }
+function rp(n){ n = Number(n); if (!n) return '-'; return 'Rp ' + n.toLocaleString('id-ID'); }
+function rpSingkat(n){
+  n = Number(n); if (!n) return '-';
+  if (n >= 1e9) return 'Rp ' + (n/1e9).toLocaleString('id-ID', {maximumFractionDigits: 2}) + ' M';
+  if (n >= 1e6) return 'Rp ' + (n/1e6).toLocaleString('id-ID', {maximumFractionDigits: 1}) + ' jt';
+  return rp(n);
+}
+function kodeList(s){ return String(s || '').split(',').map(function(x){ return x.trim(); }).filter(String); }
+function unik(arr){ var o = {}, r = []; arr.forEach(function(x){ if (ada(x) && !o[x]) { o[x] = 1; r.push(x); } }); return r.sort(); }
+function toast(msg, err){ var t = $('toast'); t.textContent = msg; t.className = 'toast' + (err ? ' err' : ''); t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(function(){ t.style.display = 'none'; }, err ? 6000 : 3000); }
+function memuat(on){ $('memuat').classList.toggle('on', !!on); }
+
+function panggil(fn, args, ok){
+  memuat(true);
+  var r = google.script.run.withSuccessHandler(function(res){ memuat(false); ok && ok(res); })
+    .withFailureHandler(function(e){ memuat(false); toast((e && e.message) || String(e), true); });
+  r[fn].apply(r, args || []);
+}
+
+/* ============ STATUS ============ */
+function statusKontrak(k){
+  if (k.STATUS !== 'Aktif') return {kode: 'selesai', label: 'Tidak aktif', urut: 9};
+  var h = ada(k.AKHIR) ? selisihHari(S.hariIni, k.AKHIR) : null;
+  if (h === null) return {kode: 'sewa', label: 'Disewa', hari: null, urut: 3};
+  if (h < 0) return {kode: 'lewat', label: 'Lewat ' + (-h) + ' hari', hari: h, urut: 1};
+  if (h <= S.batas) return {kode: 'tempo', label: h === 0 ? 'Habis hari ini' : 'Sisa ' + h + ' hari', hari: h, urut: 2};
+  return {kode: 'sewa', label: 'Disewa', hari: h, urut: 3};
+}
+function kontrakByKode(kode){ kode = String(kode).toUpperCase(); for (var i = 0; i < S.kontrak.length; i++) if (String(S.kontrak[i].KODE).toUpperCase() === kode) return S.kontrak[i]; return null; }
+function kontrakAset(a){ return kodeList(a.KODE_SEWA).map(kontrakByKode).filter(Boolean); }
+function asetKontrak(k){ var kd = String(k.KODE).toUpperCase(); return S.aset.filter(function(a){ return kodeList(a.KODE_SEWA).some(function(x){ return x.toUpperCase() === kd; }); }); }
+function statusAset(a){
+  if (a.KONDISI === 'Terjual') return {kode: 'jual', label: 'Terjual', urut: 8};
+  if (a.KONDISI === 'Dipakai sendiri') return {kode: 'pakai', label: 'Dipakai sendiri', urut: 7};
+  var ks = kontrakAset(a), aktif = ks.filter(function(k){ return k.STATUS === 'Aktif'; });
+  if (!aktif.length) return {kode: 'kosong', label: 'Belum disewa', urut: 4, kontrak: ks};
+  var terburuk = aktif.map(statusKontrak).sort(function(x, y){ return x.urut - y.urut || (x.hari||0) - (y.hari||0); })[0];
+  var sebagian = ks.length > aktif.length;
+  return {kode: terburuk.kode, label: terburuk.kode === 'sewa' ? (sebagian ? 'Disewa sebagian' : 'Disewa') : terburuk.label, urut: terburuk.urut, sebagian: sebagian, kontrak: ks};
+}
+function badge(st){ return '<span class="badge b-' + st.kode + '">' + esc(st.label) + '</span>'; }
+function pemilikKontrak(k){
+  var as = asetKontrak(k); if (as.length) return as[0].PEMILIK;
+  var o = String(k.OWNER).toLowerCase();
+  if (o.indexOf('bastian') >= 0) return 'PAK BASTIAN';
+  if (o.indexOf('roben') >= 0) return 'PAK ROBEN';
+  return k.OWNER || '';
+}
+
+/* ============ MUAT & NAV ============ */
+function muat(){ panggil('apiMuat', [], terima); }
+function terima(d){
+  S = {aset: d.aset || [], kontrak: d.kontrak || [], media: d.media || [], detailAset: d.detailAset || [], detailUnit: d.detailUnit || [], urlApp: d.urlApp || '', hariIni: d.hariIni, batas: Number(d.batasHari) || 90};
+  isiFilter(); gambarSemua();
+}
+function gambarSemua(){ gambarRingkasan(); gambarAset(); gambarKontrak(); gambarMedia(); gambarDetail(); }
+
+function isiSelect(el, label, vals){
+  var cur = el.value;
+  el.innerHTML = '<option value="">' + esc(label) + '</option>' + vals.map(function(v){ return '<option>' + esc(v) + '</option>'; }).join('');
+  if (vals.indexOf(cur) >= 0) el.value = cur;
+}
+function semuaLokasi(){ return unik(S.aset.map(function(a){ return a.LOKASI; }).concat(S.kontrak.map(function(k){ return k.LOKASI; }))); }
+function semuaJenis(){ return unik(JENIS_STD.concat(S.aset.map(function(a){ return a.JENIS; }))); }
+function semuaPemilik(){ return unik(S.aset.map(function(a){ return a.PEMILIK; })); }
+function isiFilter(){
+  var lok = semuaLokasi(), jen = semuaJenis(), pem = semuaPemilik();
+  isiSelect($('fALokasi'), 'Semua lokasi', lok); isiSelect($('fAJenis'), 'Semua jenis', jen); isiSelect($('fAPemilik'), 'Semua pemilik', pem);
+  isiSelect($('fKLokasi'), 'Semua lokasi', lok);
+  isiSelect($('lLokasi'), 'Semua lokasi', lok); isiSelect($('lPemilik'), 'Semua pemilik', pem); gambarJenis();
+}
+
+function bukaTab(v){
+  document.querySelectorAll('#nav button').forEach(function(b){ b.classList.toggle('on', b.dataset.v === v); });
+  document.querySelectorAll('.view').forEach(function(s){ s.classList.toggle('on', s.id === 'v-' + v); });
+  document.querySelector('main').classList.toggle('lebar', (v === 'aset' && modeTampilAset() === 'tabel') || (v === 'kontrak' && modeTampilKontrak() === 'tabel'));
+  document.querySelector('main').classList.toggle('sedang', v === 'detail');
+  if (v === 'detail' && S.hariIni) gambarDetail();
+  lsSet('propTab', v);
+  if (v === 'riwayat') muatRiwayat();
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('#nav button').forEach(function(b){ b.onclick = function(){ bukaTab(b.dataset.v); }; });
+
+/* ============ NAMA ============ */
+function namaSaya(){ return lsGet('propNama'); }
+function tampilNama(){ var n = namaSaya(); $('chipNama').textContent = n ? '\u{1F464} ' + n : 'Isi nama'; }
+function mintaNama(paksa, lanjut){
+  if (namaSaya() && !paksa) { lanjut && lanjut(); return; }
+  bukaModal('<div class="sheet-head"><h3>Nama Anda</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+    '<p class="info">Nama dicatat di setiap perubahan data (kolom Riwayat). Cukup isi sekali di HP/laptop ini.</p>' +
+    '<div class="form"><label class="full">Nama<input id="inNama" maxlength="40" value="' + esc(namaSaya()) + '" placeholder="contoh: Dita - Property"></label></div>' +
+    '<div class="aksi"><button class="btn" id="btnNama">Simpan</button></div>');
+  $('inNama').focus();
+  $('btnNama').onclick = function(){
+    var v = $('inNama').value.trim();
+    if (!v) { toast('Nama belum diisi', true); return; }
+    lsSet('propNama', v); tampilNama(); tutupModal(); lanjut && lanjut();
+  };
+}
+
+/* ============ MODAL ============ */
+function bukaModal(html){ $('sheet').innerHTML = html; $('modal').classList.add('on'); $('sheet').scrollTop = 0; }
+function tutupModal(){ $('modal').classList.remove('on'); }
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') tutupModal(); });
+
+/* ============ RINGKASAN ============ */
+function hitung(){
+  var r = {aset: 0, unit: 0, sewa: 0, kosong: 0, pakai: 0, jual: 0, unitKosong: 0};
+  S.aset.forEach(function(a){
+    var st = statusAset(a);
+    if (st.kode === 'jual') { r.jual++; return; }
+    r.aset++; r.unit += Number(a.UNIT) || 0;
+    if (st.kode === 'kosong') { r.kosong++; r.unitKosong += Number(a.UNIT) || 0; }
+    else if (st.kode === 'pakai') r.pakai++;
+    else r.sewa++;
+  });
+  r.kAktif = 0; r.tempo = 0; r.lewat = 0; r.nilai = 0;
+  S.kontrak.forEach(function(k){
+    var st = statusKontrak(k);
+    if (st.kode === 'selesai') return;
+    r.kAktif++; r.nilai += (Number(k.NILAI_SEWA) || 0) * (Number(k.UNIT) || 1);
+    if (st.kode === 'tempo') r.tempo++;
+    if (st.kode === 'lewat') r.lewat++;
+  });
+  return r;
+}
+function gambarRingkasan(){
+  var r = hitung();
+  var tindakan = S.kontrak.filter(function(k){ var c = statusKontrak(k).kode; return c === 'lewat' || c === 'tempo'; })
+    .sort(function(a, b){ return selisihHari(S.hariIni, a.AKHIR) - selisihHari(S.hariIni, b.AKHIR); });
+  var perJenis = {};
+  S.aset.forEach(function(a){
+    var st = statusAset(a); if (st.kode === 'jual') return;
+    var j = perJenis[a.JENIS] || (perJenis[a.JENIS] = {aset: 0, unit: 0, sewa: 0, kosong: 0, pakai: 0});
+    j.aset++; j.unit += Number(a.UNIT) || 0;
+    if (st.kode === 'kosong') j.kosong++; else if (st.kode === 'pakai') j.pakai++; else j.sewa++;
+  });
+  var h = '<div class="panel" style="padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:200px"><b>Data diperbarui di Excel?</b><div class="info" style="margin:0">Unggah Excel terbaru, cek perubahannya, lalu terapkan.</div></div><button class="btn" onclick="formImpor()">📥 Perbarui dari Excel</button></div>' +
+    '<h2>Kondisi per ' + esc(fmtTgl(S.hariIni, true)) + '</h2><div class="tiles">' +
+    tile('', r.aset, 'Aset dimiliki (' + r.unit + ' unit)', "keAset('')") +
+    tile('sewa', r.sewa, 'Aset disewa', "keAset('disewa')") +
+    tile('kosong', r.kosong, 'Aset belum disewa', "keAset('kosong')") +
+    tile('tempo', r.tempo, 'Kontrak jatuh tempo ≤ ' + S.batas + ' hari', "keKontrak('tempo')") +
+    tile('lewat', r.lewat, 'Kontrak lewat tempo (masih Aktif)', "keKontrak('lewat')") +
+    tile('', rpSingkat(r.nilai), 'Nilai sewa aktif per tahun', "keKontrak('aktif')") +
+    '</div>';
+  h += '<h2>Perlu tindakan</h2>';
+  if (!tindakan.length) h += '<div class="panel kosong-teks">Tidak ada kontrak yang jatuh tempo dalam ' + S.batas + ' hari.</div>';
+  else h += '<div class="list">' + tindakan.map(itemKontrak).join('') + '</div>';
+  h += '<h2>Per jenis aset</h2><div class="panel"><table><tr><th>Jenis</th><th class="n">Aset</th><th class="n">Unit</th><th class="n">Disewa</th><th class="n">Belum disewa</th><th class="n">Dipakai sendiri</th></tr>' +
+    Object.keys(perJenis).sort().map(function(j){ var x = perJenis[j];
+      return '<tr><td>' + esc(j) + '</td><td class="n">' + x.aset + '</td><td class="n">' + x.unit + '</td><td class="n">' + x.sewa + '</td><td class="n">' + x.kosong + '</td><td class="n">' + x.pakai + '</td></tr>'; }).join('') +
+    '</table></div>';
+  if (r.jual) h += '<p class="info" style="margin-top:8px">' + r.jual + ' aset berstatus Terjual tidak dihitung.</p>';
+  $('v-ringkasan').innerHTML = h;
+}
+function tile(cls, val, lbl, onclick){ return '<button class="tile ' + cls + '" onclick="' + onclick + '"><b>' + esc(val) + '</b><span>' + esc(lbl) + '</span></button>'; }
+function keAset(st){ ['fALokasi','fAJenis','fAPemilik'].forEach(function(id){ $(id).value = ''; }); $('cariAset').value = ''; $('fAStatus').value = st; gambarAset(); bukaTab('aset'); }
+function keKontrak(st){ $('fKLokasi').value = ''; $('cariKontrak').value = ''; $('fKStatus').value = st; gambarKontrak(); bukaTab('kontrak'); }
+
+/* ============ ASET ============ */
+function cocokCari(q, teks){ q = q.toLowerCase().trim(); if (!q) return true; teks = teks.toLowerCase(); return q.split(/\s+/).every(function(w){ return teks.indexOf(w) >= 0; }); }
+function gambarAset(){
+  var q = $('cariAset').value, fl = $('fALokasi').value, fj = $('fAJenis').value, fp = $('fAPemilik').value, fs = $('fAStatus').value;
+  var rows = S.aset.map(function(a){ return {a: a, st: statusAset(a)}; }).filter(function(x){
+    var a = x.a, k = x.st.kode;
+    if (fl && a.LOKASI !== fl) return false;
+    if (fj && a.JENIS !== fj) return false;
+    if (fp && a.PEMILIK !== fp) return false;
+    if (fs === 'disewa' && ['sewa','tempo','lewat'].indexOf(k) < 0) return false;
+    if (fs && fs !== 'disewa' && k !== fs) return false;
+    var penyewa = (x.st.kontrak || []).map(function(c){ return c.PENYEWA + ' ' + c.KODE; }).join(' ');
+    return cocokCari(q, [a.ID, a.NAMA, a.ALAMAT, a.LOKASI, a.JENIS, a.PEMILIK_DETAIL, a.CATATAN, penyewa].join(' '));
+  });
+  var unit = rows.reduce(function(s, x){ return s + (Number(x.a.UNIT) || 0); }, 0);
+  $('infoAset').textContent = rows.length + ' aset • ' + unit + ' unit';
+  var mode = modeTampilAset();
+  document.querySelectorAll('#segTampilAset button').forEach(function(b){ b.classList.toggle('on', b.dataset.t === mode); });
+  if (!rows.length) { $('listAset').innerHTML = '<div class="panel kosong-teks">Tidak ada aset yang cocok.</div>'; return; }
+  if (mode === 'tabel') { $('listAset').innerHTML = tabelAset(rows); return; }
+  rows.sort(function(x, y){ return x.st.urut - y.st.urut || String(x.a.LOKASI).localeCompare(y.a.LOKASI) || String(x.a.NAMA).localeCompare(y.a.NAMA); });
+  $('listAset').innerHTML = rows.map(function(x){ return itemAset(x.a, x.st); }).join('');
+}
+function modeTampilAset(){ return lsGet('propTampilAset') || (window.innerWidth < 700 ? 'kartu' : 'tabel'); }
+document.querySelectorAll('#segTampilAset button').forEach(function(b){ b.onclick = function(){
+  lsSet('propTampilAset', b.dataset.t); document.querySelector('main').classList.toggle('lebar', b.dataset.t === 'tabel'); gambarAset();
+}; });
+
+/** Tabel aset dengan kolom & urutan sama seperti sheet DAFTAR ASET di Excel. */
+function tabelAset(rows){
+  var urut = {}; S.aset.forEach(function(a, i){ urut[a.ID] = i; });
+  rows = rows.slice().sort(function(x, y){ return urut[x.a.ID] - urut[y.a.ID]; });
+  var kol = ['NO', 'PEMILIK (BLOK)', 'LOKASI', 'JENIS', 'ALAMAT', 'NAMA ASET', 'JML UNIT', 'JUMLAH / LUAS', 'NILAI PASAR', 'PEMILIK (DETAIL)',
+    'KODE SEWA', 'STATUS SEWA', 'PENYEWA', 'AKHIR SEWA', 'SISA (BLN)', 'NILAI SEWA TERAKHIR (Rp/thn/unit)', 'CATATAN'];
+  var body = rows.map(function(x){
+    var a = x.a, st = x.st;
+    var ks = kontrakAset(a), aktif = ks.filter(function(k){ return k.STATUS === 'Aktif'; });
+    var pakai = aktif.length ? aktif : ks;
+    var akhir = pakai.map(function(k){ return k.AKHIR; }).filter(ada).sort()[0] || '';
+    var hari = akhir ? selisihHari(S.hariIni, akhir) : null;
+    var banyak = pakai.length > 1;
+    var statusTeks = st.kode === 'kosong' ? (ks.length ? 'Tidak aktif' : 'Tidak ada data sewa') : st.label;
+    if (banyak && ['sewa', 'tempo', 'lewat'].indexOf(st.kode) >= 0) statusTeks += ' • ' + aktif.length + ' kontrak';
+    var penyewa = unikUrut(pakai.map(function(k){ return k.PENYEWA; })).join(', ');
+    var sisa = hari === null ? '' : hari < 0 ? 'Lewat' : blnTeks(hari);
+    var nilai = rentangRp(pakai.map(function(k){ return k.NILAI_SEWA; }));
+    var w = st.kode === 'kosong' ? '' : warnaSisa(hari);
+    var m = String(a.ID).match(/(\d+)$/);
+    var sel = [
+      ['n', m ? +m[1] : ''], ['', a.PEMILIK], ['', a.LOKASI], ['', a.JENIS], ['bungkus', a.ALAMAT], ['nama', a.NAMA], ['n', a.UNIT], ['bungkus', a.LUAS], ['', a.NILAI_PASAR || '-'], ['bungkus', a.PEMILIK_DETAIL],
+      ['bungkus', a.KODE_SEWA], ['st', '<span class="badge b-' + st.kode + '">' + esc(statusTeks) + '</span>'], ['lebar', penyewa],
+      ['tgl', akhir ? tglTabel(akhir) + (banyak ? '*' : '') : ''], ['n', sisa], ['rp', ks.length ? nilai : ''], ['lebar', a.CATATAN]
+    ];
+    return '<tr onclick="detailAset(\'' + esc(a.ID) + '\')">' + sel.map(function(c, i){
+      var gaya = (i === 13 || i === 14) && w && akhir ? ' style="background:' + w.bg + ';color:' + w.fg + ';font-weight:700"' : '';
+      return '<td class="' + c[0] + '"' + gaya + '>' + (c[0] === 'st' ? c[1] : esc(c[1])) + '</td>';
+    }).join('') + '</tr>';
+  }).join('');
+  return '<div class="tabel-excel"><table><thead><tr>' + kol.map(function(k){ return '<th' + (k === 'NAMA ASET' ? ' class="nama"' : '') + '>' + esc(k) + '</th>'; }).join('') + '</tr></thead><tbody>' + body + '</tbody></table></div>' +
+    '<p class="info" style="margin-top:6px">Ketuk baris untuk melihat detail / mengubah. * = aset dengan beberapa kontrak: tanggal paling cepat habis, nilai sewa terendah – tertinggi. Warna AKHIR SEWA: <span style="background:#f8cbad;padding:0 4px">≤ 3 bln</span> <span style="background:#ffe699;padding:0 4px">≤ 6 bln</span> <span style="background:#c6efce;padding:0 4px">masih lama</span> <span style="background:#e99a9a;padding:0 4px">lewat</span></p>';
+}
+function itemAset(a, st){
+  st = st || statusAset(a);
+  var aktif = (st.kontrak || []).filter(function(k){ return k.STATUS === 'Aktif'; });
+  var sewa = aktif.length ? 'Penyewa: ' + esc(aktif.map(function(k){ return k.PENYEWA + ' (s/d ' + fmtTgl(k.AKHIR) + ')'; }).join(', ')) : '';
+  return '<button class="item" onclick="detailAset(\'' + esc(a.ID) + '\')"><div class="t"><b>' + esc(a.NAMA) + '</b>' + badge(st) + '</div>' +
+    '<div class="s">' + esc([a.JENIS, a.LOKASI, a.UNIT + ' unit', a.LUAS ? 'Luas ' + a.LUAS : '', a.PEMILIK].filter(ada).join(' • ')) + '</div>' +
+    (sewa ? '<div class="s">' + sewa + '</div>' : '') + '</button>';
+}
+function asetById(id){ for (var i = 0; i < S.aset.length; i++) if (S.aset[i].ID === id) return S.aset[i]; return null; }
+function detailAset(id){
+  var a = asetById(id); if (!a) return;
+  var st = statusAset(a), ks = kontrakAset(a);
+  var h = '<div class="sheet-head"><h3>' + esc(a.NAMA) + '<br>' + badge(st) + '</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+    '<dl class="dl">' + dl('ID', a.ID) + dl('Pemilik', a.PEMILIK) + dl('Pemilik (detail)', a.PEMILIK_DETAIL) + dl('Lokasi', a.LOKASI) + dl('Jenis', a.JENIS) +
+    dl('Alamat', a.ALAMAT) + dl('Jumlah unit', a.UNIT) + dl('Luas', a.LUAS) + dl('Nilai pasar', a.NILAI_PASAR) + dl('Kondisi', a.KONDISI) +
+    dl('Catatan', a.CATATAN) + dl('Terakhir diubah', [a.DIUBAH_OLEH, a.DIUBAH_PADA].filter(ada).join(', ')) + '</dl>';
+  h += '<h2>Kontrak sewa</h2>' + (ks.length ? '<div class="list">' + ks.map(itemKontrak).join('') + '</div>' : '<div class="panel kosong-teks">Belum ada kontrak yang ditautkan.</div>');
+  if (kodeList(a.KODE_SEWA).length > ks.length) h += '<p class="info">Kode di aset tapi tidak ada di daftar kontrak: ' + esc(kodeList(a.KODE_SEWA).filter(function(x){ return !kontrakByKode(x); }).join(', ')) + '</p>';
+  var md = mediaAset(a.ID);
+  h += '<h2>Foto &amp; video (' + md.length + ')</h2>' + (md.length ? htmlThumbs(md) : '<div class="panel kosong-teks">Belum ada foto/video.</div>') +
+    (md.filter(function(m){ return m.GMAPS; })[0] ? '<p class="info" style="margin-top:6px"><a href="' + esc(md.filter(function(m){ return m.GMAPS; })[0].GMAPS) + '" target="_blank" rel="noopener">📍 Buka lokasi di Google Maps</a></p>' : '');
+  h += '<div class="aksi"><button class="btn" onclick="bukaDetail(\'' + esc(a.ID) + '\')">📋 Detail lengkap</button><button class="btn ghost" onclick="formAset(\'' + esc(a.ID) + '\')">Ubah data aset</button>' +
+    '<button class="btn ghost" onclick="formUpload(\'' + esc(a.ID) + '\')">+ Upload foto/video</button>' +
+    (a.KONDISI === 'Tersedia' ? '<button class="btn ghost" onclick="kontrakDariAset(\'' + esc(a.ID) + '\')">+ Penyewa / kontrak baru</button>' : '') +
+    '<button class="btn merah" onclick="hapusAset(\'' + esc(a.ID) + '\')">Hapus aset</button></div>';
+  bukaModal(h);
+}
+function dl(k, v){ return ada(v) ? '<dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd>' : ''; }
+function datalist(id, vals){ return '<datalist id="' + id + '">' + vals.map(function(v){ return '<option value="' + esc(v) + '">'; }).join('') + '</datalist>'; }
+function formAset(id){
+  mintaNama(false, function(){
+    var a = id ? asetById(id) : {KONDISI: 'Tersedia', UNIT: 1};
+    var h = '<div class="sheet-head"><h3>' + (id ? 'Ubah aset ' + esc(a.ID) : 'Tambah aset baru') + '</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+      '<div class="form">' +
+      inp('NAMA', 'Nama aset *', a, 'full') +
+      inp('PEMILIK', 'Pemilik *', a, '', 'dlPemilik') +
+      inp('PEMILIK_DETAIL', 'Pemilik (detail / atas nama)', a) +
+      inp('LOKASI', 'Lokasi (kota) *', a, '', 'dlLokasi') +
+      inp('JENIS', 'Jenis *', a, '', 'dlJenis') +
+      inp('ALAMAT', 'Alamat', a, 'full') +
+      inp('UNIT', 'Jumlah unit *', a, '', null, 'number') +
+      inp('LUAS', 'Luas', a, '', null, 'text', 'mis. LT 150M2/LB 186M2') +
+      inp('NILAI_PASAR', 'Nilai pasar sewa', a, '', null, 'text', 'mis. 65jt - 70jt') +
+      '<label>Kondisi<select id="f_KONDISI">' + ['Tersedia','Dipakai sendiri','Terjual'].map(function(v){ return '<option' + (a.KONDISI === v ? ' selected' : '') + '>' + v + '</option>'; }).join('') + '</select><em>Terjual / Dipakai sendiri tidak masuk laporan "belum disewa"</em></label>' +
+      '<label class="full">Catatan<textarea id="f_CATATAN">' + esc(a.CATATAN) + '</textarea></label>' +
+      '</div>' + datalist('dlPemilik', semuaPemilik()) + datalist('dlLokasi', semuaLokasi()) + datalist('dlJenis', semuaJenis()) +
+      '<p class="info" style="margin-top:10px">Penyewa &amp; tanggal sewa diisi lewat <b>kontrak</b> (tombol "+ Penyewa / kontrak baru" di detail aset).</p>' +
+      '<div class="aksi"><button class="btn" id="btnSimpan">Simpan</button><button class="btn ghost" onclick="tutupModal()">Batal</button></div>';
+    bukaModal(h);
+    $('btnSimpan').onclick = function(){
+      var o = {ID: id || '', KODE_SEWA: id ? a.KODE_SEWA : ''};
+      ['NAMA','PEMILIK','PEMILIK_DETAIL','LOKASI','JENIS','ALAMAT','UNIT','LUAS','NILAI_PASAR','KONDISI','CATATAN'].forEach(function(k){ o[k] = $('f_' + k).value; });
+      if (!o.NAMA.trim() || !o.PEMILIK.trim() || !o.LOKASI.trim() || !o.JENIS.trim()) { toast('Nama, pemilik, lokasi, dan jenis wajib diisi', true); return; }
+      panggil('apiSimpanAset', [o, namaSaya()], function(d){ terima(d); tutupModal(); toast(id ? 'Aset diperbarui' : 'Aset baru ditambahkan'); });
+    };
+  });
+}
+function inp(k, label, o, cls, list, type, ph){
+  return '<label class="' + (cls || '') + '">' + esc(label) + '<input id="f_' + k + '" type="' + (type || 'text') + '"' + (type === 'number' ? ' min="1" inputmode="numeric"' : '') +
+    (list ? ' list="' + list + '"' : '') + (ph ? ' placeholder="' + esc(ph) + '"' : '') + ' value="' + esc(o[k]) + '"></label>';
+}
+function hapusAset(id){
+  var a = asetById(id);
+  mintaNama(false, function(){
+    bukaModal('<div class="sheet-head"><h3>Hapus aset?</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+      '<p><b>' + esc(a.NAMA) + '</b> akan dihapus dari daftar. Isi data lama tetap tersimpan di Riwayat.</p>' +
+      '<p class="info">Kalau aset dijual, lebih baik ubah <b>Kondisi</b> menjadi "Terjual" agar jejaknya tetap ada.</p>' +
+      '<div class="form"><label class="full">Alasan menghapus *<input id="inAlasan" placeholder="mis. data dobel / salah input"></label></div>' +
+      '<div class="aksi"><button class="btn merah" id="btnHapus">Ya, hapus</button><button class="btn ghost" onclick="detailAset(\'' + esc(id) + '\')">Batal</button></div>');
+    $('btnHapus').onclick = function(){
+      var al = $('inAlasan').value.trim(); if (!al) { toast('Isi alasan dulu', true); return; }
+      panggil('apiHapusAset', [id, namaSaya(), al], function(d){ terima(d); tutupModal(); toast('Aset dihapus'); });
+    };
+  });
+}
+
+/* ============ KONTRAK ============ */
+function gambarKontrak(){
+  var q = $('cariKontrak').value, fs = $('fKStatus').value, fl = $('fKLokasi').value;
+  var rows = S.kontrak.filter(function(k){
+    var c = statusKontrak(k).kode;
+    if (fs === 'aktif' && c === 'selesai') return false;
+    if (fs && fs !== 'aktif' && c !== fs) return false;
+    if (fl && k.LOKASI !== fl) return false;
+    return cocokCari(q, [k.KODE, k.NAMA, k.PENYEWA, k.LOKASI, k.OWNER, k.KET, k.KET_UPDATE].join(' '));
+  }).sort(urutKontrak);
+  var nilai = rows.reduce(function(s, k){ return s + (k.STATUS === 'Aktif' ? (Number(k.NILAI_SEWA) || 0) * (Number(k.UNIT) || 1) : 0); }, 0);
+  $('infoKontrak').textContent = rows.length + ' kontrak' + (nilai ? ' • nilai sewa aktif ' + rp(nilai) + '/tahun' : '');
+  var mode = modeTampilKontrak();
+  document.querySelectorAll('#segTampilKontrak button').forEach(function(b){ b.classList.toggle('on', b.dataset.t === mode); });
+  if (!rows.length) { $('listKontrak').innerHTML = '<div class="panel kosong-teks">Tidak ada kontrak yang cocok.</div>'; return; }
+  $('listKontrak').innerHTML = mode === 'tabel' ? tabelKontrak(rows) : rows.map(itemKontrak).join('');
+}
+function modeTampilKontrak(){ return lsGet('propTampilKontrak') || (window.innerWidth < 700 ? 'kartu' : 'tabel'); }
+document.querySelectorAll('#segTampilKontrak button').forEach(function(b){ b.onclick = function(){
+  lsSet('propTampilKontrak', b.dataset.t); document.querySelector('main').classList.toggle('lebar', b.dataset.t === 'tabel'); gambarKontrak();
+}; });
+
+/** Tabel kontrak dengan kolom & urutan sama seperti sheet KONTRAK SEWA di Excel. */
+function tabelKontrak(rows){
+  var urut = {}; S.kontrak.forEach(function(k, i){ urut[k.KODE] = i; });
+  rows = rows.slice().sort(function(x, y){ return urut[x.KODE] - urut[y.KODE]; });
+  var kol = ['KODE', 'NAMA ASET (REKAP SEWA)', 'LOKASI', 'UNIT', 'OWNER', 'PENYEWA', 'STATUS', 'AWAL', 'AKHIR', 'DURASI', 'SISA (BLN)',
+    'NILAI SEWA TERAKHIR (Rp/thn/unit)', 'HARGA PASAR', 'HISTORY SEWA (Jt/thn/unit)', 'KET REKAP SEWA', 'KET UPDATE', 'PERINGATAN'];
+  var body = rows.map(function(k){
+    var st = statusKontrak(k);
+    var hari = ada(k.AKHIR) ? selisihHari(S.hariIni, k.AKHIR) : null;
+    var aktif = k.STATUS === 'Aktif';
+    var sisa = hari === null ? '' : hari < 0 ? 'Lewat' : blnTeks(hari);
+    var w = aktif ? warnaSisa(hari) : null;
+    var peringatan = !aktif ? '' : st.kode === 'lewat' ? 'Status Aktif tapi akhir sewa sudah lewat' : st.kode === 'tempo' ? 'Jatuh tempo ≤ ' + S.batas + ' hari' : (hari === null ? 'Tanggal akhir belum diisi' : '');
+    var sel = [
+      ['kode', k.KODE], ['nama', k.NAMA], ['', k.LOKASI], ['n', k.UNIT], ['', k.OWNER], ['lebar', k.PENYEWA],
+      ['st', '<span class="badge b-' + (aktif ? (st.kode === 'sewa' ? 'sewa' : st.kode) : 'selesai') + '">' + esc(k.STATUS) + '</span>'],
+      ['tgl', ada(k.AWAL) ? tglTabel(k.AWAL) : ''], ['tgl', ada(k.AKHIR) ? tglTabel(k.AKHIR) : ''], ['n', k.DURASI], ['n', sisa],
+      ['rp', k.NILAI_SEWA !== '' && k.NILAI_SEWA !== null && k.NILAI_SEWA !== undefined ? rpPenuh(k.NILAI_SEWA) : ''], ['', k.HARGA_PASAR],
+      ['lebar', k.HISTORY], ['lebar', k.KET], ['lebar', k.KET_UPDATE], ['lebar', peringatan]
+    ];
+    return '<tr onclick="detailKontrak(\'' + esc(k.KODE) + '\')">' + sel.map(function(c, i){
+      var gaya = (i === 8 || i === 10) && w ? ' style="background:' + w.bg + ';color:' + w.fg + ';font-weight:700"' :
+        (i === 16 && peringatan ? ' style="color:' + (st.kode === 'lewat' ? '#9c0006' : '#9c5700') + ';font-weight:700"' : '');
+      return '<td class="' + c[0] + '"' + gaya + '>' + (c[0] === 'st' ? c[1] : esc(c[1])) + '</td>';
+    }).join('') + '</tr>';
+  }).join('');
+  return '<div class="tabel-excel"><table><thead><tr>' + kol.map(function(k){ return '<th' + (k.indexOf('NAMA ASET') === 0 ? ' class="nama"' : '') + '>' + esc(k) + '</th>'; }).join('') + '</tr></thead><tbody>' + body + '</tbody></table></div>' +
+    '<p class="info" style="margin-top:6px">Ketuk baris untuk detail / ubah / perpanjang. Warna AKHIR &amp; SISA (kontrak Aktif): <span style="background:#f8cbad;padding:0 4px">≤ 3 bln</span> <span style="background:#ffe699;padding:0 4px">≤ 6 bln</span> <span style="background:#c6efce;padding:0 4px">masih lama</span> <span style="background:#e99a9a;padding:0 4px">lewat</span></p>';
+}
+function urutKontrak(a, b){
+  var x = statusKontrak(a), y = statusKontrak(b);
+  return x.urut - y.urut || String(a.AKHIR || '9').localeCompare(String(b.AKHIR || '9')) || String(a.KODE).localeCompare(b.KODE, 'id', {numeric: true});
+}
+function itemKontrak(k){
+  var st = statusKontrak(k);
+  var periode = (ada(k.AWAL) || ada(k.AKHIR)) ? fmtTgl(k.AWAL) + ' – ' + fmtTgl(k.AKHIR) : 'tanggal belum diisi';
+  return '<button class="item" onclick="detailKontrak(\'' + esc(k.KODE) + '\')"><div class="t"><b>' + esc(k.KODE + ' • ' + k.NAMA) + '</b>' + badge(st) + '</div>' +
+    '<div class="s">' + esc([k.PENYEWA ? 'Penyewa: ' + k.PENYEWA : 'Belum ada penyewa', k.LOKASI, k.UNIT ? k.UNIT + ' unit' : ''].filter(ada).join(' • ')) + '</div>' +
+    '<div class="s">' + esc(periode + (k.NILAI_SEWA ? ' • ' + rp(k.NILAI_SEWA) + '/thn/unit' : '')) + '</div>' +
+    (k.KET_UPDATE ? '<div class="s"><i>' + esc(k.KET_UPDATE) + '</i></div>' : '') + '</button>';
+}
+function detailKontrak(kode){
+  var k = kontrakByKode(kode); if (!k) return;
+  var st = statusKontrak(k), as = asetKontrak(k);
+  var h = '<div class="sheet-head"><h3>' + esc(k.KODE + ' • ' + k.NAMA) + '<br>' + badge(st) + '</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+    '<dl class="dl">' + dl('Penyewa', k.PENYEWA) + dl('Status', k.STATUS) + dl('Mulai sewa', ada(k.AWAL) ? fmtTgl(k.AWAL, true) : '') + dl('Akhir sewa', ada(k.AKHIR) ? fmtTgl(k.AKHIR, true) : '') +
+    dl('Durasi', k.DURASI) + dl('Nilai sewa', k.NILAI_SEWA ? rp(k.NILAI_SEWA) + ' / tahun / unit' : '') + dl('Jumlah unit', k.UNIT) + dl('Lokasi', k.LOKASI) + dl('Jenis', k.JENIS) + dl('Owner', k.OWNER) +
+    dl('Harga pasar', k.HARGA_PASAR) + dl('History sewa', k.HISTORY) + dl('Keterangan', k.KET) + dl('Update terakhir', k.KET_UPDATE) +
+    dl('Terakhir diubah', [k.DIUBAH_OLEH, k.DIUBAH_PADA].filter(ada).join(', ')) + '</dl>';
+  h += '<h2>Aset yang ditautkan</h2>' + (as.length ? '<div class="list">' + as.map(function(a){ return itemAset(a); }).join('') + '</div>' : '<div class="panel kosong-teks">Belum ditautkan ke aset mana pun.</div>');
+  h += '<div class="aksi"><button class="btn" onclick="formKontrak(\'' + esc(k.KODE) + '\')">Ubah</button>' +
+    (k.STATUS === 'Aktif' ? '<button class="btn ghost" onclick="formKontrak(\'' + esc(k.KODE) + '\', \'perpanjang\')">Perpanjang sewa</button>' +
+      '<button class="btn ghost" onclick="selesaikan(\'' + esc(k.KODE) + '\')">Sewa berakhir</button>' : '') +
+    '<button class="btn merah" onclick="hapusKontrak(\'' + esc(k.KODE) + '\')">Hapus</button></div>';
+  bukaModal(h);
+}
+function kodeBaru(){
+  var max = 0;
+  S.kontrak.forEach(function(k){ var m = String(k.KODE).match(/^A(\d+)$/i); if (m) max = Math.max(max, +m[1]); });
+  return 'A' + (max + 1);
+}
+function ownerDariPemilik(p){ p = String(p).toUpperCase(); if (p.indexOf('BASTIAN') >= 0) return 'Bastian H'; if (p.indexOf('ROBEN') >= 0) return 'Roben N'; return ''; }
+function kontrakDariAset(id){
+  var a = asetById(id);
+  formKontrak(null, null, {KODE: kodeBaru(), NAMA: a.NAMA, LOKASI: a.LOKASI, JENIS: a.JENIS, UNIT: a.UNIT, OWNER: ownerDariPemilik(a.PEMILIK), STATUS: 'Aktif', HARGA_PASAR: a.NILAI_PASAR, AWAL: S.hariIni}, [id]);
+}
+function lamaTahun(k){
+  var h = selisihHari(k.AWAL, k.AKHIR);
+  if (h === null || h < 300) return 1;
+  return Math.max(1, Math.round(h / 365));
+}
+function formKontrak(kode, mode, awal, asetAwal){
+  mintaNama(false, function(){
+    var lama = kode ? kontrakByKode(kode) : null;
+    var k = lama ? JSON.parse(JSON.stringify(lama)) : (awal || {KODE: kodeBaru(), STATUS: 'Aktif'});
+    var tautan = lama ? asetKontrak(lama).map(function(a){ return a.ID; }) : (asetAwal || []);
+    var judul = !lama ? 'Kontrak sewa baru' : (mode === 'perpanjang' ? 'Perpanjang sewa ' + esc(k.KODE) : 'Ubah kontrak ' + esc(k.KODE));
+    var catatanPerpanjang = '';
+    if (mode === 'perpanjang' && ada(lama.AKHIR)) {
+      var n = lamaTahun(lama);
+      k.AWAL = lama.AKHIR; k.AKHIR = tambahTahun(lama.AKHIR, n); k.DURASI = n + ' Tahun'; k.KET_UPDATE = 'Perpanjang ' + n + ' tahun';
+      catatanPerpanjang = '<p class="info">Tanggal sudah diisi otomatis: mulai ' + fmtTgl(k.AWAL) + ', akhir ' + fmtTgl(k.AKHIR) + '. Periksa dan sesuaikan nilai sewa baru bila naik. Data lama tetap tercatat di Riwayat.</p>';
+    }
+    var h = '<div class="sheet-head"><h3>' + judul + '</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' + catatanPerpanjang +
+      '<div class="form">' +
+      inp('KODE', 'Kode kontrak *', k, '', null, 'text', 'mis. A30') +
+      '<label>Status *<select id="f_STATUS">' + ['Aktif','Tidak Aktif'].map(function(v){ return '<option' + (k.STATUS === v ? ' selected' : '') + '>' + v + '</option>'; }).join('') + '</select></label>' +
+      inp('NAMA', 'Nama aset di kontrak *', k, 'full') +
+      inp('PENYEWA', 'Penyewa', k, 'full') +
+      inp('AWAL', 'Mulai sewa', k, '', null, 'date') +
+      inp('AKHIR', 'Akhir sewa', k, '', null, 'date') +
+      inp('NILAI_SEWA', 'Nilai sewa (Rp / tahun / unit)', {NILAI_SEWA: k.NILAI_SEWA ? Number(k.NILAI_SEWA).toLocaleString('id-ID') : ''}, '', null, 'text', 'mis. 60.000.000') +
+      inp('UNIT', 'Jumlah unit', k, '', null, 'number') +
+      inp('DURASI', 'Durasi', k, '', null, 'text', 'mis. 2 Tahun') +
+      inp('LOKASI', 'Lokasi', k, '', 'dlLokasi') +
+      inp('JENIS', 'Jenis', k, '', 'dlJenis') +
+      inp('OWNER', 'Owner (penerima uang)', k, '', 'dlOwner') +
+      inp('HARGA_PASAR', 'Harga pasar', k) +
+      inp('HISTORY', 'History sewa', k, 'full', null, 'text', 'mis. TH1-2=50, TH3-4=55') +
+      '<label class="full">Keterangan<textarea id="f_KET">' + esc(k.KET) + '</textarea></label>' +
+      '<label class="full">Update terakhir<textarea id="f_KET_UPDATE" placeholder="mis. sudah info akan jatuh tempo / perpanjang / tidak perpanjang">' + esc(k.KET_UPDATE) + '</textarea></label>' +
+      '<label class="full">Aset yang disewa dalam kontrak ini<input type="search" id="cariTaut" placeholder="Cari aset..."><div class="cek-list" id="cekTaut"></div><em>Status aset (disewa / belum disewa) dihitung dari kontrak yang ditautkan.</em></label>' +
+      '</div>' + datalist('dlLokasi', semuaLokasi()) + datalist('dlJenis', semuaJenis()) + datalist('dlOwner', unik(S.kontrak.map(function(x){ return x.OWNER; }))) +
+      '<div class="aksi"><button class="btn" id="btnSimpan">Simpan</button><button class="btn ghost" onclick="tutupModal()">Batal</button></div>';
+    bukaModal(h);
+    var dipilih = {}; tautan.forEach(function(id){ dipilih[id] = 1; });
+    function gambarTaut(){
+      var q = $('cariTaut').value;
+      var list = S.aset.filter(function(a){ return dipilih[a.ID] || cocokCari(q, a.ID + ' ' + a.NAMA + ' ' + a.LOKASI + ' ' + a.JENIS); })
+        .sort(function(x, y){ return (dipilih[y.ID] ? 1 : 0) - (dipilih[x.ID] ? 1 : 0) || String(x.NAMA).localeCompare(y.NAMA); });
+      $('cekTaut').innerHTML = list.map(function(a){
+        return '<label><input type="checkbox" value="' + esc(a.ID) + '"' + (dipilih[a.ID] ? ' checked' : '') + '><span>' + esc(a.NAMA) + '<br><small style="color:var(--muted)">' + esc([a.ID, a.JENIS, a.LOKASI, a.UNIT + ' unit'].join(' • ')) + '</small></span></label>';
+      }).join('') || '<div class="kosong-teks">Tidak ada aset cocok</div>';
+      $('cekTaut').querySelectorAll('input').forEach(function(c){ c.onchange = function(){ if (c.checked) dipilih[c.value] = 1; else delete dipilih[c.value]; }; });
+    }
+    $('cariTaut').oninput = gambarTaut; gambarTaut();
+    $('f_NILAI_SEWA').onblur = function(){ var n = Number(this.value.replace(/[^\d]/g, '')); this.value = n ? n.toLocaleString('id-ID') : ''; };
+    $('btnSimpan').onclick = function(){
+      var o = {KODE_LAMA: lama ? lama.KODE : ''};
+      ['KODE','STATUS','NAMA','PENYEWA','AWAL','AKHIR','NILAI_SEWA','UNIT','DURASI','LOKASI','JENIS','OWNER','HARGA_PASAR','HISTORY','KET','KET_UPDATE'].forEach(function(f){ o[f] = $('f_' + f).value; });
+      o.NILAI_SEWA = o.NILAI_SEWA.replace(/[^\d]/g, '');
+      if (!o.KODE.trim() || !o.NAMA.trim()) { toast('Kode dan nama aset wajib diisi', true); return; }
+      if (o.STATUS === 'Aktif' && (!o.PENYEWA.trim() || !o.AKHIR)) { toast('Kontrak aktif wajib ada penyewa dan tanggal akhir sewa', true); return; }
+      if (o.AWAL && o.AKHIR && o.AKHIR < o.AWAL) { toast('Tanggal akhir lebih awal dari tanggal mulai', true); return; }
+      panggil('apiSimpanKontrak', [o, Object.keys(dipilih), namaSaya()], function(d){ terima(d); tutupModal(); toast(lama ? 'Kontrak diperbarui' : 'Kontrak baru disimpan'); });
+    };
+  });
+}
+function selesaikan(kode){
+  var k = kontrakByKode(kode);
+  mintaNama(false, function(){
+    bukaModal('<div class="sheet-head"><h3>Sewa ' + esc(k.KODE) + ' berakhir?</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+      '<p>Status kontrak <b>' + esc(k.NAMA) + '</b> (penyewa ' + esc(k.PENYEWA) + ') diubah menjadi <b>Tidak Aktif</b>. Aset yang ditautkan akan terhitung <b>belum disewa</b> (kecuali masih ada kontrak aktif lain).</p>' +
+      '<div class="form"><label class="full">Catatan<input id="inKet" value="Tidak perpanjang, sewa berakhir ' + esc(fmtTgl(k.AKHIR)) + '"></label></div>' +
+      '<div class="aksi"><button class="btn" id="btnOk">Ya, sewa berakhir</button><button class="btn ghost" onclick="detailKontrak(\'' + esc(kode) + '\')">Batal</button></div>');
+    $('btnOk').onclick = function(){
+      var o = JSON.parse(JSON.stringify(k)); o.KODE_LAMA = k.KODE; o.STATUS = 'Tidak Aktif'; o.KET_UPDATE = $('inKet').value;
+      panggil('apiSimpanKontrak', [o, null, namaSaya()], function(d){ terima(d); tutupModal(); toast('Kontrak ' + kode + ' ditandai tidak aktif'); });
+    };
+  });
+}
+function hapusKontrak(kode){
+  var k = kontrakByKode(kode);
+  mintaNama(false, function(){
+    bukaModal('<div class="sheet-head"><h3>Hapus kontrak ' + esc(kode) + '?</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+      '<p>Kontrak <b>' + esc(k.NAMA) + '</b> dihapus dan tautannya di aset dilepas. Data lama tetap tersimpan di Riwayat.</p>' +
+      '<p class="info">Kalau sewanya hanya selesai, pakai tombol <b>Sewa berakhir</b>, jangan hapus.</p>' +
+      '<div class="form"><label class="full">Alasan menghapus *<input id="inAlasan" placeholder="mis. salah input / dobel"></label></div>' +
+      '<div class="aksi"><button class="btn merah" id="btnHapus">Ya, hapus</button><button class="btn ghost" onclick="detailKontrak(\'' + esc(kode) + '\')">Batal</button></div>');
+    $('btnHapus').onclick = function(){
+      var al = $('inAlasan').value.trim(); if (!al) { toast('Isi alasan dulu', true); return; }
+      panggil('apiHapusKontrak', [kode, namaSaya(), al], function(d){ terima(d); tutupModal(); toast('Kontrak dihapus'); });
+    };
+  });
+}
+
+/* ============ FOTO & VIDEO ============ */
+var sedangUpload = false;
+window.addEventListener('beforeunload', function(e){ if (sedangUpload) { e.preventDefault(); e.returnValue = ''; } });
+function jalan(fn, args){
+  return new Promise(function(ok, gagal){
+    var r = google.script.run.withSuccessHandler(ok).withFailureHandler(function(e){ gagal(e && e.message ? e : new Error(String(e))); });
+    r[fn].apply(r, args || []);
+  });
+}
+async function jalanUlang(fn, args, kali){
+  for (var i = 0; ; i++) {
+    try { return await jalan(fn, args); }
+    catch (e) { if (i >= (kali || 2) || /kedaluwarsa|gagal \(4/i.test(e.message)) throw e; await new Promise(function(r){ setTimeout(r, 1500 * (i + 1)); }); }
+  }
+}
+function bacaBase64(blob){
+  return new Promise(function(ok, gagal){
+    var fr = new FileReader();
+    fr.onload = function(){ ok(String(fr.result).split(',')[1] || ''); };
+    fr.onerror = function(){ gagal(new Error('File tidak bisa dibaca')); };
+    fr.readAsDataURL(blob);
+  });
+}
+var MIME_EXT = {jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', heic: 'image/heic', heif: 'image/heif', gif: 'image/gif',
+  mp4: 'video/mp4', mov: 'video/quicktime', m4v: 'video/x-m4v', '3gp': 'video/3gpp', mkv: 'video/x-matroska', avi: 'video/x-msvideo', webm: 'video/webm'};
+function mimeFile(f){
+  if (/^(image|video)\//.test(f.type)) return f.type;
+  var ext = String(f.name).split('.').pop().toLowerCase();
+  return MIME_EXT[ext] || f.type || '';
+}
+function rapikanGmaps(s){
+  s = String(s || '').trim();
+  if (!s) return '';
+  var m = s.match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+  if (m) return 'https://www.google.com/maps?q=' + m[1] + ',' + m[2];
+  return /^https?:\/\//i.test(s) ? s : null;
+}
+function fmtMB(n){ n = Number(n) || 0; return n >= 1 ? n.toLocaleString('id-ID', {maximumFractionDigits: 1}) + ' MB' : Math.round(n * 1024) + ' KB'; }
+function thumbUrl(m, ukuran){ return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(m.FILE_ID) + '&sz=w' + (ukuran || 400); }
+function mediaAset(id){ return (S.media || []).filter(function(m){ return m.ID_ASET === id; }); }
+function mediaById(id){ return (S.media || []).filter(function(m){ return m.ID === id; })[0]; }
+
+function htmlThumbs(list){
+  return '<div class="thumbs">' + list.map(function(m){
+    return '<button class="thumb" onclick="detailMedia(\'' + esc(m.ID) + '\')" title="' + esc(m.NAMA_FILE) + '">' +
+      (m.TIPE === 'Video' ? '<span class="vid">▶<small>Video</small></span>' : '<img loading="lazy" alt="" src="' + esc(thumbUrl(m)) + '" onerror="this.replaceWith(Object.assign(document.createElement(\'span\'),{className:\'vid\',textContent:\'🖼\'}))">') +
+      '</button>';
+  }).join('') + '</div>';
+}
+
+function filterMedia(){
+  var q = $('cariMedia').value, fl = $('fMLokasi').value, fj = $('fMJenis').value, ft = $('fMTipe').value;
+  return (S.media || []).filter(function(m){
+    if (fl && m.LOKASI !== fl) return false;
+    if (fj && m.JENIS !== fj) return false;
+    if (ft && m.TIPE !== ft) return false;
+    return cocokCari(q, [m.ID, m.NAMA_PROPERTI, m.ID_ASET, m.LOKASI, m.JENIS, m.KETERANGAN, m.NAMA_FILE, m.DIUPLOAD_OLEH].join(' '));
+  });
+}
+// Halaman upload untuk tim di GitHub Pages (bebas masalah HP yang login banyak akun Google).
+// File sumbernya: github/index.html (salinan Upload.html dengan alamat /exec terisi).
+var LINK_UPLOAD_GITHUB = 'https://claudeunistar.github.io/upload-property-skn/';
+function linkUpload(){ return LINK_UPLOAD_GITHUB; }
+function salinLinkUpload(){
+  var u = linkUpload();
+  var ok = function(){ toast('Link upload disalin – tempel ke grup WA tim property'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(ok, function(){ prompt('Salin link ini:', u); });
+  else prompt('Salin link ini:', u);
+}
+function gambarMedia(){
+  var media = S.media || [], lu = linkUpload();
+  $('kotakLinkUpload').style.display = lu ? '' : 'none';
+  if (lu) $('kotakLinkUpload').innerHTML = '<b>📱 Link upload lapangan</b><div class="info" style="margin:2px 0 8px">Halaman sederhana untuk tim: ambil lokasi peta, foto/video langsung dari kamera atau galeri, plus keterangan.</div>' +
+    '<div class="aksi" style="margin-top:0"><button class="btn kecil" onclick="salinLinkUpload()">Salin link</button><a class="btn kecil ghost" style="text-decoration:none" href="' + esc(lu) + '" target="_blank" rel="noopener">Buka</a></div>';
+  isiSelect($('fMLokasi'), 'Semua lokasi', unik(media.map(function(m){ return m.LOKASI; })));
+  isiSelect($('fMJenis'), 'Semua jenis', unik(media.map(function(m){ return m.JENIS; })));
+  var rows = filterMedia();
+  var grup = {}, urut = [];
+  rows.slice().sort(function(a, b){ return String(b.WAKTU).localeCompare(String(a.WAKTU)); }).forEach(function(m){
+    var k = (m.ID_ASET || '') + '|' + m.NAMA_PROPERTI;
+    if (!grup[k]) { grup[k] = []; urut.push(k); }
+    grup[k].push(m);
+  });
+  var nFoto = rows.filter(function(m){ return m.TIPE === 'Foto'; }).length;
+  $('infoMedia').textContent = urut.length + ' properti • ' + nFoto + ' foto • ' + (rows.length - nFoto) + ' video';
+  $('btnUnduhMedia').textContent = 'Unduh Excel (' + rows.length + ')';
+  $('btnUnduhMedia').disabled = !rows.length;
+  $('listMedia').innerHTML = urut.length ? urut.map(function(k){
+    var l = grup[k], m = l[0];
+    var maps = unikUrut(l.map(function(x){ return x.GMAPS; }))[0];
+    var foto = l.filter(function(x){ return x.TIPE === 'Foto'; }).length;
+    return '<div class="item" style="cursor:default"><div class="t"><b>' + esc(m.NAMA_PROPERTI) + '</b>' + (m.ID_ASET ? '<span class="badge b-kosong">' + esc(m.ID_ASET) + '</span>' : '') + '</div>' +
+      '<div class="s">' + esc([m.JENIS, m.LOKASI, foto + ' foto', (l.length - foto) + ' video'].join(' • ')) + '</div>' +
+      (maps ? '<div class="s"><a href="' + esc(maps) + '" target="_blank" rel="noopener">📍 Buka di Google Maps</a></div>' : '') +
+      htmlThumbs(l) +
+      '<div class="aksi" style="margin-top:8px"><button class="btn kecil ghost" onclick="formUpload(' + (m.ID_ASET ? '\'' + esc(m.ID_ASET) + '\'' : 'null') + ', \'' + esc(m.ID) + '\')">+ Tambah foto/video</button>' +
+      (m.ID_ASET ? '<button class="btn kecil ghost" onclick="bukaDetail(\'' + esc(m.ID_ASET) + '\')">📋 Detail aset</button>' : '<button class="btn kecil" onclick="formTautkan(\'' + esc(l.map(function(x){ return x.ID; }).join(',')) + '\')">🔗 Tautkan ke aset</button>') + '</div></div>';
+  }).join('') : '<div class="panel kosong-teks">' + (media.length ? 'Tidak ada yang cocok dengan filter.' : 'Belum ada foto/video. Tekan "+ Upload foto/video".') + '</div>';
+}
+
+function detailMedia(id){
+  var m = mediaById(id); if (!m) return;
+  var pratinjau = m.TIPE === 'Video'
+    ? '<div class="pratinjau"><iframe src="https://drive.google.com/file/d/' + esc(m.FILE_ID) + '/preview" allow="autoplay" allowfullscreen></iframe></div>'
+    : '<div class="pratinjau"><img src="' + esc(thumbUrl(m, 1200)) + '" alt=""></div>';
+  bukaModal('<div class="sheet-head"><h3>' + esc(m.NAMA_PROPERTI) + '<br><span class="badge b-' + (m.TIPE === 'Video' ? 'pakai' : 'sewa') + '">' + esc(m.TIPE) + '</span></h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+    pratinjau +
+    '<dl class="dl" style="margin-top:10px">' + dl('ID', m.ID) + dl('Aset terdaftar', m.ID_ASET) + dl('Jenis', m.JENIS) + dl('Lokasi', m.LOKASI) +
+    (m.GMAPS ? '<dt>Google Maps</dt><dd><a href="' + esc(m.GMAPS) + '" target="_blank" rel="noopener">Buka lokasi</a></dd>' : '') +
+    dl('Keterangan', m.KETERANGAN) + dl('Nama file', m.NAMA_FILE) + dl('Ukuran', fmtMB(m.UKURAN_MB)) + dl('Diupload', [m.DIUPLOAD_OLEH, m.WAKTU].filter(ada).join(', ')) + '</dl>' +
+    '<div class="aksi"><a class="btn" href="' + esc(m.LINK) + '" target="_blank" rel="noopener" style="text-decoration:none">Buka di Drive</a>' +
+    (m.ID_ASET && m.TIPE === 'Foto' ? '<button class="btn ghost" onclick="jadikanFotoUtama(\'' + esc(m.ID) + '\')">⭐ Jadikan foto tampak</button>' : '') +
+    (!m.ID_ASET ? '<button class="btn ghost" onclick="formTautkan(\'' + esc(m.ID) + '\')">🔗 Tautkan ke aset</button>' : '') +
+    '<button class="btn ghost" onclick="formUbahMedia(\'' + esc(m.ID) + '\')">Ubah data</button>' +
+    '<button class="btn merah" onclick="hapusMedia(\'' + esc(m.ID) + '\')">Hapus</button></div>');
+}
+
+function opsiAset(pilih){
+  var as = S.aset.slice().sort(function(a, b){ return String(a.NAMA).localeCompare(b.NAMA); });
+  return '<option value="">— Properti baru / belum terdaftar —</option>' + as.map(function(a){
+    return '<option value="' + esc(a.ID) + '"' + (a.ID === pilih ? ' selected' : '') + '>' + esc(a.NAMA + ' (' + a.LOKASI + ')') + '</option>';
+  }).join('');
+}
+/** Form upload. asetId = aset terpilih (boleh null); dariMedia = ID media lama untuk mengisi nama/jenis/lokasi/gmaps. */
+function formUpload(asetId, dariMedia){
+  mintaNama(false, function(){
+    var awal = dariMedia ? mediaById(dariMedia) : null;
+    bukaModal('<div class="sheet-head"><h3>Upload foto & video</h3><button class="tutup" onclick="if(!sedangUpload)tutupModal()">&times;</button></div>' +
+      '<div class="form">' +
+      '<label class="full">Aset terdaftar <em>(opsional – pilih agar data nama, jenis, dan lokasi terisi otomatis)</em><select id="m_ASET">' + opsiAset(asetId || (awal && awal.ID_ASET)) + '</select></label>' +
+      '<label class="full">Nama properti *<input id="m_NAMA" maxlength="150"></label>' +
+      '<label>Jenis properti *<input id="m_JENIS" list="dlJenisM" placeholder="RUKO / TANAH / RUMAH ..."></label>' +
+      '<label>Lokasi (kota) *<input id="m_LOKASI" list="dlLokasiM" placeholder="PEKANBARU"></label>' +
+      '<label class="full">Link Google Maps <em>(opsional)</em><span style="display:flex;gap:6px"><input id="m_GMAPS" placeholder="https://maps.app.goo.gl/... atau -0.5071,101.4478"><button type="button" class="btn ghost kecil" id="btnLokasiSaya" style="white-space:nowrap">📍 Lokasi saya</button></span></label>' +
+      '<label class="full">Keterangan <em>(opsional)</em><input id="m_KET" maxlength="300" placeholder="mis. tampak depan, kondisi atap bocor, dll."></label>' +
+      '<label class="full">Foto / video *<input id="m_FILE" type="file" accept="image/*,video/*" multiple><em>Boleh pilih banyak sekaligus. Maks ' + 500 + ' MB per file. Video besar butuh waktu – jangan tutup halaman sampai selesai.</em></label>' +
+      '</div>' + datalist('dlJenisM', semuaJenis()) + datalist('dlLokasiM', semuaLokasi()) +
+      '<div id="progUpload"></div>' +
+      '<div class="aksi"><button class="btn" id="btnUpload">Upload</button><button class="btn ghost" id="btnBatalUpload" onclick="tutupModal()">Batal</button></div>');
+    function isiDariAset(){
+      var a = asetById($('m_ASET').value);
+      if (!a) return;
+      $('m_NAMA').value = a.NAMA; $('m_JENIS').value = a.JENIS; $('m_LOKASI').value = a.LOKASI;
+      var lama = mediaAset(a.ID).filter(function(m){ return m.GMAPS; })[0];
+      if (lama && !$('m_GMAPS').value) $('m_GMAPS').value = lama.GMAPS;
+    }
+    $('m_ASET').onchange = isiDariAset;
+    if (awal) { $('m_NAMA').value = awal.NAMA_PROPERTI; $('m_JENIS').value = awal.JENIS; $('m_LOKASI').value = awal.LOKASI; $('m_GMAPS').value = awal.GMAPS || ''; }
+    else isiDariAset();
+    $('btnLokasiSaya').onclick = function(){
+      if (!navigator.geolocation) { toast('Browser tidak mendukung lokasi. Tempel link dari Google Maps.', true); return; }
+      toast('Mengambil lokasi...');
+      navigator.geolocation.getCurrentPosition(function(p){
+        $('m_GMAPS').value = 'https://www.google.com/maps?q=' + p.coords.latitude.toFixed(6) + ',' + p.coords.longitude.toFixed(6);
+        toast('Lokasi terisi');
+      }, function(){ toast('Lokasi tidak bisa diambil di sini. Buka Google Maps > Bagikan > Salin link, lalu tempel.', true); }, {enableHighAccuracy: true, timeout: 15000});
+    };
+    $('btnUpload').onclick = mulaiUpload;
+  });
+}
+async function mulaiUpload(){
+  var meta = {ID_ASET: $('m_ASET').value, NAMA_PROPERTI: $('m_NAMA').value.trim(), JENIS: $('m_JENIS').value.trim(), LOKASI: $('m_LOKASI').value.trim(), GMAPS: $('m_GMAPS').value, KETERANGAN: $('m_KET').value.trim()};
+  var files = [].slice.call($('m_FILE').files || []);
+  if (!meta.NAMA_PROPERTI || !meta.JENIS || !meta.LOKASI) { toast('Nama properti, jenis, dan lokasi wajib diisi', true); return; }
+  var g = rapikanGmaps(meta.GMAPS);
+  if (g === null) { toast('Link Google Maps harus diawali https:// atau berupa koordinat "lat,lng"', true); return; }
+  meta.GMAPS = g;
+  if (!files.length) { toast('Pilih foto/video dulu', true); return; }
+  var salah = files.filter(function(f){ return !/^(image|video)\//.test(mimeFile(f)); });
+  if (salah.length) { toast('Bukan foto/video: ' + salah.map(function(f){ return f.name; }).join(', '), true); return; }
+  var besar = files.filter(function(f){ return f.size > 500 * 1024 * 1024; });
+  if (besar.length) { toast('Lebih dari 500 MB: ' + besar.map(function(f){ return f.name; }).join(', '), true); return; }
+  sedangUpload = true;
+  ['btnUpload', 'btnBatalUpload', 'm_FILE'].forEach(function(id){ $(id).disabled = true; });
+  var prog = $('progUpload');
+  prog.innerHTML = files.map(function(f, i){
+    return '<div class="prog" id="pg' + i + '"><div class="pt"><span>' + esc(f.name) + '</span><b>menunggu</b></div><div class="pb"><i style="width:0"></i></div></div>';
+  }).join('');
+  var ok = 0, gagal = [];
+  for (var i = 0; i < files.length; i++) {
+    var f = files[i], el = $('pg' + i), lbl = el.querySelector('b'), bar = el.querySelector('i');
+    try {
+      lbl.textContent = '0%';
+      var mulai = await jalanUlang('apiMulaiUpload', [Object.assign({}, meta, {NAMA_FILE: f.name, MIME: mimeFile(f), UKURAN: f.size}), namaSaya()], 1);
+      var pos = 0, hasil = null;
+      while (pos < f.size) {
+        var ujung = Math.min(pos + mulai.potongan, f.size);
+        var b64 = await bacaBase64(f.slice(pos, ujung));
+        var r = await jalanUlang('apiKirimPotongan', [mulai.uploadId, pos, b64]);
+        pos = ujung;
+        var pct = Math.round(pos / f.size * 100);
+        bar.style.width = pct + '%'; lbl.textContent = pct + '%';
+        if (r.selesai) { hasil = r.media; break; }
+      }
+      if (!hasil) throw new Error('Drive belum mengonfirmasi file selesai');
+      S.media = (S.media || []).concat([hasil]);
+      lbl.textContent = '✔ selesai'; el.classList.add('ok'); ok++;
+    } catch (e) {
+      lbl.textContent = '✖ gagal'; el.classList.add('gagal'); gagal.push(f.name + ': ' + e.message);
+    }
+  }
+  sedangUpload = false;
+  gambarMedia(); gambarAset();
+  $('btnBatalUpload').disabled = false; $('btnBatalUpload').textContent = 'Tutup';
+  if (gagal.length) {
+    prog.insertAdjacentHTML('beforeend', '<p class="info" style="color:var(--lewat)">' + gagal.map(esc).join('<br>') + '</p>');
+    toast(ok + ' berhasil, ' + gagal.length + ' gagal', true);
+    $('btnUpload').disabled = false; $('m_FILE').disabled = false;
+  } else {
+    toast(ok + ' file tersimpan di Google Drive');
+  }
+}
+
+function formUbahMedia(id){
+  var m = mediaById(id);
+  mintaNama(false, function(){
+    bukaModal('<div class="sheet-head"><h3>Ubah data ' + esc(m.ID) + '</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+      '<div class="form">' +
+      '<label class="full">Nama properti *<input id="u_NAMA" value="' + esc(m.NAMA_PROPERTI) + '"></label>' +
+      '<label>Jenis *<input id="u_JENIS" list="dlJenisM" value="' + esc(m.JENIS) + '"></label>' +
+      '<label>Lokasi *<input id="u_LOKASI" list="dlLokasiM" value="' + esc(m.LOKASI) + '"></label>' +
+      '<label class="full">Link Google Maps<input id="u_GMAPS" value="' + esc(m.GMAPS) + '"></label>' +
+      '<label class="full">Keterangan<input id="u_KET" value="' + esc(m.KETERANGAN) + '"></label>' +
+      '</div>' + datalist('dlJenisM', semuaJenis()) + datalist('dlLokasiM', semuaLokasi()) +
+      '<p class="info" style="margin-top:8px">File di Google Drive tidak dipindah; hanya data di daftar yang berubah.</p>' +
+      '<div class="aksi"><button class="btn" id="btnSimpanM">Simpan</button><button class="btn ghost" onclick="detailMedia(\'' + esc(id) + '\')">Batal</button></div>');
+    $('btnSimpanM').onclick = function(){
+      var o = {NAMA_PROPERTI: $('u_NAMA').value, JENIS: $('u_JENIS').value, LOKASI: $('u_LOKASI').value, GMAPS: rapikanGmaps($('u_GMAPS').value), KETERANGAN: $('u_KET').value};
+      if (o.GMAPS === null) { toast('Link Google Maps harus diawali https:// atau koordinat "lat,lng"', true); return; }
+      panggil('apiUbahMedia', [id, o, namaSaya()], function(d){ terima(d); tutupModal(); toast('Data diperbarui'); });
+    };
+  });
+}
+function hapusMedia(id){
+  var m = mediaById(id);
+  mintaNama(false, function(){
+    bukaModal('<div class="sheet-head"><h3>Hapus ' + esc(m.TIPE.toLowerCase()) + '?</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+      '<p><b>' + esc(m.NAMA_FILE) + '</b> dari ' + esc(m.NAMA_PROPERTI) + ' dihapus dari daftar dan dipindah ke Sampah Google Drive (masih bisa dipulihkan 30 hari).</p>' +
+      '<div class="form"><label class="full">Alasan menghapus *<input id="inAlasan" placeholder="mis. foto buram / salah properti"></label></div>' +
+      '<div class="aksi"><button class="btn merah" id="btnHapus">Ya, hapus</button><button class="btn ghost" onclick="detailMedia(\'' + esc(id) + '\')">Batal</button></div>');
+    $('btnHapus').onclick = function(){
+      var al = $('inAlasan').value.trim(); if (!al) { toast('Isi alasan dulu', true); return; }
+      panggil('apiHapusMedia', [id, namaSaya(), al], function(d){ terima(d); tutupModal(); toast('Dihapus'); });
+    };
+  });
+}
+
+/** Unduh Excel daftar foto/video (sesuai filter) dengan link yang bisa diklik. */
+function muatXlsx(){
+  if (window.XLSX) return Promise.resolve();
+  return new Promise(function(ok, gagal){
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = ok; s.onerror = function(){ gagal(new Error('Pustaka Excel gagal dimuat. Cek internet lalu coba lagi.')); };
+    document.head.appendChild(s);
+  });
+}
+function unduhExcelMedia(){
+  var rows = filterMedia().slice().sort(function(a, b){ return String(a.NAMA_PROPERTI).localeCompare(b.NAMA_PROPERTI) || String(a.WAKTU).localeCompare(String(b.WAKTU)); });
+  if (!rows.length) return;
+  memuat(true);
+  muatXlsx().then(function(){
+    var head = ['No', 'Nama Properti', 'ID Aset', 'Jenis', 'Lokasi', 'Link Google Maps', 'Tipe', 'Nama File', 'Link Foto/Video', 'Ukuran (MB)', 'Keterangan', 'Waktu Upload', 'Diupload Oleh'];
+    var aoa = [head].concat(rows.map(function(m, i){
+      return [i + 1, m.NAMA_PROPERTI, m.ID_ASET, m.JENIS, m.LOKASI, m.GMAPS, m.TIPE, m.NAMA_FILE, m.LINK, Number(m.UKURAN_MB) || 0, m.KETERANGAN, m.WAKTU, m.DIUPLOAD_OLEH];
+    }));
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    rows.forEach(function(m, i){
+      [[5, m.GMAPS], [8, m.LINK]].forEach(function(p){
+        if (!p[1]) return;
+        var ref = XLSX.utils.encode_cell({r: i + 1, c: p[0]});
+        ws[ref].l = {Target: p[1], Tooltip: 'Buka'};
+      });
+    });
+    ws['!cols'] = [6, 36, 9, 12, 14, 40, 7, 36, 48, 11, 30, 17, 18].map(function(w){ return {wch: w}; });
+    ws['!autofilter'] = {ref: 'A1:M' + (rows.length + 1)};
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'FOTO & VIDEO');
+    XLSX.writeFile(wb, 'Foto-Video-Property-' + S.hariIni + '.xlsx');
+    memuat(false); toast('Excel diunduh (' + rows.length + ' baris)');
+  }).catch(function(e){ memuat(false); toast(e.message, true); });
+}
+
+/* ============ PERBARUI DARI EXCEL ============ */
+var imporData = null, imporFile = '';
+function normHeader(s){ return String(s == null ? '' : s).toUpperCase().replace(/\s+/g, ' ').trim(); }
+/** Cari baris judul kolom & petakan kolom -> field. pola = {FIELD: /regex/} */
+function petakanSheet(rows, wajib, pola){
+  for (var r = 0; r < Math.min(rows.length, 15); r++) {
+    var h = rows[r].map(normHeader);
+    if (!wajib.every(function(w){ return h.some(function(x){ return w.test(x); }); })) continue;
+    var peta = {};
+    Object.keys(pola).forEach(function(f){
+      for (var c = 0; c < h.length; c++) if (pola[f].test(h[c]) && !Object.keys(peta).some(function(k){ return peta[k] === c; })) { peta[f] = c; break; }
+    });
+    return {baris: r, peta: peta};
+  }
+  return null;
+}
+var POLA_ASET = {NAMA: /^NAMA ASET/, PEMILIK_DETAIL: /^PEMILIK \(DETAIL\)/, PEMILIK: /^PEMILIK/, LOKASI: /^LOKASI$/, JENIS: /^JENIS$/, ALAMAT: /^ALAMAT$/,
+  UNIT: /^(JML UNIT|JUMLAH UNIT|UNIT)$/, LUAS: /LUAS/, NILAI_PASAR: /^NILAI PASAR/, KODE_SEWA: /^KODE SEWA/, CATATAN: /^CATATAN/};
+var POLA_KONTRAK = {KODE: /^KODE$/, NAMA: /^NAMA ASET/, LOKASI: /^LOKASI$/, UNIT: /^UNIT$/, OWNER: /^OWNER$/, PENYEWA: /^PENYEWA$/, STATUS: /^STATUS$/,
+  AWAL: /^AWAL/, AKHIR: /^AKHIR/, DURASI: /^DURASI/, NILAI_SEWA: /^NILAI SEWA/, HARGA_PASAR: /^HARGA PASAR/, HISTORY: /^HISTORY/, KET_UPDATE: /^KET UPDATE/, KET: /^KET/};
+function bacaExcelProperti(buf){
+  var wb = XLSX.read(buf, {type: 'array'});
+  var ambil = function(nama){ return XLSX.utils.sheet_to_json(wb.Sheets[nama], {header: 1, raw: true, defval: ''}); };
+  var cari = function(namaCocok, wajib, pola){
+    var urut = wb.SheetNames.slice().sort(function(a, b){ return (namaCocok.test(b) ? 1 : 0) - (namaCocok.test(a) ? 1 : 0); });
+    var terbaik = null;
+    urut.forEach(function(n){
+      if (terbaik && namaCocok.test(terbaik.nama)) return;
+      var rows = ambil(n), p = petakanSheet(rows, wajib, pola);
+      if (p && (!terbaik || namaCocok.test(n) || rows.length > terbaik.rows.length)) terbaik = {nama: n, rows: rows, p: p};
+    });
+    return terbaik;
+  };
+  var sa = cari(/DAFTAR ASET/i, [/^NAMA ASET/, /^PEMILIK/, /^LOKASI$/], POLA_ASET);
+  var sk = cari(/KONTRAK/i, [/^KODE$/, /^PENYEWA$/, /^STATUS$/], POLA_KONTRAK);
+  var galat = [];
+  if (!sa) galat.push('Sheet DAFTAR ASET (kolom NAMA ASET, PEMILIK, LOKASI) tidak ditemukan.');
+  if (!sk) galat.push('Sheet KONTRAK SEWA (kolom KODE, PENYEWA, STATUS) tidak ditemukan.');
+  if (galat.length) throw new Error(galat.join(' '));
+  var keObj = function(s){
+    return s.rows.slice(s.p.baris + 1).map(function(row){
+      var o = {}; Object.keys(s.p.peta).forEach(function(f){ o[f] = row[s.p.peta[f]]; }); return o;
+    });
+  };
+  var aset = keObj(sa).filter(function(o){ return String(o.NAMA || '').trim() && !/^TOTAL$/i.test(String(o.NAMA).trim()); });
+  var kontrak = keObj(sk).filter(function(o){ return String(o.KODE || '').trim() && !/^TOTAL$/i.test(String(o.KODE).trim()); });
+  return {aset: aset, kontrak: kontrak, sheetAset: sa.nama, sheetKontrak: sk.nama};
+}
+
+function formImpor(){
+  mintaNama(false, function(){
+    imporData = null; imporFile = '';
+    bukaModal('<div class="sheet-head"><h3>📥 Perbarui data dari Excel</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+      '<p class="info" style="font-size:14px">Unggah Excel terbaru dengan format yang sama (sheet <b>DAFTAR ASET</b> dan <b>KONTRAK SEWA</b>). ' +
+      'Aplikasi menampilkan dulu apa saja yang berubah. Setelah <b>Terapkan</b>, data aset &amp; kontrak di aplikasi <b>diganti sesuai Excel</b>; data lama disimpan sebagai cadangan.</p>' +
+      '<div class="form"><label class="full">File Excel (.xlsx)<input type="file" id="fileImpor" accept=".xlsx,.xlsm,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"></label></div>' +
+      '<div id="hasilImpor"></div>');
+    $('fileImpor').onchange = function(){ var f = this.files[0]; if (f) prosesFileImpor(f); };
+  });
+}
+function prosesFileImpor(f){
+  var w = $('hasilImpor');
+  imporFile = f.name;
+  w.innerHTML = '<p class="info">Membaca ' + esc(f.name) + '...</p>';
+  muatXlsx().then(function(){ return f.arrayBuffer(); }).then(function(buf){
+    var d = bacaExcelProperti(buf);
+    imporData = {aset: d.aset, kontrak: d.kontrak};
+    w.innerHTML = '<p class="info">Terbaca: ' + d.aset.length + ' baris aset (sheet "' + esc(d.sheetAset) + '"), ' + d.kontrak.length + ' kontrak (sheet "' + esc(d.sheetKontrak) + '"). Membandingkan dengan data aplikasi...</p>';
+    google.script.run.withSuccessHandler(function(r){ tampilPratinjauImpor(r, d); })
+      .withFailureHandler(function(e){ w.innerHTML = '<div class="panel kosong-teks" style="color:var(--lewat)">Gagal membandingkan: ' + esc(e.message || e) + '</div>'; })
+      .apiPratinjauImpor(imporData);
+  }).catch(function(e){
+    imporData = null;
+    w.innerHTML = '<div class="panel kosong-teks" style="color:var(--lewat)">' + esc(e.message || e) + '</div>';
+  });
+}
+function daftarRincian(judul, list, warna, detail){
+  if (!list.length) return '';
+  return '<details class="rinci"><summary><b style="color:' + warna + '">' + list.length + '</b> ' + esc(judul) + '</summary><ul>' +
+    list.slice(0, 200).map(function(x){
+      return '<li><b>' + esc(x.ID) + '</b> ' + esc(x.NAMA) + (detail && x.beda ? '<div class="beda">' + x.beda.map(function(b){
+        return esc(b.kolom) + ': <s>' + esc(b.dari || '(kosong)') + '</s> → <b>' + esc(b.jadi || '(kosong)') + '</b>';
+      }).join('<br>') + '</div>' : '') + '</li>';
+    }).join('') + (list.length > 200 ? '<li>... dan ' + (list.length - 200) + ' lainnya</li>' : '') + '</ul></details>';
+}
+function blokImpor(judul, s){
+  return '<div class="panel" style="padding:12px 14px;margin-top:10px"><b>' + esc(judul) + '</b> <span class="info">(' + s.total + ' di Excel • ' + s.sama + ' sama)</span>' +
+    (s.baru.length + s.berubah.length + s.hilang.length ? '' : '<div class="info">Tidak ada perubahan.</div>') +
+    daftarRincian('baru', s.baru, 'var(--sewa)') +
+    daftarRincian('berubah', s.berubah, 'var(--tempo)', true) +
+    daftarRincian('dihapus (tidak ada di Excel)', s.hilang, 'var(--lewat)') + '</div>';
+}
+function tampilPratinjauImpor(r, d){
+  var w = $('hasilImpor');
+  var ubah = r.aset.baru.length + r.aset.berubah.length + r.aset.hilang.length + r.kontrak.baru.length + r.kontrak.berubah.length + r.kontrak.hilang.length;
+  var h = blokImpor('Aset', r.aset) + blokImpor('Kontrak sewa', r.kontrak);
+  if (r.galat.length) h += '<div class="panel" style="padding:12px 14px;margin-top:10px;border-color:var(--lewat)"><b style="color:var(--lewat)">Belum bisa diterapkan</b><ul>' + r.galat.map(function(g){ return '<li>' + esc(g) + '</li>'; }).join('') + '</ul></div>';
+  if (r.peringatan.length) h += '<details class="rinci panel" style="padding:10px 14px;margin-top:10px"><summary>⚠ ' + r.jmlPeringatan + ' catatan data (tetap bisa diterapkan)</summary><ul>' + r.peringatan.map(function(g){ return '<li>' + esc(g) + '</li>'; }).join('') + '</ul></details>';
+  if (r.aset.hilang.length) h += '<p class="info" style="color:var(--lewat)">Aset yang dihapus: foto/video lamanya tetap ada di tab Foto & Drive.</p>';
+  h += '<div class="aksi">' + (ubah && !r.galat.length ? '<button class="btn" id="btnTerapkan">Terapkan ' + ubah + ' perubahan</button>' : '') +
+    '<button class="btn ghost" onclick="tutupModal()">' + (ubah ? 'Batal' : 'Tutup') + '</button></div>' +
+    (!ubah && !r.galat.length ? '<p class="info">Data aplikasi sudah sama dengan Excel ini.</p>' : '');
+  w.innerHTML = h;
+  if ($('btnTerapkan')) $('btnTerapkan').onclick = function(){
+    if (!confirm('Ganti data aset & kontrak di aplikasi sesuai Excel "' + imporFile + '"?\nData lama disimpan sebagai cadangan.')) return;
+    panggil('apiTerapkanImpor', [imporData, namaSaya(), imporFile], function(d){
+      terima(d); tutupModal(); toast('Data diperbarui dari ' + imporFile);
+    });
+  };
+}
+
+/* ============ DETAIL ASET ============ */
+var detailBuka = null;   // ID aset yang sedang dibuka di tab Detail (null = daftar)
+function detailOf(id){ return (S.detailAset || []).filter(function(d){ return d.ID_ASET === id; })[0] || {ID_ASET: id, GMAPS: '', FOTO_UTAMA: '', CATATAN: ''}; }
+function unitsOf(id){ return (S.detailUnit || []).filter(function(u){ return u.ID_ASET === id; }).sort(function(a, b){ return (Number(a.URUT) || 0) - (Number(b.URUT) || 0); }); }
+function gmapsAset(id){
+  var d = detailOf(id);
+  if (d.GMAPS) return {link: d.GMAPS, sumber: 'detail'};
+  var m = mediaAset(id).filter(function(x){ return x.GMAPS; }).sort(function(a, b){ return String(b.WAKTU).localeCompare(String(a.WAKTU)); })[0];
+  return m ? {link: m.GMAPS, sumber: 'upload', media: m} : {link: '', sumber: ''};
+}
+function fotoUtama(id){
+  var d = detailOf(id), md = mediaAset(id).filter(function(m){ return m.TIPE === 'Foto'; });
+  return md.filter(function(m){ return m.ID === d.FOTO_UTAMA; })[0] || md.sort(function(a, b){ return String(a.WAKTU).localeCompare(String(b.WAKTU)); })[0] || null;
+}
+function fmtLuas(n){ return n === '' || n === null || n === undefined || isNaN(Number(n)) ? '' : Number(n).toLocaleString('id-ID', {maximumFractionDigits: 3}); }
+function totalLuas(units, k){ var t = 0, ada1 = false; units.forEach(function(u){ if (u[k] !== '' && !isNaN(Number(u[k]))) { t += Number(u[k]); ada1 = true; } }); return ada1 ? t : ''; }
+function kelengkapan(a){
+  var u = unitsOf(a.ID).length, md = mediaAset(a.ID), f = md.filter(function(m){ return m.TIPE === 'Foto'; }).length, v = md.length - f, g = !!gmapsAset(a.ID).link;
+  var kurang = []; if (!u) kurang.push('rincian'); if (!f) kurang.push('foto'); if (!g) kurang.push('maps');
+  return {unit: u, foto: f, video: v, maps: g, kurang: kurang};
+}
+function mediaBelumTaut(){ return (S.media || []).filter(function(m){ return !m.ID_ASET; }); }
+
+function gambarDetail(){
+  var w = $('v-detail'); if (!w) return;
+  if (detailBuka && !asetById(detailBuka)) detailBuka = null;
+  w.innerHTML = detailBuka ? halamanDetail(detailBuka) : daftarDetail();
+  if (!detailBuka) {
+    var isi = function(){ $('dHasil').innerHTML = tabelKelengkapan(); };
+    ['dCari', 'dLokasi', 'dJenis', 'dKurang'].forEach(function(id){ $(id).oninput = isi; $(id).onchange = isi; });
+    isiSelect($('dLokasi'), 'Semua lokasi', semuaLokasi()); isiSelect($('dJenis'), 'Semua jenis', semuaJenis());
+    isi();
+  }
+}
+function daftarDetail(){
+  var bt = mediaBelumTaut();
+  var grupBt = unikUrut(bt.map(function(m){ return m.NAMA_PROPERTI; }));
+  return '<p class="info" style="font-size:14px;margin-top:0">Pilih aset untuk melihat &amp; mengisi <b>detail</b>: rincian per unit (daya listrik, dokumen, atas nama, luas tanah &amp; bangunan, dimensi), foto/video, dan lokasi Maps.</p>' +
+    (bt.length ? '<div class="panel" style="padding:12px 14px;margin-bottom:12px;border-color:var(--tempo)"><b>📥 ' + bt.length + ' upload lapangan belum ditautkan ke aset</b> <span class="info">(' + grupBt.length + ' properti: ' + esc(grupBt.slice(0, 4).join(', ')) + (grupBt.length > 4 ? ', …' : '') + ')</span>' +
+      '<div class="info" style="margin:4px 0 0">Buka aset yang sesuai di bawah, lalu tekan <b>Tautkan ke aset ini</b> pada bagian "Upload lapangan belum ditautkan". Bisa juga dari tab Foto.</div></div>' : '') +
+    '<div class="alat"><input type="search" id="dCari" placeholder="Cari nama aset, alamat...">' +
+    '<select id="dKurang"><option value="">Semua kelengkapan</option><option value="rincian">Belum ada rincian unit</option><option value="foto">Belum ada foto</option><option value="maps">Belum ada maps</option><option value="lengkap">Sudah lengkap</option></select></div>' +
+    '<div class="alat"><select id="dLokasi"></select><select id="dJenis"></select></div><div id="dHasil"></div>';
+}
+function tabelKelengkapan(){
+  var q = $('dCari').value, fl = $('dLokasi').value, fj = $('dJenis').value, fk = $('dKurang').value;
+  var rows = S.aset.filter(function(a){
+    if (a.KONDISI === 'Terjual') return false;
+    if (fl && a.LOKASI !== fl) return false;
+    if (fj && a.JENIS !== fj) return false;
+    var k = kelengkapan(a);
+    if (fk === 'lengkap' && k.kurang.length) return false;
+    if (fk && fk !== 'lengkap' && k.kurang.indexOf(fk) < 0) return false;
+    return cocokCari(q, [a.ID, a.NAMA, a.ALAMAT, a.LOKASI, a.JENIS].join(' '));
+  });
+  var lengkap = rows.filter(function(a){ return !kelengkapan(a).kurang.length; }).length;
+  var cek = function(ok, teks){ return ok ? '<span style="color:var(--sewa);font-weight:700">✔ ' + teks + '</span>' : '<span style="color:#b9b3a6">–</span>'; };
+  return '<p class="info">' + rows.length + ' aset • ' + lengkap + ' sudah lengkap</p>' +
+    '<div class="tabel-excel"><table><thead><tr><th>NO</th><th class="nama">NAMA ASET</th><th>JENIS</th><th>LOKASI</th><th>JML UNIT</th><th>RINCIAN UNIT</th><th>FOTO</th><th>VIDEO</th><th>MAPS</th><th>KELENGKAPAN</th></tr></thead><tbody>' +
+    rows.map(function(a){
+      var k = kelengkapan(a), m = String(a.ID).match(/(\d+)$/);
+      return '<tr onclick="bukaDetail(\'' + esc(a.ID) + '\')"><td class="n">' + (m ? +m[1] : '') + '</td><td class="nama">' + esc(a.NAMA) + '</td><td>' + esc(a.JENIS) + '</td><td>' + esc(a.LOKASI) + '</td><td class="n">' + esc(a.UNIT) + '</td>' +
+        '<td class="n">' + cek(k.unit, k.unit + ' unit') + '</td><td class="n">' + cek(k.foto, k.foto) + '</td><td class="n">' + (k.video ? k.video : '<span style="color:#b9b3a6">–</span>') + '</td><td class="n">' + cek(k.maps, 'ada') + '</td>' +
+        '<td>' + (k.kurang.length ? '<span class="badge b-tempo">Kurang: ' + esc(k.kurang.join(', ')) + '</span>' : '<span class="badge b-sewa">Lengkap</span>') + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+}
+function bukaDetail(id){ detailBuka = id; tutupModal(); bukaTab('detail'); }
+function tutupDetail(){ detailBuka = null; gambarDetail(); window.scrollTo(0, 0); }
+
+function kartuRingkas(judul, nilai, sub){
+  return '<div class="kd"><div class="kd-j">' + esc(judul) + '</div><div class="kd-n">' + nilai + '</div>' + (sub ? '<div class="kd-s">' + esc(sub) + '</div>' : '') + '</div>';
+}
+function halamanDetail(id){
+  var a = asetById(id), d = detailOf(id), u = unitsOf(id), md = mediaAset(id), g = gmapsAset(id), f = fotoUtama(id), k = kelengkapan(a);
+  var dok = unikUrut(u.map(function(x){ var m = String(x.DOKUMEN).match(/^([A-Za-z]+)/); return m ? m[1].toUpperCase() : ''; }));
+  var namaDok = {SHM: 'Sertipikat Hak Milik (SHM)', HGB: 'Hak Guna Bangunan (HGB)', AJB: 'Akta Jual Beli (AJB)'};
+  var jenisUnit = a.JENIS === 'TANAH' ? 'BIDANG TANAH' : a.JENIS === 'RUKO' ? 'UNIT RUKO' : 'UNIT';
+  var tl = totalLuas(u, 'LUAS_TANAH'), tb = totalLuas(u, 'LUAS_BANGUNAN');
+  var kor = (g.link.match(/[?&]q=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/) || []);
+  var h = '<button class="btn ghost kecil" onclick="tutupDetail()">← Semua aset</button>' +
+    '<div class="judul-detail"><div class="jd-1">DATA ' + esc(a.NAMA) + '</div><div class="jd-2">' + esc([a.JENIS, a.LOKASI, a.ALAMAT, a.PEMILIK].filter(ada).join(' • ')) + '</div>' +
+    (k.kurang.length ? '<span class="badge b-tempo">Belum lengkap: ' + esc(k.kurang.join(', ')) + '</span>' : '<span class="badge b-sewa">Detail lengkap</span>') + '</div>';
+  // kartu ringkas
+  h += '<div class="kd-grid">' +
+    kartuRingkas('JUMLAH ' + jenisUnit, String(u.length || a.UNIT), dok.length ? dok.map(function(x){ return namaDok[x] || x; }).join(', ') : (u.length ? '' : 'dari daftar aset')) +
+    kartuRingkas('TOTAL LUAS TANAH', tl === '' ? '–' : fmtLuas(tl) + ' <small>m²</small>', 'Akumulasi seluruh unit') +
+    kartuRingkas('TOTAL LUAS BANGUNAN / LANTAI', tb === '' ? '–' : fmtLuas(tb) + ' <small>m²</small>', 'Akumulasi luas per lantai') +
+    '<div class="kd kd-foto">' + (f ? '<button class="thumb-besar" onclick="detailMedia(\'' + esc(f.ID) + '\')"><img src="' + esc(thumbUrl(f, 800)) + '" alt=""></button><div class="kd-s">FOTO TAMPAK BANGUNAN</div>'
+      : '<div class="kd-j">FOTO TAMPAK BANGUNAN</div><div class="kd-s" style="margin:8px 0">Belum ada foto</div><button class="btn kecil" onclick="formUpload(\'' + esc(id) + '\')">+ Upload foto</button>') + '</div>' +
+    '</div>';
+  // rincian per unit
+  h += '<div class="sub-judul"><h2>RINCIAN PER UNIT</h2><button class="btn kecil" onclick="formDetail(\'' + esc(id) + '\')">✏️ ' + (u.length ? 'Ubah rincian' : 'Isi rincian') + '</button></div>';
+  if (u.length) {
+    h += '<div class="tabel-excel rincian"><table><thead><tr><th>' + esc(a.JENIS === 'RUKO' ? 'RUKO' : 'UNIT') + '</th><th>DAYA LISTRIK</th><th>DOKUMEN LEGAL</th><th>ATAS NAMA</th><th>LUAS TANAH (m²)</th><th>LUAS BANGUNAN PER LANTAI (m²)</th><th>DIMENSI BANGUNAN (m)</th><th>KETERANGAN</th></tr></thead><tbody>' +
+      u.map(function(x){ return '<tr style="cursor:default"><td style="font-weight:700">' + esc(x.UNIT) + '</td><td>' + esc(x.DAYA_LISTRIK) + '</td><td>' + esc(x.DOKUMEN) + '</td><td class="bungkus">' + esc(x.ATAS_NAMA) + '</td><td class="rp">' + esc(fmtLuas(x.LUAS_TANAH)) + '</td><td class="rp">' + esc(fmtLuas(x.LUAS_BANGUNAN)) + '</td><td class="lebar">' + esc(x.DIMENSI) + '</td><td class="lebar">' + esc(x.KETERANGAN) + '</td></tr>'; }).join('') +
+      '<tr class="total" style="cursor:default"><td>Total</td><td></td><td></td><td></td><td class="rp">' + esc(fmtLuas(tl)) + '</td><td class="rp">' + esc(fmtLuas(tb)) + '</td><td></td><td></td></tr></tbody></table></div>';
+  } else h += '<div class="panel kosong-teks">Rincian per unit belum diisi. Tekan <b>Isi rincian</b> – bisa juga menempel langsung dari Excel.</div>';
+  if (d.CATATAN) h += '<p class="info" style="margin-top:8px"><b>Catatan:</b> ' + esc(d.CATATAN) + '</p>';
+  // lokasi
+  h += '<div class="sub-judul"><h2>LOKASI</h2><button class="btn kecil ghost" onclick="formDetail(\'' + esc(id) + '\', true)">📍 ' + (g.link ? 'Ubah lokasi' : 'Isi lokasi') + '</button></div>';
+  if (g.link) {
+    h += (kor.length ? '<div class="peta-detail"><iframe loading="lazy" src="https://maps.google.com/maps?q=' + esc(kor[1] + ',' + kor[2]) + '&z=17&output=embed"></iframe></div>' : '') +
+      '<p class="info"><a href="' + esc(g.link) + '" target="_blank" rel="noopener">Buka di Google Maps</a>' +
+      (g.sumber === 'upload' ? ' • dari upload lapangan ' + esc(g.media.WAKTU) + ' <button class="btn kecil ghost" style="margin-left:6px" onclick="simpanGmapsDariUpload(\'' + esc(id) + '\')">Simpan sebagai lokasi aset</button>' : '') + '</p>';
+  } else h += '<div class="panel kosong-teks">Lokasi belum diisi. Isi dari kantor (tempel link Google Maps) atau tunggu upload tim lapangan.</div>';
+  // foto & video
+  h += '<div class="sub-judul"><h2>FOTO &amp; VIDEO (' + md.length + ')</h2><button class="btn kecil" onclick="formUpload(\'' + esc(id) + '\')">+ Upload foto/video</button></div>' +
+    (md.length ? htmlThumbs(md) + '<p class="info" style="margin-top:6px">Ketuk foto lalu <b>⭐ Jadikan foto tampak</b> untuk memilih foto di kartu ringkas.</p>' : '<div class="panel kosong-teks">Belum ada foto/video untuk aset ini.</div>');
+  // upload lapangan belum ditautkan
+  h += saranBelumTaut(a);
+  return h;
+}
+/** Upload tanpa aset: dikelompokkan per nama properti, diurutkan dari yang paling mirip dengan aset ini. */
+function saranBelumTaut(a){
+  var bt = mediaBelumTaut();
+  if (!bt.length) return '';
+  var kata = function(s){ return String(s || '').toUpperCase().replace(/[^A-Z0-9 ]+/g, ' ').split(/\s+/).filter(function(w){ return w.length > 2 && ['RUKO', 'TANAH', 'RUMAH', 'JALAN', 'GANG', 'NO', 'KEC', 'DAN', 'THE'].indexOf(w) < 0; }); };
+  var kAset = kata(a.NAMA + ' ' + a.ALAMAT);
+  var grup = {};
+  bt.forEach(function(m){ (grup[m.NAMA_PROPERTI] = grup[m.NAMA_PROPERTI] || []).push(m); });
+  var list = Object.keys(grup).map(function(n){
+    var l = grup[n], kk = kata(n), skor = kk.filter(function(w){ return kAset.indexOf(w) >= 0; }).length + (l[0].LOKASI === a.LOKASI ? 0.5 : 0) + (l[0].JENIS === a.JENIS ? 0.25 : 0);
+    return {nama: n, media: l, skor: skor};
+  }).sort(function(x, y){ return y.skor - x.skor || String(y.media[0].WAKTU).localeCompare(String(x.media[0].WAKTU)); });
+  var mirip = list.filter(function(x){ return x.skor >= 1; });
+  var tampil = mirip.length ? mirip : list;
+  var blok = function(x){
+    var maps = unikUrut(x.media.map(function(m){ return m.GMAPS; }))[0];
+    return '<div class="item" style="cursor:default"><div class="t"><b>' + esc(x.nama) + '</b>' + (x.skor >= 1 ? '<span class="badge b-sewa">mirip</span>' : '') + '</div>' +
+      '<div class="s">' + esc([x.media[0].JENIS, x.media[0].LOKASI, x.media.length + ' file', 'upload ' + x.media[0].WAKTU].join(' • ')) + (maps ? ' • 📍 ada lokasi' : '') + '</div>' +
+      htmlThumbs(x.media) +
+      '<div class="aksi" style="margin-top:8px"><button class="btn kecil" onclick="tautkanGrup(\'' + esc(a.ID) + '\', \'' + esc(x.media.map(function(m){ return m.ID; }).join(',')) + '\')">🔗 Tautkan ke aset ini</button></div></div>';
+  };
+  return '<div class="sub-judul"><h2>UPLOAD LAPANGAN BELUM DITAUTKAN</h2></div><p class="info">Upload tim lapangan yang belum dipilih asetnya' + (mirip.length ? ' – ditampilkan yang namanya mirip dengan aset ini' : ' – tidak ada yang namanya mirip, ditampilkan semua') + '. Tautkan bila memang properti yang sama; lokasi Maps-nya ikut dipakai bila aset belum punya.</p>' +
+    '<div class="list">' + tampil.slice(0, 6).map(blok).join('') + '</div>' +
+    (tampil.length > 6 ? '<p class="info">+ ' + (tampil.length - 6) + ' lainnya – lihat di tab Foto.</p>' : '');
+}
+function tautkanGrup(idAset, ids){
+  var a = asetById(idAset);
+  mintaNama(false, function(){
+    if (!confirm('Tautkan ' + ids.split(',').length + ' file ke aset "' + a.NAMA + '"?')) return;
+    panggil('apiTautkanMedia', [ids.split(','), idAset, namaSaya()], function(d){ terima(d); toast('Upload ditautkan ke ' + a.NAMA); });
+  });
+}
+function simpanGmapsDariUpload(id){
+  var g = gmapsAset(id);
+  mintaNama(false, function(){ panggil('apiSimpanDetail', [id, {GMAPS: g.link}, namaSaya()], function(d){ terima(d); toast('Lokasi disimpan'); }); });
+}
+function jadikanFotoUtama(mediaId){
+  var m = mediaById(mediaId);
+  mintaNama(false, function(){ panggil('apiSimpanDetail', [m.ID_ASET, {FOTO_UTAMA: m.ID}, namaSaya()], function(d){ terima(d); tutupModal(); toast('Foto tampak diganti'); }); });
+}
+
+/* ---------- form isi / ubah detail ---------- */
+/** Teks salinan Excel (tab-separated). Sel yang berisi baris baru dibungkus tanda kutip oleh Excel. */
+function bacaTempelanExcel(t){
+  var rows = [], row = [], sel = '', kutip = false;
+  t = String(t || '').replace(/\r\n?/g, '\n');
+  for (var i = 0; i < t.length; i++) {
+    var ch = t[i];
+    if (kutip) {
+      if (ch === '"' && t[i + 1] === '"') { sel += '"'; i++; }
+      else if (ch === '"') kutip = false;
+      else sel += ch;
+    } else if (ch === '"' && sel === '') kutip = true;
+    else if (ch === '\t') { row.push(sel); sel = ''; }
+    else if (ch === '\n') { row.push(sel); rows.push(row); row = []; sel = ''; }
+    else sel += ch;
+  }
+  if (sel !== '' || row.length) { row.push(sel); rows.push(row); }
+  return rows.map(function(r){ return r.map(function(c){ return c.replace(/\s+/g, ' ').trim(); }); });
+}
+var KOLOM_FORM_UNIT = [['UNIT', 'Unit / nama', 'mis. Ruko 1'], ['DAYA_LISTRIK', 'Daya listrik', 'mis. 2200 Watt'], ['DOKUMEN', 'Dokumen legal', 'mis. SHM No.308'], ['ATAS_NAMA', 'Atas nama', ''],
+  ['LUAS_TANAH', 'Luas tanah (m²)', 'mis. 162'], ['LUAS_BANGUNAN', 'Luas bangunan / lantai (m²)', 'mis. 112,5'], ['DIMENSI', 'Dimensi bangunan (m)', 'mis. 22,5 × 5'], ['KETERANGAN', 'Keterangan', '']];
+function formDetail(id, fokusLokasi){
+  mintaNama(false, function(){
+    var a = asetById(id), d = detailOf(id), g = gmapsAset(id);
+    var units = unitsOf(id).map(function(u){ var o = {}; KOLOM_FORM_UNIT.forEach(function(c){ o[c[0]] = c[0].indexOf('LUAS') === 0 ? fmtLuas(u[c[0]]) : u[c[0]]; }); return o; });
+    if (!units.length) units = [{}];
+    bukaModal('<div class="sheet-head"><h3>Detail ' + esc(a.NAMA) + '</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+      '<div class="form"><label class="full" id="lblGmaps">Link Google Maps<span style="display:flex;gap:6px"><input id="dtGmaps" value="' + esc(d.GMAPS) + '" placeholder="https://maps.app.goo.gl/... atau -0.5071,101.4478"><button type="button" class="btn ghost kecil" id="dtLokasiSaya" style="white-space:nowrap">📍 Lokasi saya</button></span>' +
+      (!d.GMAPS && g.link ? '<em>Ada lokasi dari upload lapangan: <a href="' + esc(g.link) + '" target="_blank" rel="noopener">lihat</a> • <a href="#" id="dtPakaiUpload">pakai ini</a></em>' : '<em>Salin dari Google Maps (Bagikan → Salin link), atau tekan Lokasi saya bila sedang di lokasi.</em>') + '</label>' +
+      '<label class="full">Catatan<textarea id="dtCatatan" placeholder="mis. sertifikat disimpan di brankas kantor PKU">' + esc(d.CATATAN) + '</textarea></label></div>' +
+      '<div class="sub-judul" style="margin-top:6px"><h2 style="margin:8px 0">Rincian per unit</h2><span class="info" id="dtTotal"></span></div>' +
+      '<div id="dtUnits"></div>' +
+      '<div class="aksi" style="margin-top:8px"><button class="btn ghost kecil" id="dtTambah">+ Tambah unit</button><button class="btn ghost kecil" id="dtTempelBuka">📋 Tempel dari Excel</button></div>' +
+      '<div id="dtTempel" style="display:none;margin-top:8px"><textarea id="dtTempelIsi" style="min-height:110px" placeholder="Di Excel, blok baris rincian (Ruko, Daya Listrik, Dokumen Legal, Atas Nama, Luas Tanah, Luas Ruko per Lantai, Dimensi) → Ctrl+C → tempel di sini"></textarea><div class="aksi" style="margin-top:6px"><button class="btn kecil" id="dtTempelPakai">Pakai baris ini</button></div></div>' +
+      '<div class="aksi"><button class="btn" id="dtSimpan">Simpan</button><button class="btn ghost" onclick="tutupModal()">Batal</button></div>');
+    var gambarUnits = function(){
+      $('dtUnits').innerHTML = units.map(function(u, i){
+        return '<div class="unit-box"><div class="unit-head"><b>Unit ' + (i + 1) + '</b><button type="button" class="tautan-hapus" data-hapus="' + i + '">✕ hapus</button></div><div class="form">' +
+          KOLOM_FORM_UNIT.map(function(c){ return '<label' + (c[0] === 'KETERANGAN' || c[0] === 'ATAS_NAMA' ? ' class="full"' : '') + '>' + esc(c[1]) + '<input data-i="' + i + '" data-k="' + c[0] + '" value="' + esc(u[c[0]] || '') + '" placeholder="' + esc(c[2]) + '"' + (c[0].indexOf('LUAS') === 0 ? ' inputmode="decimal"' : '') + '></label>'; }).join('') +
+          '</div></div>';
+      }).join('');
+      $('dtUnits').querySelectorAll('input').forEach(function(inp){ inp.oninput = function(){ units[+inp.dataset.i][inp.dataset.k] = inp.value; hitungTotal(); }; });
+      $('dtUnits').querySelectorAll('[data-hapus]').forEach(function(b){ b.onclick = function(){ units.splice(+b.dataset.hapus, 1); if (!units.length) units.push({}); gambarUnits(); }; });
+      hitungTotal();
+    };
+    var angka = function(s){ s = String(s || '').replace(/m2|m²|\s/gi, ''); if (!s) return null; if (s.indexOf(',') >= 0) s = s.replace(/\./g, '').replace(',', '.'); var n = Number(s); return isNaN(n) ? NaN : n; };
+    var hitungTotal = function(){
+      var t = 0, b = 0, salah = 0;
+      units.forEach(function(u){ var x = angka(u.LUAS_TANAH), y = angka(u.LUAS_BANGUNAN); if (isNaN(x) || isNaN(y)) salah++; t += x || 0; b += y || 0; });
+      $('dtTotal').textContent = 'Total: tanah ' + fmtLuas(t) + ' m² • bangunan ' + fmtLuas(b) + ' m²' + (salah ? ' • ⚠ ada luas bukan angka' : '');
+    };
+    gambarUnits();
+    $('dtTambah').onclick = function(){ units.push({}); gambarUnits(); };
+    $('dtTempelBuka').onclick = function(){ $('dtTempel').style.display = ''; $('dtTempelIsi').focus(); };
+    $('dtTempelPakai').onclick = function(){
+      // baris kosong, baris judul (Daya Listrik / Luas Tanah / Per Lantai / Dimensi) dan baris Total dilewati
+      var baris = bacaTempelanExcel($('dtTempelIsi').value)
+        .filter(function(c){ var p = String(c[0] || '').trim(); return c.join('').trim() && p && !/^total$/i.test(p) && !/daya listrik|luas tanah|per lantai|dimensi bangunan|dokumen legal/i.test(c.join(' ')); });
+      if (!baris.length) { toast('Tidak ada baris yang bisa dibaca', true); return; }
+      var baru = baris.map(function(c){ return {UNIT: (c[0] || '').trim(), DAYA_LISTRIK: (c[1] || '').trim(), DOKUMEN: (c[2] || '').trim(), ATAS_NAMA: (c[3] || '').trim(), LUAS_TANAH: (c[4] || '').trim(), LUAS_BANGUNAN: (c[5] || '').trim(), DIMENSI: (c[6] || '').trim(), KETERANGAN: (c[7] || '').trim()}; });
+      var kosong = units.length === 1 && !Object.keys(units[0]).some(function(k){ return units[0][k]; });
+      units = kosong ? baru : units.concat(baru);
+      $('dtTempel').style.display = 'none'; $('dtTempelIsi').value = '';
+      gambarUnits(); toast(baru.length + ' unit ditambahkan dari Excel');
+    };
+    if ($('dtPakaiUpload')) $('dtPakaiUpload').onclick = function(e){ e.preventDefault(); $('dtGmaps').value = g.link; };
+    $('dtLokasiSaya').onclick = function(){
+      if (!navigator.geolocation) { toast('Browser tidak mendukung lokasi', true); return; }
+      toast('Mengambil lokasi...');
+      navigator.geolocation.getCurrentPosition(function(p){ $('dtGmaps').value = 'https://www.google.com/maps?q=' + p.coords.latitude.toFixed(6) + ',' + p.coords.longitude.toFixed(6); toast('Lokasi terisi (±' + Math.round(p.coords.accuracy) + ' m)'); },
+        function(){ toast('Lokasi tidak bisa diambil. Tempel link dari Google Maps.', true); }, {enableHighAccuracy: true, timeout: 20000});
+    };
+    if (fokusLokasi) setTimeout(function(){ $('dtGmaps').focus(); }, 50);
+    $('dtSimpan').onclick = function(){
+      var gm = rapikanGmaps($('dtGmaps').value);
+      if (gm === null) { toast('Link Google Maps harus diawali https:// atau berupa koordinat "lat,lng"', true); return; }
+      var salah = units.filter(function(u){ return isNaN(angka(u.LUAS_TANAH)) || isNaN(angka(u.LUAS_BANGUNAN)); });
+      if (salah.length) { toast('Luas tanah / bangunan harus angka (mis. 112,5)', true); return; }
+      panggil('apiSimpanDetail', [id, {GMAPS: gm, CATATAN: $('dtCatatan').value, units: units}, namaSaya()], function(dd){ terima(dd); tutupModal(); toast('Detail disimpan'); });
+    };
+  });
+}
+
+/* ---------- tautkan dari tab Foto ---------- */
+function formTautkan(ids){
+  var namaProp = (mediaById(String(ids).split(',')[0]) || {}).NAMA_PROPERTI || '';
+  mintaNama(false, function(){
+    var saran = S.aset.map(function(a){
+      var w = String(namaProp).toUpperCase().split(/[^A-Z0-9]+/).filter(function(x){ return x.length > 2; });
+      return {a: a, s: w.filter(function(x){ return (a.NAMA + ' ' + a.ALAMAT).toUpperCase().indexOf(x) >= 0; }).length};
+    }).sort(function(x, y){ return y.s - x.s; })[0];
+    bukaModal('<div class="sheet-head"><h3>Tautkan ke aset</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+      '<p>Upload <b>' + esc(namaProp) + '</b> (' + ids.split(',').length + ' file) akan ditautkan ke aset terdaftar. Nama, jenis &amp; lokasi file ikut aset; Maps-nya dipakai bila aset belum punya.</p>' +
+      '<div class="form"><label class="full">Aset<select id="tkAset">' + opsiAset(saran && saran.s ? saran.a.ID : '').replace('— Properti baru / belum terdaftar —', '— pilih aset —') + '</select></label></div>' +
+      '<div class="aksi"><button class="btn" id="tkOk">Tautkan</button><button class="btn ghost" onclick="tutupModal()">Batal</button></div>');
+    $('tkOk').onclick = function(){
+      var id = $('tkAset').value; if (!id) { toast('Pilih aset dulu', true); return; }
+      panggil('apiTautkanMedia', [ids.split(','), id, namaSaya()], function(d){ terima(d); tutupModal(); toast('Ditautkan ke ' + asetById(id).NAMA); });
+    };
+  });
+}
+
+/* ============ RIWAYAT ============ */
+function muatRiwayat(){
+  $('listRiwayat').innerHTML = 'Memuat...'; $('listRiwayat').className = 'kosong-teks';
+  google.script.run.withSuccessHandler(function(rows){
+    $('listRiwayat').className = '';
+    $('listRiwayat').innerHTML = rows.length ? '<table class="riw">' + rows.map(function(r){
+      return '<tr><td><div class="w">' + esc(r.WAKTU) + ' • ' + esc(r.NAMA) + '</div><b>' + esc(r.AKSI) + '</b> ' + esc(r.OBJEK) + '<div class="r">' + esc(r.RINCIAN) + '</div></td></tr>';
+    }).join('') + '</table>' : '<div class="kosong-teks">Belum ada riwayat.</div>';
+  }).withFailureHandler(function(e){ $('listRiwayat').textContent = 'Gagal memuat: ' + (e.message || e); }).apiRiwayat();
+}
+
+/* ============ LAPORAN (KARTU PNG) ============ */
+var LAP = [
+  {id: 'disewa', judul: 'Aset sudah disewakan', ket: 'Kontrak aktif yang belum habis + warna sisa sewa', warna: '#1f8a4c'},
+  {id: 'kosong', judul: 'Aset belum disewa', ket: 'Aset kosong, siap ditawarkan', warna: '#2f5d9e'},
+  {id: 'tanah', judul: 'Tanah belum disewa', ket: 'Khusus jenis TANAH', warna: '#7a5a1e'},
+  {id: 'tempo', judul: 'Akan jatuh tempo', ket: 'Kontrak habis ≤ 90 hari + yang sudah lewat', warna: '#c77700'},
+  {id: 'lewat', judul: 'Lewat tempo', ket: 'Sudah habis tapi masih Aktif – perlu tindakan', warna: '#c62f2f'},
+  {id: 'ringkasan', judul: 'Ringkasan property', ket: 'Angka total per status, jenis & lokasi', warna: '#0f3d3e'}
+];
+var JUDUL_TABEL = {disewa: 'ASET SUDAH DISEWAKAN', kosong: 'ASET BELUM DISEWA', tanah: 'TANAH BELUM DISEWA', tempo: 'KONTRAK AKAN JATUH TEMPO', lewat: 'KONTRAK LEWAT TEMPO'};
+var lapDipilih = lsGet('propLap') || 'disewa';
+var jenisDipilih = {};
+lsGet('propJenis').split('|').filter(String).forEach(function(j){ jenisDipilih[j] = 1; });
+
+function gambarPilihLap(){
+  $('pilihLap').innerHTML = LAP.map(function(l){
+    return '<button class="' + (l.id === lapDipilih ? 'on' : '') + '" onclick="pilihLap(\'' + l.id + '\')"><b>' + esc(l.judul) + '</b><span>' + esc(l.ket) + '</span></button>';
+  }).join('');
+  gambarJenis();
+}
+function pilihLap(id){ lapDipilih = id; lsSet('propLap', id); gambarPilihLap(); $('hasilKartu').innerHTML = ''; }
+/** Centang jenis (boleh lebih dari satu). Tidak ada yang dicentang = semua jenis. */
+function gambarJenis(){
+  var w = $('lJenis');
+  if (lapDipilih === 'tanah' || lapDipilih === 'ringkasan') { w.style.display = 'none'; return; }
+  w.style.display = '';
+  var semua = semuaJenis();
+  Object.keys(jenisDipilih).forEach(function(j){ if (semua.indexOf(j) < 0) delete jenisDipilih[j]; });
+  w.innerHTML = '<span class="lbl">Jenis:</span>' + semua.map(function(j){
+    return '<label class="chip-j' + (jenisDipilih[j] ? ' on' : '') + '"><input type="checkbox" value="' + esc(j) + '"' + (jenisDipilih[j] ? ' checked' : '') + '>' + esc(j) + '</label>';
+  }).join('') + (Object.keys(jenisDipilih).length ? '' : '<span class="lbl" style="font-weight:400">(tidak dicentang = semua jenis)</span>');
+  w.querySelectorAll('input').forEach(function(c){ c.onchange = function(){
+    if (c.checked) jenisDipilih[c.value] = 1; else delete jenisDipilih[c.value];
+    lsSet('propJenis', Object.keys(jenisDipilih).join('|')); gambarJenis();
+  }; });
+}
+
+/* ---------- bahan tabel ---------- */
+var URUT_JENIS = ['RUMAH', 'RUKO', 'TANAH', 'APARTEMEN', 'GUDANG', 'KIOS MP'];
+function rankJenis(j){ var i = URUT_JENIS.indexOf(j); return i < 0 ? 99 : i; }
+/** Gabungkan baris aset yang berbagi kode kontrak (mis. 1 kontrak untuk beberapa baris aset). */
+function grupAset(){
+  var induk = {}, perKode = {};
+  S.aset.forEach(function(a){ induk[a.ID] = a.ID; });
+  function akar(i){ while (induk[i] !== i) { induk[i] = induk[induk[i]]; i = induk[i]; } return i; }
+  S.aset.forEach(function(a){
+    kodeList(a.KODE_SEWA).forEach(function(kd){
+      kd = kd.toUpperCase();
+      if (perKode[kd]) { var r1 = akar(a.ID), r2 = akar(perKode[kd]); if (r1 !== r2) induk[r1] = r2; }
+      else perKode[kd] = a.ID;
+    });
+  });
+  var g = {}, urut = [];
+  S.aset.forEach(function(a, i){ var r = akar(a.ID); if (!g[r]) { g[r] = {idx: i, aset: []}; urut.push(r); } g[r].aset.push(a); });
+  return urut.map(function(r){
+    var as = g[r].aset, ks = [], sudah = {};
+    as.forEach(function(a){ kontrakAset(a).forEach(function(k){ if (!sudah[k.KODE]) { sudah[k.KODE] = 1; ks.push(k); } }); });
+    return {idx: g[r].idx, aset: as, kontrak: ks};
+  });
+}
+function gabungUnik(arr, sep){ return unikUrut(arr).join(sep || ', '); }
+function unikUrut(arr){ var o = {}, r = []; arr.forEach(function(x){ x = String(x || '').trim(); if (x && !o[x]) { o[x] = 1; r.push(x); } }); return r; }
+function tglTabel(s){ var d = tglObj(s); if (!d) return '-'; return ('0' + d.getUTCDate()).slice(-2) + '-' + BULAN[d.getUTCMonth()] + '-' + d.getUTCFullYear(); }
+function blnTeks(hari){ return (hari / 30.4).toFixed(1).replace('.', ','); }
+function rpPenuh(n){ n = Number(n); return n ? 'Rp ' + n.toLocaleString('id-ID') : '-'; }
+function rentangRp(list){
+  var n = list.map(Number).filter(function(v){ return v > 0; });
+  if (!n.length) return '-';
+  var lo = Math.min.apply(null, n), hi = Math.max.apply(null, n);
+  return lo === hi ? rpPenuh(lo) : rpPenuh(lo) + ' – ' + rpPenuh(hi);
+}
+function luasRapi(a){
+  var s = teksLuas(a).replace(/^Luas\s*/, '');
+  if (!s) return '';
+  if (/^\d+(\.\d+)?$/.test(s)) return Number(s) >= 10 ? Number(s).toLocaleString('id-ID') + ' m²' : s;
+  return s.replace(/\b(LT|LB)\s*/gi, function(m, p){ return p.toUpperCase() + ' '; })
+    .replace(/\s*M2\b/gi, ' m²').replace(/\s*\/\s*/g, ' / ').replace(/\s+/g, ' ').trim();
+}
+var W_MERAH = {bg: '#f8cbad', fg: '#a50000'}, W_KUNING = {bg: '#ffe699', fg: '#7f6000'}, W_HIJAU = {bg: '#c6efce', fg: '#006100'}, W_LEWAT = {bg: '#e99a9a', fg: '#6e0000'};
+function warnaSisa(hari){
+  if (hari === null) return null;
+  if (hari < 0) return W_LEWAT;
+  if (hari <= S.batas) return W_MERAH;
+  if (hari <= 182) return W_KUNING;
+  return W_HIJAU;
+}
+function cocokGrup(g, f){
+  var as = g.aset;
+  if (f.lokasi && !as.some(function(a){ return a.LOKASI === f.lokasi; })) return false;
+  if (f.pemilik && !as.some(function(a){ return a.PEMILIK === f.pemilik; })) return false;
+  if (f.jenis.length && f.jenis.indexOf(as[0].JENIS) < 0) return false;
+  return true;
+}
+function urutBaris(rows){
+  var urutPemilik = unikUrut(S.aset.map(function(a){ return a.PEMILIK; }));
+  rows.sort(function(a, b){
+    return urutPemilik.indexOf(a.pemilikUtama) - urutPemilik.indexOf(b.pemilikUtama) || rankJenis(a.jenis) - rankJenis(b.jenis) || a.idx - b.idx || String(a.akhir || '').localeCompare(String(b.akhir || ''));
+  });
+  return rows;
+}
+function grupDariKontrak(k, grup){
+  var kd = String(k.KODE).toUpperCase();
+  for (var i = 0; i < grup.length; i++) if (grup[i].kontrak.some(function(x){ return String(x.KODE).toUpperCase() === kd; })) return grup[i];
+  return null;
+}
+
+/** Data tabel sesuai jenis laporan + filter. */
+function dataTabel(id, f){
+  var grup = grupAset(), rows = [], spec = {id: id};
+  if (id === 'disewa') {
+    spec.kolom = [{t: 'NO', w: 60, al: 'c'}, {t: 'PEMILIK', w: 158}, {t: 'JENIS', w: 136, al: 'c'}, {t: 'ALAMAT', w: 198}, {t: 'NAMA ASET', w: 314},
+      {t: 'JML UNIT', w: 74, al: 'c'}, {t: 'LUAS', w: 198}, {t: 'PENYEWA', w: 290}, {t: 'AKHIR SEWA', w: 155, al: 'c', b: 1}, {t: 'SISA (BLN)', w: 80, al: 'c', b: 1}, {t: 'NILAI SEWA TERAKHIR (Rp/thn/unit)', w: 267, al: 'r'}];
+    var bintang = false;
+    grup.forEach(function(g){
+      var ks = g.kontrak.filter(function(k){ var c = statusKontrak(k).kode; return c === 'sewa' || c === 'tempo'; });
+      if (!ks.length || !cocokGrup(g, f)) return;
+      var as = g.aset, akhir = ks.map(function(k){ return k.AKHIR; }).filter(ada).sort()[0] || '';
+      var hari = akhir ? selisihHari(S.hariIni, akhir) : null, w = warnaSisa(hari);
+      var unit = ks.reduce(function(s, k){ return s + (Number(k.UNIT) || 0); }, 0) || as.reduce(function(s, a){ return s + (Number(a.UNIT) || 0); }, 0);
+      var banyak = ks.length > 1; if (banyak) bintang = true;
+      var penyewa = gabungUnik(ks.map(function(k){ return k.PENYEWA; })) + (banyak ? ' (' + ks.length + ' kontrak)' : '');
+      rows.push({idx: g.idx, jenis: as[0].JENIS, pemilikUtama: as[0].PEMILIK, unit: unit, akhir: akhir,
+        sel: ['', gabungUnik(as.map(function(a){ return a.PEMILIK; }), ' & '), as[0].JENIS, gabungUnik(as.map(function(a){ return a.ALAMAT; })), as[0].NAMA,
+          String(unit), as.length === 1 && !banyak ? luasRapi(as[0]) : '', penyewa, akhir ? tglTabel(akhir) + (banyak ? '*' : '') : '-', hari === null ? '-' : blnTeks(hari), rentangRp(ks.map(function(k){ return k.NILAI_SEWA; }))],
+        warna: w ? {8: w, 9: w} : {}});
+    });
+    spec.ringkasJudul = 'DISEWAKAN';
+    spec.sumber = 'Hanya kontrak Aktif yang akhir sewanya belum lewat.';
+    spec.catatan = [[{t: 'Warna AKHIR SEWA / SISA: ', b: 1}, {t: 'merah', b: 1, bg: W_MERAH.bg}, {t: ' habis ≤ 3 bulan (' + rows.filter(function(r){ return r.warna[8] === W_MERAH; }).length + ' aset) · '}, {t: 'kuning', b: 1, bg: W_KUNING.bg}, {t: ' ≤ 6 bulan · '}, {t: 'hijau', b: 1, bg: W_HIJAU.bg}, {t: ' masih lama.'}]];
+    if (bintang) spec.catatan.push([{t: '* Aset dengan beberapa kontrak: tanggal = kontrak yang paling cepat habis; nilai sewa = terendah – tertinggi.'}]);
+    spec.kosongTeks = 'yang sedang disewa';
+  } else if (id === 'kosong' || id === 'tanah') {
+    spec.kolom = [{t: 'NO', w: 60, al: 'c'}, {t: 'PEMILIK', w: 158}, {t: 'JENIS', w: 136, al: 'c'}, {t: 'ALAMAT', w: 200}, {t: 'NAMA ASET', w: 338},
+      {t: 'JML UNIT', w: 74, al: 'c'}, {t: 'LUAS', w: 230}, {t: 'NILAI PASAR', w: 150, al: 'c'}, {t: 'PENYEWA TERAKHIR', w: 230}, {t: 'SEWA BERAKHIR', w: 140, al: 'c'}, {t: 'CATATAN', w: 214}];
+    grup.forEach(function(g){
+      var aktif = g.kontrak.filter(function(k){ return k.STATUS === 'Aktif'; });
+      var as = g.aset.filter(function(a){ return a.KONDISI === 'Tersedia'; });
+      if (!as.length) return;
+      var gg = {aset: as};
+      if (!cocokGrup(gg, f)) return;
+      if (!aktif.length) {
+        var lama = g.kontrak.filter(function(k){ return ada(k.PENYEWA); }).sort(function(x, y){ return String(y.AKHIR).localeCompare(String(x.AKHIR)); })[0];
+        var unit = as.reduce(function(s, a){ return s + (Number(a.UNIT) || 0); }, 0);
+        rows.push({idx: g.idx, jenis: as[0].JENIS, pemilikUtama: as[0].PEMILIK, unit: unit,
+          sel: ['', gabungUnik(as.map(function(a){ return a.PEMILIK; }), ' & '), as[0].JENIS, gabungUnik(as.map(function(a){ return a.ALAMAT; })), as[0].NAMA,
+            String(unit), as.length === 1 ? luasRapi(as[0]) : '', gabungUnik(as.map(function(a){ return a.NILAI_PASAR; })) || '-',
+            lama ? lama.PENYEWA : '-', lama && ada(lama.AKHIR) ? tglTabel(lama.AKHIR) : '-', gabungUnik(as.map(function(a){ return a.CATATAN; }), '; ')], warna: {}});
+      } else {
+        // sebagian unit kosong: kontrak tidak aktif di aset yang masih punya kontrak aktif
+        g.kontrak.filter(function(k){ return k.STATUS !== 'Aktif'; }).forEach(function(k){
+          if (f.jenis.length && f.jenis.indexOf(k.JENIS || as[0].JENIS) < 0) return;
+          rows.push({idx: g.idx, jenis: k.JENIS || as[0].JENIS, pemilikUtama: as[0].PEMILIK, unit: Number(k.UNIT) || 1,
+            sel: ['', gabungUnik(as.map(function(a){ return a.PEMILIK; }), ' & '), k.JENIS || as[0].JENIS, gabungUnik(as.map(function(a){ return a.ALAMAT; })), k.NAMA,
+              String(Number(k.UNIT) || 1), '', k.HARGA_PASAR || '-', k.PENYEWA || '-', ada(k.AKHIR) ? tglTabel(k.AKHIR) : '-', 'Sebagian unit kosong (kontrak ' + k.KODE + ' tidak aktif)'], warna: {}});
+        });
+      }
+    });
+    spec.ringkasJudul = 'BELUM DISEWA';
+    spec.sumber = 'Kondisi Tersedia & tidak ada kontrak Aktif. Tidak termasuk aset Terjual / Dipakai sendiri.';
+    spec.catatan = [[{t: 'Kontrak yang sudah habis tapi masih Aktif tidak masuk daftar ini – lihat laporan '}, {t: 'Lewat tempo', b: 1}, {t: '.'}]];
+    spec.kosongTeks = 'yang belum disewa';
+  } else {
+    spec.kolom = [{t: 'NO', w: 60, al: 'c'}, {t: 'PEMILIK', w: 158}, {t: 'JENIS', w: 136, al: 'c'}, {t: 'KODE', w: 74, al: 'c'}, {t: 'NAMA ASET', w: 288},
+      {t: 'JML UNIT', w: 74, al: 'c'}, {t: 'PENYEWA', w: 250}, {t: 'AKHIR SEWA', w: 150, al: 'c', b: 1}, {t: 'SISA (HARI)', w: 110, al: 'c', b: 1}, {t: 'NILAI SEWA (Rp/thn/unit)', w: 190, al: 'r'}, {t: 'UPDATE TERAKHIR', w: 440}];
+    S.kontrak.forEach(function(k){
+      var st = statusKontrak(k);
+      if (id === 'lewat' ? st.kode !== 'lewat' : (st.kode !== 'lewat' && st.kode !== 'tempo')) return;
+      var g = grupDariKontrak(k, grup), as = g ? g.aset : [];
+      var lokasi = k.LOKASI || (as[0] && as[0].LOKASI) || '', pem = as.length ? gabungUnik(as.map(function(a){ return a.PEMILIK; }), ' & ') : pemilikKontrak(k);
+      if (f.lokasi && lokasi !== f.lokasi && !as.some(function(a){ return a.LOKASI === f.lokasi; })) return;
+      if (f.pemilik && pem.indexOf(f.pemilik) < 0) return;
+      var jenis = k.JENIS || (as[0] && as[0].JENIS) || '';
+      if (f.jenis.length && f.jenis.indexOf(jenis) < 0) return;
+      var w = st.hari < 0 ? W_LEWAT : st.hari <= 30 ? W_MERAH : W_KUNING;
+      rows.push({idx: 0, jenis: jenis, pemilikUtama: '', unit: Number(k.UNIT) || 1, akhir: k.AKHIR, lewat: st.hari < 0, hari: st.hari,
+        sel: ['', pem, jenis, k.KODE, k.NAMA, String(Number(k.UNIT) || 1), k.PENYEWA || '-', tglTabel(k.AKHIR), st.hari < 0 ? 'Lewat ' + (-st.hari) : String(st.hari), rpPenuh(k.NILAI_SEWA), k.KET_UPDATE || 'Belum ada tindak lanjut'],
+        warna: {7: w, 8: w}});
+    });
+    rows.sort(function(a, b){ return String(a.akhir).localeCompare(String(b.akhir)); });
+    spec.ringkasJudul = 'STATUS';
+    spec.ringkasKolom = ['KONTRAK', 'UNIT'];
+    spec.ringkasBaris = (id === 'lewat' ? [['Lewat tempo', function(r){ return r.lewat; }]] :
+      [['Lewat tempo', function(r){ return r.lewat; }], ['≤ 30 hari', function(r){ return !r.lewat && r.hari <= 30; }], ['31 – ' + S.batas + ' hari', function(r){ return !r.lewat && r.hari > 30; }]]);
+    spec.sumber = id === 'lewat' ? 'Kontrak berstatus Aktif yang tanggal akhir sewanya sudah lewat – perlu diperpanjang atau ditandai sewa berakhir.' : 'Kontrak Aktif yang habis dalam ' + S.batas + ' hari + yang sudah lewat tapi masih Aktif.';
+    spec.catatan = [[{t: 'Warna AKHIR SEWA / SISA: ', b: 1}, {t: 'merah tua', b: 1, bg: W_LEWAT.bg}, {t: ' sudah lewat · '}, {t: 'merah', b: 1, bg: W_MERAH.bg}, {t: ' habis ≤ 30 hari · '}, {t: 'kuning', b: 1, bg: W_KUNING.bg}, {t: ' 31 – ' + S.batas + ' hari.'}]];
+    spec.kosongTeks = id === 'lewat' ? 'yang lewat tempo' : 'yang akan jatuh tempo';
+  }
+  if (id !== 'tempo' && id !== 'lewat') urutBaris(rows);
+  rows.forEach(function(r, i){ r.sel[0] = String(i + 1); });
+  spec.rows = rows;
+  // kotak ringkas
+  if (!spec.ringkasBaris) {
+    var jenisList = f.jenis.length ? f.jenis.slice().sort(function(a, b){ return rankJenis(a) - rankJenis(b) || a.localeCompare(b); })
+      : unikUrut(rows.map(function(r){ return r.jenis; })).sort(function(a, b){ return rankJenis(a) - rankJenis(b) || a.localeCompare(b); });
+    spec.ringkasKolom = ['ASET', 'UNIT'];
+    spec.ringkasBaris = jenisList.map(function(j){ return [j, function(r){ return r.jenis === j; }]; });
+    var nol = jenisList.filter(function(j){ return !rows.some(function(r){ return r.jenis === j; }); });
+    nol.forEach(function(j){ spec.catatan.push([{t: j.charAt(0) + j.slice(1).toLowerCase() + ': ', b: 1}, {t: 'tidak ada ' + j.toLowerCase() + (f.lokasi ? ' di ' + judulKata(f.lokasi) : '') + ' ' + spec.kosongTeks + '.'}]); });
+  }
+  spec.ringkas = spec.ringkasBaris.map(function(b){
+    var rr = rows.filter(b[1]);
+    return [b[0], rr.length, rr.reduce(function(s, r){ return s + (Number(r.unit) || 0); }, 0)];
+  });
+  var judul = JUDUL_TABEL[id] + ' — ' + (f.lokasi || 'SEMUA LOKASI');
+  if (id !== 'tanah') judul += ' (' + (f.jenis.length ? f.jenis.slice().sort(function(a, b){ return rankJenis(a) - rankJenis(b); }).join(' · ') : 'SEMUA JENIS') + ')';
+  if (f.pemilik) judul += ' — ' + f.pemilik;
+  spec.judul = judul;
+  spec.sumber = 'Sumber: App Property SKN (sheet ASET + KONTRAK). Status per ' + fmtTgl(S.hariIni, true) + '. ' + spec.sumber;
+  return spec;
+}
+function judulKata(s){ return String(s).toLowerCase().replace(/\b\w/g, function(c){ return c.toUpperCase(); }); }
+
+/* ---------- gambar tabel ---------- */
+var TW = 2000, TSKALA = 1.5, TMAKS_H = 2500, FONT_T = '"Open Sans", Calibri, Arial, sans-serif';
+var MARUN = '#8b1538';
+function fontT(x, w, s, it){ x.font = (it ? 'italic ' : '') + w + ' ' + s + 'px ' + FONT_T; }
+function kartuTabel(spec){
+  var ukur = document.createElement('canvas').getContext('2d');
+  var kolom = spec.kolom, X0 = 35, PAD = 10, LH = 24;
+  var lebarTabel = kolom.reduce(function(s, k){ return s + k.w; }, 0);
+  var skala = (TW - 2 * X0) / lebarTabel;
+  kolom.forEach(function(k){ k.ww = k.w * skala; });
+  fontT(ukur, 700, 18);
+  var hdr = kolom.map(function(k){ return bungkus(ukur, k.t, k.ww - 2 * PAD, 2); });
+  var tinggiHdr = Math.max.apply(null, hdr.map(function(l){ return l.length; })) * 23 + 24;
+  var baris = spec.rows.map(function(r){
+    var isi = r.sel.map(function(t, i){ fontT(ukur, kolom[i].b ? 700 : 400, 18); return bungkus(ukur, t || '', kolom[i].ww - 2 * PAD, 3); });
+    var n = Math.max.apply(null, isi.map(function(l){ return l.length; }));
+    return {r: r, isi: isi, h: Math.max(n, 1) * LH + 22};
+  });
+  // bagi halaman
+  var ATAS = 152, BAWAH_RINGKAS = 70 + 44 * (spec.ringkas.length + 2);
+  var halaman = [[]], y = ATAS + tinggiHdr;
+  baris.forEach(function(b){
+    if (y + b.h > TMAKS_H - 40 && halaman[halaman.length - 1].length) { halaman.push([]); y = ATAS + tinggiHdr; }
+    halaman[halaman.length - 1].push(b); y += b.h;
+  });
+  if (y + BAWAH_RINGKAS > TMAKS_H) halaman.push([]);
+  return halaman.map(function(isi, hi){
+    var akhir = hi === halaman.length - 1;
+    var tinggi = ATAS + tinggiHdr + isi.reduce(function(s, b){ return s + b.h; }, 0) + (isi.length ? 0 : 0) + (akhir ? BAWAH_RINGKAS : 0) + 40;
+    var c = document.createElement('canvas'); c.width = Math.round(TW * TSKALA); c.height = Math.round(tinggi * TSKALA);
+    var x = c.getContext('2d'); x.scale(TSKALA, TSKALA); x.textBaseline = 'alphabetic';
+    x.fillStyle = '#ffffff'; x.fillRect(0, 0, TW, tinggi);
+    x.fillStyle = MARUN; fontT(x, 700, 34); x.fillText('PT SATELIT KOMUNIKA NUSANTARA (SKN / UNISTAR)', X0, 64);
+    x.fillStyle = '#111111'; fontT(x, 700, 25);
+    var hal = halaman.length > 1 ? 'Hal ' + (hi + 1) + '/' + halaman.length : '';
+    x.fillText(spec.judul, X0, 104, TW - 2 * X0 - (hal ? 120 : 0));
+    if (hal) { fontT(x, 700, 20); x.fillStyle = MARUN; x.fillText(hal, TW - X0 - x.measureText(hal).width, 104); }
+    x.fillStyle = '#555555'; fontT(x, 400, 16, 1); x.fillText(spec.sumber, X0, 134, TW - 2 * X0);
+    // header
+    var yy = ATAS, cx = X0;
+    x.fillStyle = MARUN; x.fillRect(X0, yy, TW - 2 * X0, tinggiHdr);
+    kolom.forEach(function(k, i){
+      x.fillStyle = '#ffffff'; fontT(x, 700, 18);
+      var ly = yy + (tinggiHdr - hdr[i].length * 23) / 2 + 17;
+      hdr[i].forEach(function(l){ x.fillText(l, cx + (k.ww - x.measureText(l).width) / 2, ly); ly += 23; });
+      if (i) { x.fillStyle = 'rgba(255,255,255,.35)'; x.fillRect(cx, yy, 1, tinggiHdr); }
+      cx += k.ww;
+    });
+    yy += tinggiHdr;
+    // baris
+    isi.forEach(function(b, bi){
+      x.fillStyle = bi % 2 ? '#faf6f7' : '#ffffff'; x.fillRect(X0, yy, TW - 2 * X0, b.h);
+      cx = X0;
+      kolom.forEach(function(k, i){
+        var w = b.r.warna[i];
+        if (w) { x.fillStyle = w.bg; x.fillRect(cx, yy, k.ww, b.h); }
+        x.fillStyle = w ? w.fg : '#1a1a1a'; fontT(x, (k.b || w) ? 700 : 400, 18);
+        var ly = yy + (b.h - b.isi[i].length * LH) / 2 + 18;
+        b.isi[i].forEach(function(l){
+          var tx = k.al === 'c' ? cx + (k.ww - x.measureText(l).width) / 2 : k.al === 'r' ? cx + k.ww - PAD - x.measureText(l).width : cx + PAD;
+          x.fillText(l, tx, ly); ly += LH;
+        });
+        cx += k.ww;
+      });
+      x.fillStyle = '#d9cfd2'; x.fillRect(X0, yy + b.h - 1, TW - 2 * X0, 1);
+      yy += b.h;
+    });
+    // garis kolom & bingkai
+    cx = X0; x.fillStyle = '#d9cfd2';
+    kolom.forEach(function(k, i){ if (i) x.fillRect(cx, ATAS + tinggiHdr, 1, yy - ATAS - tinggiHdr); cx += k.ww; });
+    x.strokeStyle = '#c9bcc0'; x.lineWidth = 1; x.strokeRect(X0 + .5, ATAS + .5, TW - 2 * X0 - 1, yy - ATAS - 1);
+    if (!spec.rows.length && hi === 0) {
+      x.fillStyle = '#666666'; fontT(x, 600, 22); var t = 'Tidak ada data untuk filter ini.';
+      x.fillText(t, (TW - x.measureText(t).width) / 2, yy + 40);
+    }
+    if (akhir) gambarRingkas(x, spec, yy + 22);
+    return c;
+  });
+}
+function gambarRingkas(x, spec, y0){
+  var X0 = 35, kol = [{w: 150}, {w: 90}, {w: 90}], RH = 44, lebar = 330;
+  var data = spec.ringkas.slice(), tot = ['TOTAL', 0, 0];
+  data.forEach(function(r){ tot[1] += r[1]; tot[2] += r[2]; });
+  var head = [spec.ringkasJudul].concat(spec.ringkasKolom);
+  x.fillStyle = MARUN; x.fillRect(X0, y0, lebar, RH);
+  var tulis = function(vals, y, warna, tebal){
+    var cx = X0;
+    vals.forEach(function(v, i){
+      var w = i ? (lebar - 150) / 2 : 150; fontT(x, tebal ? 700 : 400, 17); x.fillStyle = warna;
+      var s = String(v);
+      x.fillText(s, i ? cx + (w - x.measureText(s).width) / 2 : cx + 16, y + 28, w - 20);
+      cx += w;
+    });
+  };
+  tulis(head, y0, '#ffffff', 1);
+  var y = y0 + RH;
+  data.forEach(function(r, i){
+    x.fillStyle = i % 2 ? '#faf6f7' : '#ffffff'; x.fillRect(X0, y, lebar, RH);
+    tulis(r, y, '#1a1a1a', 0);
+    x.fillStyle = '#d9cfd2'; x.fillRect(X0, y + RH - 1, lebar, 1);
+    y += RH;
+  });
+  x.fillStyle = MARUN; x.fillRect(X0, y - 1, lebar, 3);
+  x.fillStyle = '#efefef'; x.fillRect(X0, y + 2, lebar, RH);
+  tulis(tot, y + 2, '#1a1a1a', 1);
+  y += RH + 2;
+  x.strokeStyle = '#c9bcc0'; x.lineWidth = 1; x.strokeRect(X0 + .5, y0 + .5, lebar - 1, y - y0 - 1);
+  x.fillStyle = '#d9cfd2'; x.fillRect(X0 + 150, y0 + RH, 1, y - y0 - RH); x.fillRect(X0 + 150 + (lebar - 150) / 2, y0 + RH, 1, y - y0 - RH);
+  // catatan di kanan kotak
+  var nx = X0 + lebar + 28, ny = y0 + 18;
+  spec.catatan.forEach(function(baris){
+    var cx = nx;
+    baris.forEach(function(p){
+      fontT(x, p.b ? 700 : 400, 17); var w = x.measureText(p.t).width;
+      if (p.bg) { x.fillStyle = p.bg; x.fillRect(cx - 4, ny - 16, w + 8, 23); }
+      x.fillStyle = '#222222'; x.fillText(p.t, cx, ny); cx += w + (p.bg ? 4 : 0);
+    });
+    ny += 26;
+  });
+}
+
+/** Luas untuk kartu: buang isian yang sebenarnya jumlah unit (mis. "3 UNIT", "1") dan awalan "LUAS". */
+function teksLuas(a){
+  var s = String(a.LUAS || '').trim().replace(/^luas\s*/i, '');
+  if (!s || /unit|ruko/i.test(s) || s === String(a.UNIT)) return '';
+  return 'Luas ' + s;
+}
+
+function teksFilter(f, id){
+  return [f.lokasi || 'Semua lokasi', f.pemilik || 'Semua pemilik'].join(' • ');
+}
+
+function buatKartu(){
+  var f = {lokasi: $('lLokasi').value, pemilik: $('lPemilik').value, jenis: lapDipilih === 'tanah' ? ['TANAH'] : Object.keys(jenisDipilih)};
+  $('hasilKartu').innerHTML = '<p class="info">Menyiapkan kartu...</p>';
+  var siap = (document.fonts && document.fonts.load) ? Promise.all([
+    document.fonts.load('800 40px "Plus Jakarta Sans"'), document.fonts.load('700 28px "Plus Jakarta Sans"'),
+    document.fonts.load('500 22px "Plus Jakarta Sans"'), document.fonts.load('600 22px "Plus Jakarta Sans"'),
+    document.fonts.load('400 18px "Open Sans"'), document.fonts.load('700 18px "Open Sans"'), document.fonts.load('italic 400 16px "Open Sans"')]).catch(function(){}) : Promise.resolve();
+  siap.then(function(){
+    var kanvas = lapDipilih === 'ringkasan' ? [kartuRingkasan(f)] : kartuTabel(dataTabel(lapDipilih, f));
+    tampilkanKartu(kanvas, lapDipilih);
+  });
+}
+
+var KW = 1080, KH = 1220, SKALA = 2, FONT = '"Plus Jakarta Sans", system-ui, sans-serif';
+function kanvasBaru(){
+  var c = document.createElement('canvas'); c.width = KW * SKALA; c.height = KH * SKALA;
+  var x = c.getContext('2d'); x.scale(SKALA, SKALA); x.textBaseline = 'alphabetic';
+  x.fillStyle = '#f3f1ec'; x.fillRect(0, 0, KW, KH);
+  return {c: c, x: x};
+}
+function font(x, w, s){ x.font = w + ' ' + s + 'px ' + FONT; }
+function bungkus(x, teks, maxW, maxBaris){
+  var kata = String(teks).split(/\s+/).filter(String), baris = [], cur = '';
+  for (var i = 0; i < kata.length; i++) {
+    var coba = cur ? cur + ' ' + kata[i] : kata[i];
+    if (x.measureText(coba).width <= maxW || !cur) cur = coba;
+    else { baris.push(cur); cur = kata[i]; }
+  }
+  if (cur) baris.push(cur);
+  if (baris.length > maxBaris) {
+    baris = baris.slice(0, maxBaris);
+    var b = baris[maxBaris - 1];
+    while (b.length > 1 && x.measureText(b + '…').width > maxW) b = b.slice(0, -1);
+    baris[maxBaris - 1] = b + '…';
+  }
+  // potong kata tunggal yang terlalu panjang
+  return baris.map(function(s){ while (s.length > 1 && x.measureText(s).width > maxW) s = s.slice(0, -2) + '…'; return s; });
+}
+function bulat(x, X, Y, w, h, r){ x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); }
+function kepala(x, L, f, id, chips){
+  x.fillStyle = '#0f3d3e'; x.fillRect(0, 0, KW, 178);
+  x.fillStyle = L.warna; x.fillRect(0, 172, KW, 6);
+  x.fillStyle = 'rgba(255,255,255,.72)'; font(x, 700, 19); x.fillText('PT SATELIT KOMUNIKA NUSANTARA • PROPERTY', 56, 50);
+  x.fillStyle = '#ffffff'; font(x, 800, 48); x.fillText(L.judul.toUpperCase(), 56, 106);
+  x.fillStyle = 'rgba(255,255,255,.85)'; font(x, 500, 22); x.fillText('Per ' + fmtTgl(S.hariIni, true) + '  •  ' + teksFilter(f, id), 56, 146, KW - 112);
+  var cx = 56, cy = 196;
+  (chips || []).forEach(function(t, i){
+    font(x, 700, 22); var w = x.measureText(t).width + 36;
+    bulat(x, cx, cy, w, 44, 22); x.fillStyle = i === 0 ? L.warna : '#ffffff'; x.fill();
+    if (i) { x.strokeStyle = '#d8d2c6'; x.lineWidth = 2; x.stroke(); }
+    x.fillStyle = i === 0 ? '#ffffff' : '#1d2a2b'; x.fillText(t, cx + 18, cy + 29);
+    cx += w + 10;
+  });
+  return 262;
+}
+function kaki(x, hal, total){
+  x.fillStyle = '#d8d2c6'; x.fillRect(56, KH - 62, KW - 112, 2);
+  x.fillStyle = '#667476'; font(x, 500, 20);
+  x.fillText('Sumber: App Property SKN • dibuat ' + fmtTgl(S.hariIni), 56, KH - 26);
+  if (total > 1) { font(x, 700, 20); var t = 'Hal ' + hal + '/' + total; x.fillText(t, KW - 56 - x.measureText(t).width, KH - 26); }
+}
+function kartuRingkasan(f){
+  var L = LAP.filter(function(l){ return l.id === 'ringkasan'; })[0];
+  var as = S.aset.filter(function(a){ return (!f.lokasi || a.LOKASI === f.lokasi) && (!f.pemilik || a.PEMILIK === f.pemilik) && statusAset(a).kode !== 'jual'; });
+  var ks = S.kontrak.filter(function(k){ return (!f.lokasi || k.LOKASI === f.lokasi) && (!f.pemilik || pemilikKontrak(k) === f.pemilik) && k.STATUS === 'Aktif'; });
+  var r = {aset: as.length, unit: 0, sewa: 0, kosong: 0, pakai: 0, tempo: 0, lewat: 0, nilai: 0};
+  var perJenis = {}, perLokasi = {};
+  as.forEach(function(a){
+    var c = statusAset(a).kode, u = Number(a.UNIT) || 0; r.unit += u;
+    var j = perJenis[a.JENIS] || (perJenis[a.JENIS] = {aset: 0, sewa: 0, kosong: 0, pakai: 0});
+    var l = perLokasi[a.LOKASI] || (perLokasi[a.LOKASI] = {aset: 0, sewa: 0, kosong: 0, pakai: 0});
+    j.aset++; l.aset++;
+    var key = c === 'kosong' ? 'kosong' : c === 'pakai' ? 'pakai' : 'sewa';
+    r[key]++; j[key]++; l[key]++;
+  });
+  ks.forEach(function(k){ var c = statusKontrak(k).kode; if (c === 'tempo') r.tempo++; if (c === 'lewat') r.lewat++; r.nilai += (Number(k.NILAI_SEWA) || 0) * (Number(k.UNIT) || 1); });
+  var k = kanvasBaru(), x = k.x;
+  var y = kepala(x, L, f, 'ringkasan', [r.aset + ' aset • ' + r.unit + ' unit', rpSingkat(r.nilai) + ' sewa/tahun']);
+  var tiles = [
+    {v: r.sewa, t: 'Aset disewa', w: '#1f8a4c'}, {v: r.kosong, t: 'Belum disewa', w: '#2f5d9e'}, {v: r.pakai, t: 'Dipakai sendiri', w: '#6b4fa0'},
+    {v: ks.length, t: 'Kontrak aktif', w: '#0f3d3e'}, {v: r.tempo, t: 'Jatuh tempo ≤ ' + S.batas + ' hr', w: '#c77700'}, {v: r.lewat, t: 'Lewat tempo', w: '#c62f2f'}];
+  var tw = (KW - 80 - 2 * 16) / 3;
+  tiles.forEach(function(t, i){
+    var cx = 40 + (i % 3) * (tw + 16), cy = y + Math.floor(i / 3) * 126;
+    bulat(x, cx, cy, tw, 112, 16); x.fillStyle = '#fff'; x.fill();
+    x.fillStyle = t.w; x.fillRect(cx, cy + 20, 6, 72);
+    font(x, 800, 50); x.fillText(String(t.v), cx + 26, cy + 62);
+    x.fillStyle = '#5b6869'; font(x, 600, 21); x.fillText(t.t, cx + 26, cy + 94);
+  });
+  y += 2 * 126 + 14;
+  function tabel(judul, obj, yy, maks){
+    var kunci = Object.keys(obj).sort(function(a, b){ return obj[b].aset - obj[a].aset || a.localeCompare(b); });
+    var lain = kunci.slice(maks);
+    kunci = kunci.slice(0, maks);
+    if (lain.length) { var g = {aset: 0, sewa: 0, kosong: 0, pakai: 0}; lain.forEach(function(n){ ['aset','sewa','kosong','pakai'].forEach(function(c){ g[c] += obj[n][c]; }); }); obj = Object.assign({}, obj); obj['LAINNYA (' + lain.length + ' lokasi)'] = g; kunci.push('LAINNYA (' + lain.length + ' lokasi)'); }
+    var h = 54 + kunci.length * 38 + 12;
+    bulat(x, 40, yy, KW - 80, h, 16); x.fillStyle = '#fff'; x.fill();
+    var kol = [{t: 'Aset', x: 640}, {t: 'Disewa', x: 770}, {t: 'Kosong', x: 890}, {t: 'Pakai', x: 1000}];
+    x.fillStyle = '#0f3d3e'; font(x, 800, 22); x.fillText(judul, 64, yy + 38);
+    x.fillStyle = '#667476'; font(x, 600, 18); kol.forEach(function(c){ x.fillText(c.t, c.x - x.measureText(c.t).width, yy + 38); });
+    var ry = yy + 54;
+    kunci.forEach(function(n, i){
+      if (i % 2 === 0) { x.fillStyle = '#f7f5f0'; x.fillRect(48, ry, KW - 96, 38); }
+      x.fillStyle = '#1d2a2b'; font(x, 600, 21); x.fillText(bungkus(x, n, 520, 1)[0], 64, ry + 26);
+      var v = obj[n]; font(x, 700, 21);
+      [[v.aset, '#1d2a2b'], [v.sewa, '#1f8a4c'], [v.kosong, '#2f5d9e'], [v.pakai, '#6b4fa0']].forEach(function(p, j){
+        x.fillStyle = p[1]; var s = String(p[0]); x.fillText(s, kol[j].x - x.measureText(s).width, ry + 26);
+      });
+      ry += 38;
+    });
+    return yy + h + 14;
+  }
+  var nJ = Object.keys(perJenis).length;
+  var sisaBaris = Math.floor((KH - 80 - y - 2 * 80) / 38);
+  var maksJ = Math.min(nJ, Math.max(3, Math.ceil(sisaBaris / 2)));
+  y = tabel('Per jenis aset', perJenis, y, maksJ);
+  var maksL = Math.max(2, Math.floor((KH - 80 - y - 80) / 38));
+  tabel('Per lokasi', perLokasi, y, maksL);
+  kaki(x, 1, 1);
+  return k.c;
+}
+function namaFile(id, i, n){ return 'Property-' + id + '-' + S.hariIni + (n > 1 ? '-hal' + (i + 1) : '') + '.png'; }
+function tampilkanKartu(kanvas, id){
+  var wadah = $('hasilKartu');
+  var url = kanvas.map(function(c){ return c.toDataURL('image/png'); });
+  wadah.innerHTML = '<div class="aksi" style="margin-top:0">' + (kanvas.length > 1 ? '<button class="btn" id="unduhSemua">Unduh semua (' + kanvas.length + ' kartu)</button>' : '') + '</div>' +
+    '<div class="hasil-kartu' + (kanvas[0].width > kanvas[0].height ? ' lebar' : '') + '">' + url.map(function(u, i){
+      return '<div class="kartu-box"><img src="' + u + '" alt="Kartu ' + (i + 1) + '"><div class="aksi"><button class="btn kecil" data-bagi="' + i + '">Bagikan</button><button class="btn kecil ghost" data-unduh="' + i + '">Unduh PNG</button></div></div>';
+    }).join('') + '</div>' +
+    '<p class="info" style="margin-top:8px">Di HP: tekan lama gambar untuk simpan atau bagikan bila tombol Bagikan tidak jalan.</p>';
+  function unduh(i){ var a = document.createElement('a'); a.href = url[i]; a.download = namaFile(id, i, kanvas.length); document.body.appendChild(a); a.click(); a.remove(); }
+  wadah.querySelectorAll('[data-unduh]').forEach(function(b){ b.onclick = function(){ unduh(+b.dataset.unduh); }; });
+  wadah.querySelectorAll('[data-bagi]').forEach(function(b){ b.onclick = function(){
+    var i = +b.dataset.bagi;
+    kanvas[i].toBlob(function(blob){
+      var file = new File([blob], namaFile(id, i, kanvas.length), {type: 'image/png'});
+      if (navigator.canShare && navigator.canShare({files: [file]})) {
+        navigator.share({files: [file]}).catch(function(e){ if (e && e.name !== 'AbortError') { unduh(i); toast('Bagikan tidak didukung di sini, gambar diunduh'); } });
+      } else { unduh(i); toast('Bagikan tidak didukung di browser ini, gambar diunduh'); }
+    }, 'image/png');
+  }; });
+  if ($('unduhSemua')) $('unduhSemua').onclick = function(){ url.forEach(function(u, i){ setTimeout(function(){ unduh(i); }, i * 600); }); };
+  wadah.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+/* ============ MULAI ============ */
+tampilNama();
+gambarPilihLap();
+bukaTab(lsGet('propTab') || 'ringkasan');
+muat();
+</script>
+</body>
+</html>
