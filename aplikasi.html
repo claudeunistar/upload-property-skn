@@ -40,7 +40,7 @@ h2:first-child{margin-top:4px}
 .tile{background:var(--card);border-radius:14px;padding:12px 14px;border:1px solid var(--line);cursor:pointer;text-align:left}
 .tile b{display:block;font-size:26px;line-height:1.1;font-weight:800}
 .tile span{font-size:13px;color:var(--muted)}
-.tile.sewa b{color:var(--sewa)}.tile.tempo b{color:var(--tempo)}.tile.lewat b{color:var(--lewat)}.tile.kosong b{color:var(--kosong)}
+.tile.sewa b{color:var(--sewa)}.tile.tempo b{color:var(--tempo)}.tile.lewat b{color:var(--lewat)}.tile.kosong b{color:var(--kosong)}.tile.pakai b{color:var(--pakai)}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 table{border-collapse:collapse;width:100%;font-size:14px}
 th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
@@ -479,6 +479,7 @@ function gambarRingkasan(){
     tile('', r.aset, 'Aset dimiliki (' + r.unit + ' unit)', "keAset('')") +
     tile('sewa', r.sewa, 'Aset disewa', "keAset('disewa')") +
     tile('kosong', r.kosong, 'Aset belum disewa', "keAset('kosong')") +
+    tile('pakai', r.pakai, 'Aset dipakai sendiri (' + r.unitPakai + ' unit)', "keAset('pakai')") +
     tile('sewa', r.unitSewa, 'Unit disewa (' + r.kAktif + ' kontrak Aktif)', "keKontrak('aktif')") +
     tile('kosong', r.unitBelum, 'Unit belum disewa', "keAset('kosong')") +
     tile('tempo', r.tempo, 'Kontrak jatuh tempo ≤ ' + S.batas + ' hari', "keKontrak('tempo')") +
