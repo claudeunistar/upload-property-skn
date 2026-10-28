@@ -450,14 +450,17 @@ function hitung(){
     else if (st.kode === 'pakai') r.pakai++;
     else r.sewa++;
   });
-  r.kAktif = 0; r.tempo = 0; r.lewat = 0; r.nilai = 0;
+  r.kAktif = 0; r.tempo = 0; r.lewat = 0; r.nilai = 0; r.unitSewa = 0;
   S.kontrak.forEach(function(k){
     var st = statusKontrak(k);
     if (st.kode === 'selesai') return;
     r.kAktif++; r.nilai += (Number(k.NILAI_SEWA) || 0) * (Number(k.UNIT) || 1);
+    r.unitSewa += Number(k.UNIT) || 1; // unit disewa = jumlah unit di kontrak berstatus Aktif
     if (st.kode === 'tempo') r.tempo++;
     if (st.kode === 'lewat') r.lewat++;
   });
+  r.unitPakai = S.aset.filter(function(a){ return statusAset(a).kode === 'pakai'; }).reduce(function(s, a){ return s + (Number(a.UNIT) || 0); }, 0);
+  r.unitBelum = Math.max(r.unit - r.unitPakai - r.unitSewa, 0);
   return r;
 }
 function gambarRingkasan(){
@@ -476,10 +479,13 @@ function gambarRingkasan(){
     tile('', r.aset, 'Aset dimiliki (' + r.unit + ' unit)', "keAset('')") +
     tile('sewa', r.sewa, 'Aset disewa', "keAset('disewa')") +
     tile('kosong', r.kosong, 'Aset belum disewa', "keAset('kosong')") +
+    tile('sewa', r.unitSewa, 'Unit disewa (' + r.kAktif + ' kontrak Aktif)', "keKontrak('aktif')") +
+    tile('kosong', r.unitBelum, 'Unit belum disewa', "keAset('kosong')") +
     tile('tempo', r.tempo, 'Kontrak jatuh tempo ≤ ' + S.batas + ' hari', "keKontrak('tempo')") +
     tile('lewat', r.lewat, 'Kontrak lewat tempo (masih Aktif)', "keKontrak('lewat')") +
     tile('', rpSingkat(r.nilai), 'Nilai sewa aktif per tahun', "keKontrak('aktif')") +
-    '</div>';
+    '</div>' +
+    '<p class="info" style="margin-top:6px">Unit disewa = jumlah unit di kontrak berstatus <b>Aktif</b>. Unit belum disewa = ' + r.unit + ' unit dimiliki' + (r.unitPakai ? ' − ' + r.unitPakai + ' dipakai sendiri' : '') + ' − ' + r.unitSewa + ' unit disewa.</p>';
   h += '<h2>Perlu tindakan</h2>';
   if (!tindakan.length) h += '<div class="panel kosong-teks">Tidak ada kontrak yang jatuh tempo dalam ' + S.batas + ' hari.</div>';
   else h += '<div class="list">' + tindakan.map(itemKontrak).join('') + '</div>';
@@ -1896,7 +1902,7 @@ function kartuRingkasan(f){
   var L = LAP.filter(function(l){ return l.id === 'ringkasan'; })[0];
   var as = S.aset.filter(function(a){ return (!f.lokasi || a.LOKASI === f.lokasi) && (!f.pemilik || a.PEMILIK === f.pemilik) && statusAset(a).kode !== 'jual'; });
   var ks = S.kontrak.filter(function(k){ return (!f.lokasi || k.LOKASI === f.lokasi) && (!f.pemilik || pemilikKontrak(k) === f.pemilik) && k.STATUS === 'Aktif'; });
-  var r = {aset: as.length, unit: 0, sewa: 0, kosong: 0, pakai: 0, tempo: 0, lewat: 0, nilai: 0};
+  var r = {aset: as.length, unit: 0, sewa: 0, kosong: 0, pakai: 0, tempo: 0, lewat: 0, nilai: 0, unitPakai: 0, unitSewa: 0};
   var perJenis = {}, perLokasi = {};
   as.forEach(function(a){
     var c = statusAset(a).kode, u = Number(a.UNIT) || 0; r.unit += u;
@@ -1905,13 +1911,16 @@ function kartuRingkasan(f){
     j.aset++; l.aset++;
     var key = c === 'kosong' ? 'kosong' : c === 'pakai' ? 'pakai' : 'sewa';
     r[key]++; j[key]++; l[key]++;
+    if (key === 'pakai') r.unitPakai += u;
   });
-  ks.forEach(function(k){ var c = statusKontrak(k).kode; if (c === 'tempo') r.tempo++; if (c === 'lewat') r.lewat++; r.nilai += (Number(k.NILAI_SEWA) || 0) * (Number(k.UNIT) || 1); });
+  ks.forEach(function(k){ var c = statusKontrak(k).kode; if (c === 'tempo') r.tempo++; if (c === 'lewat') r.lewat++; r.nilai += (Number(k.NILAI_SEWA) || 0) * (Number(k.UNIT) || 1); r.unitSewa += Number(k.UNIT) || 1; });
+  var unitBelum = Math.max(r.unit - r.unitPakai - r.unitSewa, 0);
   var k = kanvasBaru(), x = k.x;
   var y = kepala(x, L, f, 'ringkasan', [r.aset + ' aset • ' + r.unit + ' unit', rpSingkat(r.nilai) + ' sewa/tahun']);
   var tiles = [
     {v: r.sewa, t: 'Aset disewa', w: '#1f8a4c'}, {v: r.kosong, t: 'Belum disewa', w: '#2f5d9e'}, {v: r.pakai, t: 'Dipakai sendiri', w: '#6b4fa0'},
-    {v: ks.length, t: 'Kontrak aktif', w: '#0f3d3e'}, {v: r.tempo, t: 'Jatuh tempo ≤ ' + S.batas + ' hr', w: '#c77700'}, {v: r.lewat, t: 'Lewat tempo', w: '#c62f2f'}];
+    {v: r.unitSewa, t: 'Unit disewa', w: '#1f8a4c'}, {v: unitBelum, t: 'Unit belum disewa', w: '#2f5d9e'}, {v: ks.length, t: 'Kontrak aktif', w: '#0f3d3e'},
+    {v: r.tempo, t: 'Jatuh tempo ≤ ' + S.batas + ' hr', w: '#c77700'}, {v: r.lewat, t: 'Lewat tempo', w: '#c62f2f'}];
   var tw = (KW - 80 - 2 * 16) / 3;
   tiles.forEach(function(t, i){
     var cx = 40 + (i % 3) * (tw + 16), cy = y + Math.floor(i / 3) * 126;
@@ -1920,7 +1929,7 @@ function kartuRingkasan(f){
     font(x, 800, 50); x.fillText(String(t.v), cx + 26, cy + 62);
     x.fillStyle = '#5b6869'; font(x, 600, 21); x.fillText(t.t, cx + 26, cy + 94);
   });
-  y += 2 * 126 + 14;
+  y += Math.ceil(tiles.length / 3) * 126 + 14;
   function tabel(judul, obj, yy, maks){
     var kunci = Object.keys(obj).sort(function(a, b){ return obj[b].aset - obj[a].aset || a.localeCompare(b); });
     var lain = kunci.slice(maks);
