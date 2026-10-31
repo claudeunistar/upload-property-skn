@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Property SKN</title>
@@ -648,7 +647,7 @@ function gambarKontrak(){
     if (fs === 'aktif' && c === 'selesai') return false;
     if (fs && fs !== 'aktif' && c !== fs) return false;
     if (fl && k.LOKASI !== fl) return false;
-    return cocokCari(q, [k.KODE, k.NAMA, k.PENYEWA, k.LOKASI, k.OWNER, k.KET, k.KET_UPDATE].join(' '));
+    return cocokCari(q, [k.KODE, k.NAMA, k.PENYEWA, k.HP_PENYEWA, k.TUJUAN_SEWA, k.LOKASI, k.OWNER, k.KET, k.KET_UPDATE].join(' '));
   }).sort(urutKontrak);
   var nilai = rows.reduce(function(s, k){ return s + (k.STATUS === 'Aktif' ? (Number(k.NILAI_SEWA) || 0) * (Number(k.UNIT) || 1) : 0); }, 0);
   $('infoKontrak').textContent = rows.length + ' kontrak' + (nilai ? ' • nilai sewa aktif ' + rp(nilai) + '/tahun' : '');
@@ -666,7 +665,7 @@ document.querySelectorAll('#segTampilKontrak button').forEach(function(b){ b.onc
 function tabelKontrak(rows){
   var urut = {}; S.kontrak.forEach(function(k, i){ urut[k.KODE] = i; });
   rows = rows.slice().sort(function(x, y){ return urut[x.KODE] - urut[y.KODE]; });
-  var kol = ['KODE', 'NAMA ASET (REKAP SEWA)', 'LOKASI', 'UNIT', 'OWNER', 'PENYEWA', 'STATUS', 'AWAL', 'AKHIR', 'DURASI', 'SISA (BLN)',
+  var kol = ['KODE', 'NAMA ASET (REKAP SEWA)', 'LOKASI', 'UNIT', 'OWNER', 'PENYEWA', 'NO HP PENYEWA', 'TUJUAN SEWA', 'STATUS', 'AWAL', 'AKHIR', 'DURASI', 'SISA (BLN)',
     'NILAI SEWA TERAKHIR (Rp/thn/unit)', 'HARGA PASAR', 'HISTORY SEWA (Jt/thn/unit)', 'KET REKAP SEWA', 'KET UPDATE', 'PERINGATAN'];
   var body = rows.map(function(k){
     var st = statusKontrak(k);
@@ -676,15 +675,15 @@ function tabelKontrak(rows){
     var w = aktif ? warnaSisa(hari) : null;
     var peringatan = !aktif ? '' : st.kode === 'lewat' ? 'Status Aktif tapi akhir sewa sudah lewat' : st.kode === 'tempo' ? 'Jatuh tempo ≤ ' + S.batas + ' hari' : (hari === null ? 'Tanggal akhir belum diisi' : '');
     var sel = [
-      ['kode', k.KODE], ['nama', k.NAMA], ['', k.LOKASI], ['n', k.UNIT], ['', k.OWNER], ['lebar', k.PENYEWA],
+      ['kode', k.KODE], ['nama', k.NAMA], ['', k.LOKASI], ['n', k.UNIT], ['', k.OWNER], ['lebar', k.PENYEWA], ['', k.HP_PENYEWA], ['lebar', k.TUJUAN_SEWA],
       ['st', '<span class="badge b-' + (aktif ? (st.kode === 'sewa' ? 'sewa' : st.kode) : 'selesai') + '">' + esc(k.STATUS) + '</span>'],
       ['tgl', ada(k.AWAL) ? tglTabel(k.AWAL) : ''], ['tgl', ada(k.AKHIR) ? tglTabel(k.AKHIR) : ''], ['n', k.DURASI], ['n', sisa],
       ['rp', k.NILAI_SEWA !== '' && k.NILAI_SEWA !== null && k.NILAI_SEWA !== undefined ? rpPenuh(k.NILAI_SEWA) : ''], ['', k.HARGA_PASAR],
       ['lebar', k.HISTORY], ['lebar', k.KET], ['lebar', k.KET_UPDATE], ['lebar', peringatan]
     ];
     return '<tr onclick="detailKontrak(\'' + esc(k.KODE) + '\')">' + sel.map(function(c, i){
-      var gaya = (i === 8 || i === 10) && w ? ' style="background:' + w.bg + ';color:' + w.fg + ';font-weight:700"' :
-        (i === 16 && peringatan ? ' style="color:' + (st.kode === 'lewat' ? '#9c0006' : '#9c5700') + ';font-weight:700"' : '');
+      var gaya = (i === 10 || i === 12) && w ? ' style="background:' + w.bg + ';color:' + w.fg + ';font-weight:700"' :
+        (i === 18 && peringatan ? ' style="color:' + (st.kode === 'lewat' ? '#9c0006' : '#9c5700') + ';font-weight:700"' : '');
       return '<td class="' + c[0] + '"' + gaya + '>' + (c[0] === 'st' ? c[1] : esc(c[1])) + '</td>';
     }).join('') + '</tr>';
   }).join('');
@@ -699,7 +698,8 @@ function itemKontrak(k){
   var st = statusKontrak(k);
   var periode = (ada(k.AWAL) || ada(k.AKHIR)) ? fmtTgl(k.AWAL) + ' – ' + fmtTgl(k.AKHIR) : 'tanggal belum diisi';
   return '<button class="item" onclick="detailKontrak(\'' + esc(k.KODE) + '\')"><div class="t"><b>' + esc(k.KODE + ' • ' + k.NAMA) + '</b>' + badge(st) + '</div>' +
-    '<div class="s">' + esc([k.PENYEWA ? 'Penyewa: ' + k.PENYEWA : 'Belum ada penyewa', k.LOKASI, k.UNIT ? k.UNIT + ' unit' : ''].filter(ada).join(' • ')) + '</div>' +
+    '<div class="s">' + esc([k.PENYEWA ? 'Penyewa: ' + k.PENYEWA : 'Belum ada penyewa', k.HP_PENYEWA, k.LOKASI, k.UNIT ? k.UNIT + ' unit' : ''].filter(ada).join(' • ')) + '</div>' +
+    (k.TUJUAN_SEWA ? '<div class="s">Tujuan sewa: ' + esc(k.TUJUAN_SEWA) + '</div>' : '') +
     '<div class="s">' + esc(periode + (k.NILAI_SEWA ? ' • ' + rp(k.NILAI_SEWA) + '/thn/unit' : '')) + '</div>' +
     (k.KET_UPDATE ? '<div class="s"><i>' + esc(k.KET_UPDATE) + '</i></div>' : '') + '</button>';
 }
@@ -707,7 +707,7 @@ function detailKontrak(kode){
   var k = kontrakByKode(kode); if (!k) return;
   var st = statusKontrak(k), as = asetKontrak(k);
   var h = '<div class="sheet-head"><h3>' + esc(k.KODE + ' • ' + k.NAMA) + '<br>' + badge(st) + '</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
-    '<dl class="dl">' + dl('Penyewa', k.PENYEWA) + dl('Status', k.STATUS) + dl('Mulai sewa', ada(k.AWAL) ? fmtTgl(k.AWAL, true) : '') + dl('Akhir sewa', ada(k.AKHIR) ? fmtTgl(k.AKHIR, true) : '') +
+    '<dl class="dl">' + dl('Penyewa', k.PENYEWA) + ddHp(k.HP_PENYEWA) + dl('Tujuan sewa', k.TUJUAN_SEWA) + dl('Status', k.STATUS) + dl('Mulai sewa', ada(k.AWAL) ? fmtTgl(k.AWAL, true) : '') + dl('Akhir sewa', ada(k.AKHIR) ? fmtTgl(k.AKHIR, true) : '') +
     dl('Durasi', k.DURASI) + dl('Nilai sewa', k.NILAI_SEWA ? rp(k.NILAI_SEWA) + ' / tahun / unit' : '') + dl('Jumlah unit', k.UNIT) + dl('Lokasi', k.LOKASI) + dl('Jenis', k.JENIS) + dl('Owner', k.OWNER) +
     dl('Harga pasar', k.HARGA_PASAR) + dl('History sewa', k.HISTORY) + dl('Keterangan', k.KET) + dl('Update terakhir', k.KET_UPDATE) +
     dl('Terakhir diubah', [k.DIUBAH_OLEH, k.DIUBAH_PADA].filter(ada).join(', ')) + '</dl>';
@@ -718,6 +718,14 @@ function detailKontrak(kode){
     '<button class="btn merah" onclick="hapusKontrak(\'' + esc(k.KODE) + '\')">Hapus</button></div>';
   bukaModal(h);
 }
+/** No. HP penyewa + tombol telepon & chat WA (0812... -> 62812...). */
+function ddHp(hp){
+  if (!ada(hp)) return '';
+  var no = String(hp).split(/[\/,;]/)[0].replace(/\D/g, '');
+  var wa = no.charAt(0) === '0' ? '62' + no.slice(1) : no.charAt(0) === '8' ? '62' + no : no;
+  return '<dt>No. HP penyewa</dt><dd>' + esc(hp) + (no.length >= 8 ? ' &nbsp;<a href="tel:' + esc(no) + '">📞 Telepon</a> &nbsp;<a href="https://wa.me/' + esc(wa) + '" target="_blank" rel="noopener">💬 WhatsApp</a>' : '') + '</dd>';
+}
+var TUJUAN_SEWA_UMUM = ['Toko / usaha dagang', 'Kantor', 'Gudang', 'Rumah tinggal', 'Usaha makanan / minuman', 'Bengkel / showroom', 'Kos / mess karyawan', 'Klinik / apotek', 'Lahan parkir / kebun'];
 function kodeBaru(){
   var max = 0;
   S.kontrak.forEach(function(k){ var m = String(k.KODE).match(/^A(\d+)$/i); if (m) max = Math.max(max, +m[1]); });
@@ -751,6 +759,8 @@ function formKontrak(kode, mode, awal, asetAwal){
       '<label>Status *<select id="f_STATUS">' + ['Aktif','Tidak Aktif'].map(function(v){ return '<option' + (k.STATUS === v ? ' selected' : '') + '>' + v + '</option>'; }).join('') + '</select></label>' +
       inp('NAMA', 'Nama aset di kontrak *', k, 'full') +
       inp('PENYEWA', 'Penyewa', k, 'full') +
+      inp('HP_PENYEWA', 'No. HP penyewa', k, '', null, 'tel', 'mis. 0812 3456 7890') +
+      inp('TUJUAN_SEWA', 'Tujuan sewa', k, '', 'dlTujuan', 'text', 'mis. Toko HP / gudang / rumah tinggal') +
       inp('AWAL', 'Mulai sewa', k, '', null, 'date') +
       inp('AKHIR', 'Akhir sewa', k, '', null, 'date') +
       inp('NILAI_SEWA', 'Nilai sewa (Rp / tahun / unit)', {NILAI_SEWA: k.NILAI_SEWA ? Number(k.NILAI_SEWA).toLocaleString('id-ID') : ''}, '', null, 'text', 'mis. 60.000.000') +
@@ -765,6 +775,7 @@ function formKontrak(kode, mode, awal, asetAwal){
       '<label class="full">Update terakhir<textarea id="f_KET_UPDATE" placeholder="mis. sudah info akan jatuh tempo / perpanjang / tidak perpanjang">' + esc(k.KET_UPDATE) + '</textarea></label>' +
       '<label class="full">Aset yang disewa dalam kontrak ini<input type="search" id="cariTaut" placeholder="Cari aset..."><div class="cek-list" id="cekTaut"></div><em>Status aset (disewa / belum disewa) dihitung dari kontrak yang ditautkan.</em></label>' +
       '</div>' + datalist('dlLokasi', semuaLokasi()) + datalist('dlJenis', semuaJenis()) + datalist('dlOwner', unik(S.kontrak.map(function(x){ return x.OWNER; }))) +
+      datalist('dlTujuan', unik(TUJUAN_SEWA_UMUM.concat(S.kontrak.map(function(x){ return x.TUJUAN_SEWA; })))) +
       '<div class="aksi"><button class="btn" id="btnSimpan">Simpan</button><button class="btn ghost" onclick="tutupModal()">Batal</button></div>';
     bukaModal(h);
     var dipilih = {}; tautan.forEach(function(id){ dipilih[id] = 1; });
@@ -781,11 +792,12 @@ function formKontrak(kode, mode, awal, asetAwal){
     $('f_NILAI_SEWA').onblur = function(){ var n = Number(this.value.replace(/[^\d]/g, '')); this.value = n ? n.toLocaleString('id-ID') : ''; };
     $('btnSimpan').onclick = function(){
       var o = {KODE_LAMA: lama ? lama.KODE : ''};
-      ['KODE','STATUS','NAMA','PENYEWA','AWAL','AKHIR','NILAI_SEWA','UNIT','DURASI','LOKASI','JENIS','OWNER','HARGA_PASAR','HISTORY','KET','KET_UPDATE'].forEach(function(f){ o[f] = $('f_' + f).value; });
+      ['KODE','STATUS','NAMA','PENYEWA','HP_PENYEWA','TUJUAN_SEWA','AWAL','AKHIR','NILAI_SEWA','UNIT','DURASI','LOKASI','JENIS','OWNER','HARGA_PASAR','HISTORY','KET','KET_UPDATE'].forEach(function(f){ o[f] = $('f_' + f).value; });
       o.NILAI_SEWA = o.NILAI_SEWA.replace(/[^\d]/g, '');
       if (!o.KODE.trim() || !o.NAMA.trim()) { toast('Kode dan nama aset wajib diisi', true); return; }
       if (o.STATUS === 'Aktif' && (!o.PENYEWA.trim() || !o.AKHIR)) { toast('Kontrak aktif wajib ada penyewa dan tanggal akhir sewa', true); return; }
       if (o.AWAL && o.AKHIR && o.AKHIR < o.AWAL) { toast('Tanggal akhir lebih awal dari tanggal mulai', true); return; }
+      if (o.HP_PENYEWA.trim() && o.HP_PENYEWA.replace(/\D/g, '').length < 8) { toast('No. HP penyewa terlalu pendek (minimal 8 angka)', true); return; }
       panggil('apiSimpanKontrak', [o, Object.keys(dipilih), namaSaya()], function(d){ terima(d); tutupModal(); toast(lama ? 'Kontrak diperbarui' : 'Kontrak baru disimpan'); });
     };
   });
@@ -1134,7 +1146,8 @@ function petakanSubSertifikat(rows, p){
   }
 }
 var POLA_KONTRAK = {KODE: /^KODE$/, NAMA: /^NAMA ASET/, LOKASI: /^LOKASI$/, UNIT: /^UNIT$/, OWNER: /^OWNER$/, PENYEWA: /^PENYEWA$/, STATUS: /^STATUS$/,
-  AWAL: /^AWAL/, AKHIR: /^AKHIR/, DURASI: /^DURASI/, NILAI_SEWA: /^NILAI SEWA/, HARGA_PASAR: /^HARGA PASAR/, HISTORY: /^HISTORY/, KET_UPDATE: /^KET UPDATE/, KET: /^KET/};
+  AWAL: /^AWAL/, AKHIR: /^AKHIR/, DURASI: /^DURASI/, NILAI_SEWA: /^NILAI SEWA/, HARGA_PASAR: /^HARGA PASAR/, HISTORY: /^HISTORY/, KET_UPDATE: /^KET UPDATE/, KET: /^KET/,
+  HP_PENYEWA: /^(NO\.? ?|NOMOR ?)?(HP|TELP|TELEPON|WA|WHATSAPP|KONTAK)\b/, TUJUAN_SEWA: /^(TUJUAN|KEGUNAAN|PERUNTUKAN)/};
 function bacaExcelProperti(buf){
   var wb = XLSX.read(buf, {type: 'array'});
   var ambil = function(nama){ return XLSX.utils.sheet_to_json(wb.Sheets[nama], {header: 1, raw: true, defval: ''}); };
@@ -1163,7 +1176,8 @@ function bacaExcelProperti(buf){
   var aset = keObj(sa).filter(function(o){ return String(o.NAMA || '').trim() && !/^TOTAL$/i.test(String(o.NAMA).trim()); });
   var kontrak = keObj(sk).filter(function(o){ return String(o.KODE || '').trim() && !/^TOTAL$/i.test(String(o.KODE).trim()); });
   var adaSertifikat = sa.p.peta.SERTIFIKAT_NAMA !== undefined || sa.p.peta.SERTIFIKAT_NO !== undefined;
-  return {aset: aset, kontrak: kontrak, adaSertifikat: adaSertifikat, sheetAset: sa.nama, sheetKontrak: sk.nama};
+  return {aset: aset, kontrak: kontrak, adaSertifikat: adaSertifikat, adaHp: sk.p.peta.HP_PENYEWA !== undefined, adaTujuan: sk.p.peta.TUJUAN_SEWA !== undefined,
+    sheetAset: sa.nama, sheetKontrak: sk.nama};
 }
 
 function formImpor(){
@@ -1183,7 +1197,7 @@ function prosesFileImpor(f){
   w.innerHTML = '<p class="info">Membaca ' + esc(f.name) + '...</p>';
   muatXlsx().then(function(){ return f.arrayBuffer(); }).then(function(buf){
     var d = bacaExcelProperti(buf);
-    imporData = {aset: d.aset, kontrak: d.kontrak, adaSertifikat: d.adaSertifikat};
+    imporData = {aset: d.aset, kontrak: d.kontrak, adaSertifikat: d.adaSertifikat, adaHp: d.adaHp, adaTujuan: d.adaTujuan};
     w.innerHTML = '<p class="info">Terbaca: ' + d.aset.length + ' baris aset (sheet "' + esc(d.sheetAset) + '"), ' + d.kontrak.length + ' kontrak (sheet "' + esc(d.sheetKontrak) + '"). Membandingkan dengan data aplikasi...</p>';
     google.script.run.withSuccessHandler(function(r){ tampilPratinjauImpor(r, d); })
       .withFailureHandler(function(e){ w.innerHTML = '<div class="panel kosong-teks" style="color:var(--lewat)">Gagal membandingkan: ' + esc(e.message || e) + '</div>'; })
