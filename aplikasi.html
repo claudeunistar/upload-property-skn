@@ -1258,10 +1258,16 @@ function fotoUtama(id){
 }
 function fmtLuas(n){ return n === '' || n === null || n === undefined || isNaN(Number(n)) ? '' : Number(n).toLocaleString('id-ID', {maximumFractionDigits: 3}); }
 function totalLuas(units, k){ var t = 0, ada1 = false; units.forEach(function(u){ if (u[k] !== '' && !isNaN(Number(u[k]))) { t += Number(u[k]); ada1 = true; } }); return ada1 ? t : ''; }
+/** Kontrak aktif aset ini (yang No. HP & tujuan sewanya diisi dari tab Detail). */
+function penyewaAset(a){
+  if (a.KONDISI === 'Terjual' || a.KONDISI === 'Dipakai sendiri') return [];
+  return kontrakAset(a).filter(function(k){ return k.STATUS === 'Aktif'; });
+}
 function kelengkapan(a){
   var u = unitsOf(a.ID).length, md = mediaAset(a.ID), f = md.filter(function(m){ return m.TIPE === 'Foto'; }).length, v = md.length - f, g = !!gmapsAset(a.ID).link;
-  var kurang = []; if (!u) kurang.push('rincian'); if (!f) kurang.push('foto'); if (!g) kurang.push('maps');
-  return {unit: u, foto: f, video: v, maps: g, kurang: kurang};
+  var ps = penyewaAset(a), psIsi = ps.filter(function(k){ return ada(k.HP_PENYEWA) && ada(k.TUJUAN_SEWA); }).length;
+  var kurang = []; if (!u) kurang.push('rincian'); if (!f) kurang.push('foto'); if (!g) kurang.push('maps'); if (psIsi < ps.length) kurang.push('HP/tujuan penyewa');
+  return {unit: u, foto: f, video: v, maps: g, penyewa: ps.length, penyewaIsi: psIsi, kurang: kurang};
 }
 function mediaBelumTaut(){ return (S.media || []).filter(function(m){ return !m.ID_ASET; }); }
 
@@ -1279,11 +1285,11 @@ function gambarDetail(){
 function daftarDetail(){
   var bt = mediaBelumTaut();
   var grupBt = unikUrut(bt.map(function(m){ return m.NAMA_PROPERTI; }));
-  return '<p class="info" style="font-size:14px;margin-top:0">Pilih aset untuk melihat &amp; mengisi <b>detail</b>: rincian per unit (daya listrik, dokumen, atas nama, luas tanah &amp; bangunan, dimensi), foto/video, dan lokasi Maps.</p>' +
+  return '<p class="info" style="font-size:14px;margin-top:0">Pilih aset untuk melihat &amp; mengisi <b>detail</b>: rincian per unit (daya listrik, dokumen, atas nama, luas tanah &amp; bangunan, dimensi), foto/video, lokasi Maps, serta <b>No. HP &amp; tujuan sewa penyewa</b>.</p>' +
     (bt.length ? '<div class="panel" style="padding:12px 14px;margin-bottom:12px;border-color:var(--tempo)"><b>📥 ' + bt.length + ' upload lapangan belum ditautkan ke aset</b> <span class="info">(' + grupBt.length + ' properti: ' + esc(grupBt.slice(0, 4).join(', ')) + (grupBt.length > 4 ? ', …' : '') + ')</span>' +
       '<div class="info" style="margin:4px 0 0">Buka aset yang sesuai di bawah, lalu tekan <b>Tautkan ke aset ini</b> pada bagian "Upload lapangan belum ditautkan". Bisa juga dari tab Foto.</div></div>' : '') +
     '<div class="alat"><input type="search" id="dCari" placeholder="Cari nama aset, alamat...">' +
-    '<select id="dKurang"><option value="">Semua kelengkapan</option><option value="rincian">Belum ada rincian unit</option><option value="foto">Belum ada foto</option><option value="maps">Belum ada maps</option><option value="lengkap">Sudah lengkap</option></select></div>' +
+    '<select id="dKurang"><option value="">Semua kelengkapan</option><option value="rincian">Belum ada rincian unit</option><option value="foto">Belum ada foto</option><option value="maps">Belum ada maps</option><option value="HP/tujuan penyewa">Belum ada HP/tujuan penyewa</option><option value="lengkap">Sudah lengkap</option></select></div>' +
     '<div class="alat"><select id="dLokasi"></select><select id="dJenis"></select></div><div id="dHasil"></div>';
 }
 function tabelKelengkapan(){
@@ -1300,11 +1306,12 @@ function tabelKelengkapan(){
   var lengkap = rows.filter(function(a){ return !kelengkapan(a).kurang.length; }).length;
   var cek = function(ok, teks){ return ok ? '<span style="color:var(--sewa);font-weight:700">✔ ' + teks + '</span>' : '<span style="color:#b9b3a6">–</span>'; };
   return '<p class="info">' + rows.length + ' aset • ' + lengkap + ' sudah lengkap</p>' +
-    '<div class="tabel-excel"><table><thead><tr><th>NO</th><th class="nama">NAMA ASET</th><th>JENIS</th><th>LOKASI</th><th>JML UNIT</th><th>RINCIAN UNIT</th><th>FOTO</th><th>VIDEO</th><th>MAPS</th><th>KELENGKAPAN</th></tr></thead><tbody>' +
+    '<div class="tabel-excel"><table><thead><tr><th>NO</th><th class="nama">NAMA ASET</th><th>JENIS</th><th>LOKASI</th><th>JML UNIT</th><th>RINCIAN UNIT</th><th>FOTO</th><th>VIDEO</th><th>MAPS</th><th>HP &amp; TUJUAN PENYEWA</th><th>KELENGKAPAN</th></tr></thead><tbody>' +
     rows.map(function(a){
       var k = kelengkapan(a), m = String(a.ID).match(/(\d+)$/);
       return '<tr onclick="bukaDetail(\'' + esc(a.ID) + '\')"><td class="n">' + (m ? +m[1] : '') + '</td><td class="nama">' + esc(a.NAMA) + '</td><td>' + esc(a.JENIS) + '</td><td>' + esc(a.LOKASI) + '</td><td class="n">' + esc(a.UNIT) + '</td>' +
         '<td class="n">' + cek(k.unit, k.unit + ' unit') + '</td><td class="n">' + cek(k.foto, k.foto) + '</td><td class="n">' + (k.video ? k.video : '<span style="color:#b9b3a6">–</span>') + '</td><td class="n">' + cek(k.maps, 'ada') + '</td>' +
+        '<td class="n">' + (!k.penyewa ? '<span style="color:#b9b3a6" title="tidak ada kontrak aktif">–</span>' : k.penyewaIsi === k.penyewa ? cek(true, k.penyewa > 1 ? k.penyewa + ' penyewa' : 'ada') : '<span style="color:var(--tempo);font-weight:700">' + k.penyewaIsi + '/' + k.penyewa + '</span>') + '</td>' +
         '<td>' + (k.kurang.length ? '<span class="badge b-tempo">Kurang: ' + esc(k.kurang.join(', ')) + '</span>' : '<span class="badge b-sewa">Lengkap</span>') + '</td></tr>';
     }).join('') + '</tbody></table></div>';
 }
@@ -1340,6 +1347,19 @@ function halamanDetail(id){
       '<tr class="total" style="cursor:default"><td>Total</td><td></td><td></td><td></td><td class="rp">' + esc(fmtLuas(tl)) + '</td><td class="rp">' + esc(fmtLuas(tb)) + '</td><td></td><td></td></tr></tbody></table></div>';
   } else h += '<div class="panel kosong-teks">Rincian per unit belum diisi. Tekan <b>Isi rincian</b> – bisa juga menempel langsung dari Excel.</div>';
   if (d.CATATAN) h += '<p class="info" style="margin-top:8px"><b>Catatan:</b> ' + esc(d.CATATAN) + '</p>';
+  // penyewa (No. HP & tujuan sewa disimpan di kontrak)
+  var ps = penyewaAset(a);
+  h += '<div class="sub-judul"><h2>PENYEWA</h2>' + (ps.length ? '<button class="btn kecil" onclick="formPenyewa(\'' + esc(id) + '\')">✏️ ' + (k.penyewaIsi ? 'Ubah' : 'Isi') + ' No. HP &amp; tujuan sewa</button>' : '') + '</div>';
+  if (ps.length) {
+    h += '<div class="tabel-excel rincian"><table><thead><tr><th>KODE</th><th>PENYEWA</th><th>UNIT</th><th>AKHIR SEWA</th><th>NO HP PENYEWA</th><th>TUJUAN SEWA</th></tr></thead><tbody>' +
+      ps.map(function(x){
+        var no = String(x.HP_PENYEWA || '').split(/[\/,;]/)[0].replace(/\D/g, ''), wa = no.charAt(0) === '0' ? '62' + no.slice(1) : no;
+        var kosong = '<span style="color:var(--tempo);font-weight:700">belum diisi</span>';
+        return '<tr style="cursor:default"><td style="font-weight:700">' + esc(x.KODE) + '</td><td class="bungkus">' + esc(x.PENYEWA) + '</td><td class="n">' + esc(x.UNIT) + '</td><td>' + (ada(x.AKHIR) ? esc(tglTabel(x.AKHIR)) : '') + '</td>' +
+          '<td>' + (ada(x.HP_PENYEWA) ? esc(x.HP_PENYEWA) + (no.length >= 8 ? ' <a href="https://wa.me/' + esc(wa) + '" target="_blank" rel="noopener" title="Chat WhatsApp">💬</a> <a href="tel:' + esc(no) + '" title="Telepon">📞</a>' : '') : kosong) + '</td>' +
+          '<td class="lebar">' + (ada(x.TUJUAN_SEWA) ? esc(x.TUJUAN_SEWA) : kosong) + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  } else h += '<div class="panel kosong-teks">' + (a.KONDISI === 'Dipakai sendiri' ? 'Aset dipakai sendiri – tidak ada penyewa.' : 'Belum ada kontrak sewa aktif untuk aset ini. Penyewa ditambahkan dari tab Kontrak (+ Kontrak baru) lalu ditautkan ke aset ini.') + '</div>';
   // lokasi
   h += '<div class="sub-judul"><h2>LOKASI</h2><button class="btn kecil ghost" onclick="formDetail(\'' + esc(id) + '\', true)">📍 ' + (g.link ? 'Ubah lokasi' : 'Isi lokasi') + '</button></div>';
   if (g.link) {
@@ -1393,6 +1413,28 @@ function simpanGmapsDariUpload(id){
 function jadikanFotoUtama(mediaId){
   var m = mediaById(mediaId);
   mintaNama(false, function(){ panggil('apiSimpanDetail', [m.ID_ASET, {FOTO_UTAMA: m.ID}, namaSaya()], function(d){ terima(d); tutupModal(); toast('Foto tampak diganti'); }); });
+}
+
+/** Isi No. HP & tujuan sewa untuk semua penyewa aktif aset ini sekaligus. */
+function formPenyewa(id){
+  mintaNama(false, function(){
+    var a = asetById(id), ps = penyewaAset(a);
+    bukaModal('<div class="sheet-head"><h3>Penyewa ' + esc(a.NAMA) + '</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+      '<p class="info">Isi No. HP dan tujuan sewa tiap penyewa. Data ini ikut tersimpan di kontrak sewanya (tab Kontrak).</p>' +
+      ps.map(function(k, i){
+        return '<div class="unit-box"><div class="unit-head"><b>' + esc(k.KODE + ' • ' + (k.PENYEWA || 'penyewa belum diisi')) + '</b><span class="info">' + esc([k.UNIT ? k.UNIT + ' unit' : '', ada(k.AKHIR) ? 's/d ' + fmtTgl(k.AKHIR) : ''].filter(ada).join(' • ')) + '</span></div><div class="form">' +
+          '<label>No. HP penyewa<input id="ps_hp_' + i + '" type="tel" value="' + esc(k.HP_PENYEWA) + '" placeholder="mis. 0812 3456 7890"></label>' +
+          '<label>Tujuan sewa<input id="ps_tj_' + i + '" list="dlTujuan" value="' + esc(k.TUJUAN_SEWA) + '" placeholder="mis. Toko HP / gudang / rumah tinggal"></label></div></div>';
+      }).join('') +
+      datalist('dlTujuan', unik(TUJUAN_SEWA_UMUM.concat(S.kontrak.map(function(x){ return x.TUJUAN_SEWA; })))) +
+      '<div class="aksi"><button class="btn" id="psSimpan">Simpan</button><button class="btn ghost" onclick="tutupModal()">Batal</button></div>');
+    $('psSimpan').onclick = function(){
+      var list = ps.map(function(k, i){ return {KODE: k.KODE, HP_PENYEWA: $('ps_hp_' + i).value.trim(), TUJUAN_SEWA: $('ps_tj_' + i).value.trim()}; });
+      var pendek = list.filter(function(x){ return x.HP_PENYEWA && x.HP_PENYEWA.replace(/\D/g, '').length < 8; })[0];
+      if (pendek) { toast('No. HP penyewa ' + pendek.KODE + ' terlalu pendek (minimal 8 angka)', true); return; }
+      panggil('apiSimpanPenyewa', [list, namaSaya()], function(d){ terima(d); tutupModal(); toast('Data penyewa disimpan'); });
+    };
+  });
 }
 
 /* ---------- form isi / ubah detail ---------- */
