@@ -12,7 +12,7 @@
   --brand:#0f3d3e; --brand2:#14595b; --accent:#e0a526;
   --sewa:#1f8a4c; --sewa-bg:#e3f4ea; --tempo:#c77700; --tempo-bg:#fdf0d9;
   --lewat:#c62f2f; --lewat-bg:#fbe3e1; --kosong:#2f5d9e; --kosong-bg:#e3ecf8;
-  --pakai:#6b4fa0; --pakai-bg:#eee8f7; --jual:#7a7a7a; --jual-bg:#ececec;
+  --pakai:#6b4fa0; --pakai-bg:#eee8f7; --jual:#7a7a7a; --jual-bg:#ececec; --cari:#0b7285; --cari-bg:#ddf2f5;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -39,7 +39,7 @@ h2:first-child{margin-top:4px}
 .tile{background:var(--card);border-radius:14px;padding:12px 14px;border:1px solid var(--line);cursor:pointer;text-align:left}
 .tile b{display:block;font-size:26px;line-height:1.1;font-weight:800}
 .tile span{font-size:13px;color:var(--muted)}
-.tile.sewa b{color:var(--sewa)}.tile.tempo b{color:var(--tempo)}.tile.lewat b{color:var(--lewat)}.tile.kosong b{color:var(--kosong)}.tile.pakai b{color:var(--pakai)}
+.tile.sewa b{color:var(--sewa)}.tile.tempo b{color:var(--tempo)}.tile.lewat b{color:var(--lewat)}.tile.kosong b{color:var(--kosong)}.tile.pakai b{color:var(--pakai)}.tile.cari b{color:var(--cari)}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 table{border-collapse:collapse;width:100%;font-size:14px}
 th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
@@ -67,7 +67,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--brand2);outline-
 .badge{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap;flex:none}
 .b-sewa{background:var(--sewa-bg);color:var(--sewa)}.b-tempo{background:var(--tempo-bg);color:var(--tempo)}
 .b-lewat{background:var(--lewat-bg);color:var(--lewat)}.b-kosong{background:var(--kosong-bg);color:var(--kosong)}
-.b-pakai{background:var(--pakai-bg);color:var(--pakai)}.b-jual{background:var(--jual-bg);color:var(--jual)}
+.b-pakai{background:var(--pakai-bg);color:var(--pakai)}.b-jual{background:var(--jual-bg);color:var(--jual)}.b-cari{background:var(--cari-bg);color:var(--cari)}
 .b-selesai{background:var(--jual-bg);color:var(--jual)}
 .kosong-teks{padding:20px;text-align:center;color:var(--muted)}
 /* modal */
@@ -214,12 +214,13 @@ details.rinci .beda{font-size:12px;color:#4b5758;margin-top:2px;word-break:break
       <select id="fAPemilik" onchange="gambarAset()"></select>
       <select id="fAStatus" onchange="gambarAset()">
         <option value="">Semua status</option>
-        <option value="kosong">Belum disewa</option>
-        <option value="disewa">Disewa (semua)</option>
+        <option value="kosong">Belum Disewa (semua yang kosong)</option>
+        <option value="cari">Proses Mencari Penyewa</option>
+        <option value="disewa">Sedang Disewa (semua)</option>
         <option value="tempo">Jatuh tempo &le; 90 hari</option>
         <option value="lewat">Lewat tempo</option>
-        <option value="pakai">Dipakai sendiri</option>
-        <option value="jual">Terjual</option>
+        <option value="pakai">Dipakai Sendiri</option>
+        <option value="jual">Sudah Terjual</option>
       </select>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
@@ -355,24 +356,33 @@ function panggil(fn, args, ok){
 function statusKontrak(k){
   if (k.STATUS !== 'Aktif') return {kode: 'selesai', label: 'Tidak aktif', urut: 9};
   var h = ada(k.AKHIR) ? selisihHari(S.hariIni, k.AKHIR) : null;
-  if (h === null) return {kode: 'sewa', label: 'Disewa', hari: null, urut: 3};
+  if (h === null) return {kode: 'sewa', label: 'Sedang Disewa', hari: null, urut: 3};
   if (h < 0) return {kode: 'lewat', label: 'Lewat ' + (-h) + ' hari', hari: h, urut: 1};
   if (h <= S.batas) return {kode: 'tempo', label: h === 0 ? 'Habis hari ini' : 'Sisa ' + h + ' hari', hari: h, urut: 2};
-  return {kode: 'sewa', label: 'Disewa', hari: h, urut: 3};
+  return {kode: 'sewa', label: 'Sedang Disewa', hari: h, urut: 3};
 }
 function kontrakByKode(kode){ kode = String(kode).toUpperCase(); for (var i = 0; i < S.kontrak.length; i++) if (String(S.kontrak[i].KODE).toUpperCase() === kode) return S.kontrak[i]; return null; }
 function kontrakAset(a){ return kodeList(a.KODE_SEWA).map(kontrakByKode).filter(Boolean); }
 function asetKontrak(k){ var kd = String(k.KODE).toUpperCase(); return S.aset.filter(function(a){ return kodeList(a.KODE_SEWA).some(function(x){ return x.toUpperCase() === kd; }); }); }
 function statusAset(a){
-  if (a.KONDISI === 'Terjual') return {kode: 'jual', label: 'Terjual', urut: 8};
-  if (a.KONDISI === 'Dipakai sendiri') return {kode: 'pakai', label: 'Dipakai sendiri', urut: 7};
+  if (a.KONDISI === 'Terjual') return {kode: 'jual', label: 'Sudah Terjual', urut: 8};
+  if (a.KONDISI === 'Dipakai sendiri') return {kode: 'pakai', label: 'Dipakai Sendiri', urut: 7};
   var ks = kontrakAset(a), aktif = ks.filter(function(k){ return k.STATUS === 'Aktif'; });
-  if (!aktif.length) return {kode: 'kosong', label: 'Belum disewa', urut: 4, kontrak: ks};
+  // "Proses mencari penyewa" = belum disewa yang sedang dicarikan penyewa (tetap dihitung belum disewa);
+  // begitu ada kontrak Aktif, status otomatis jadi Sedang Disewa.
+  if (!aktif.length) return a.KONDISI === KONDISI_CARI ? {kode: 'kosong', cari: true, kelas: 'cari', label: 'Proses Mencari Penyewa', urut: 4, kontrak: ks}
+    : {kode: 'kosong', label: 'Belum Disewa', urut: 4, kontrak: ks};
   var terburuk = aktif.map(statusKontrak).sort(function(x, y){ return x.urut - y.urut || (x.hari||0) - (y.hari||0); })[0];
   var sebagian = ks.length > aktif.length;
-  return {kode: terburuk.kode, label: terburuk.kode === 'sewa' ? (sebagian ? 'Disewa sebagian' : 'Disewa') : terburuk.label, urut: terburuk.urut, sebagian: sebagian, kontrak: ks};
+  return {kode: terburuk.kode, label: terburuk.kode === 'sewa' ? (sebagian ? 'Sedang Disewa (sebagian)' : 'Sedang Disewa') : terburuk.label, urut: terburuk.urut, sebagian: sebagian, kontrak: ks};
 }
-function badge(st){ return '<span class="badge b-' + st.kode + '">' + esc(st.label) + '</span>'; }
+function badge(st){ return '<span class="badge b-' + (st.kelas || st.kode) + '">' + esc(st.label) + '</span>'; }
+var KONDISI_CARI = 'Proses mencari penyewa';
+/** Pilihan kondisi aset: nilai di sheet -> teks di layar. */
+var KONDISI_PILIH = [['Tersedia', 'Belum disewa (tersedia)'], [KONDISI_CARI, 'Proses mencari penyewa'], ['Dipakai sendiri', 'Dipakai sendiri'], ['Terjual', 'Sudah terjual']];
+function teksKondisi(v){ var p = KONDISI_PILIH.filter(function(x){ return x[0] === v; })[0]; return p ? p[1] : v; }
+/** Aset yang bisa disewakan (belum disewa atau sedang dicarikan penyewa). */
+function bisaDisewa(a){ return a.KONDISI === 'Tersedia' || a.KONDISI === KONDISI_CARI; }
 function pemilikKontrak(k){
   var as = asetKontrak(k); if (as.length) return as[0].PEMILIK;
   var o = String(k.OWNER).toLowerCase();
@@ -440,11 +450,12 @@ document.addEventListener('keydown', function(e){ if (e.key === 'Escape') tutupM
 
 /* ============ RINGKASAN ============ */
 function hitung(){
-  var r = {aset: 0, unit: 0, sewa: 0, kosong: 0, pakai: 0, jual: 0, unitKosong: 0};
+  var r = {aset: 0, unit: 0, sewa: 0, kosong: 0, pakai: 0, jual: 0, unitKosong: 0, cari: 0, unitCari: 0};
   S.aset.forEach(function(a){
     var st = statusAset(a);
     if (st.kode === 'jual') { r.jual++; return; }
     r.aset++; r.unit += Number(a.UNIT) || 0;
+    if (st.cari) { r.cari++; r.unitCari += Number(a.UNIT) || 0; }
     if (st.kode === 'kosong') { r.kosong++; r.unitKosong += Number(a.UNIT) || 0; }
     else if (st.kode === 'pakai') r.pakai++;
     else r.sewa++;
@@ -469,15 +480,17 @@ function gambarRingkasan(){
   var perJenis = {};
   S.aset.forEach(function(a){
     var st = statusAset(a); if (st.kode === 'jual') return;
-    var j = perJenis[a.JENIS] || (perJenis[a.JENIS] = {aset: 0, unit: 0, sewa: 0, kosong: 0, pakai: 0});
+    var j = perJenis[a.JENIS] || (perJenis[a.JENIS] = {aset: 0, unit: 0, sewa: 0, kosong: 0, cari: 0, pakai: 0});
     j.aset++; j.unit += Number(a.UNIT) || 0;
+    if (st.cari) j.cari++;
     if (st.kode === 'kosong') j.kosong++; else if (st.kode === 'pakai') j.pakai++; else j.sewa++;
   });
   var h = '<div class="panel" style="padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:200px"><b>Data diperbarui di Excel?</b><div class="info" style="margin:0">Unggah Excel terbaru, cek perubahannya, lalu terapkan.</div></div><button class="btn" onclick="formImpor()">📥 Perbarui dari Excel</button></div>' +
     '<h2>Kondisi per ' + esc(fmtTgl(S.hariIni, true)) + '</h2><div class="tiles">' +
     tile('', r.aset, 'Aset dimiliki (' + r.unit + ' unit)', "keAset('')") +
-    tile('sewa', r.sewa, 'Aset disewa', "keAset('disewa')") +
+    tile('sewa', r.sewa, 'Aset sedang disewa', "keAset('disewa')") +
     tile('kosong', r.kosong, 'Aset belum disewa', "keAset('kosong')") +
+    tile('cari', r.cari, 'Proses mencari penyewa (' + r.unitCari + ' unit)', "keAset('cari')") +
     tile('pakai', r.pakai, 'Aset dipakai sendiri (' + r.unitPakai + ' unit)', "keAset('pakai')") +
     tile('sewa', r.unitSewa, 'Unit disewa (' + r.kAktif + ' kontrak Aktif)', "keKontrak('aktif')") +
     tile('kosong', r.unitBelum, 'Unit belum disewa', "keAset('kosong')") +
@@ -485,15 +498,15 @@ function gambarRingkasan(){
     tile('lewat', r.lewat, 'Kontrak lewat tempo (masih Aktif)', "keKontrak('lewat')") +
     tile('', rpSingkat(r.nilai), 'Nilai sewa aktif per tahun', "keKontrak('aktif')") +
     '</div>' +
-    '<p class="info" style="margin-top:6px">Unit disewa = jumlah unit di kontrak berstatus <b>Aktif</b>. Unit belum disewa = ' + r.unit + ' unit dimiliki' + (r.unitPakai ? ' − ' + r.unitPakai + ' dipakai sendiri' : '') + ' − ' + r.unitSewa + ' unit disewa.</p>';
+    '<p class="info" style="margin-top:6px">Unit disewa = jumlah unit di kontrak berstatus <b>Aktif</b>. Unit belum disewa = ' + r.unit + ' unit dimiliki' + (r.unitPakai ? ' − ' + r.unitPakai + ' dipakai sendiri' : '') + ' − ' + r.unitSewa + ' unit disewa. <b>Proses mencari penyewa</b> termasuk aset belum disewa.</p>';
   h += '<h2>Perlu tindakan</h2>';
   if (!tindakan.length) h += '<div class="panel kosong-teks">Tidak ada kontrak yang jatuh tempo dalam ' + S.batas + ' hari.</div>';
   else h += '<div class="list">' + tindakan.map(itemKontrak).join('') + '</div>';
-  h += '<h2>Per jenis aset</h2><div class="panel"><table><tr><th>Jenis</th><th class="n">Aset</th><th class="n">Unit</th><th class="n">Disewa</th><th class="n">Belum disewa</th><th class="n">Dipakai sendiri</th></tr>' +
+  h += '<h2>Per jenis aset</h2><div class="panel"><table><tr><th>Jenis</th><th class="n">Aset</th><th class="n">Unit</th><th class="n">Sedang disewa</th><th class="n">Belum disewa</th><th class="n">Mencari penyewa</th><th class="n">Dipakai sendiri</th></tr>' +
     Object.keys(perJenis).sort().map(function(j){ var x = perJenis[j];
-      return '<tr><td>' + esc(j) + '</td><td class="n">' + x.aset + '</td><td class="n">' + x.unit + '</td><td class="n">' + x.sewa + '</td><td class="n">' + x.kosong + '</td><td class="n">' + x.pakai + '</td></tr>'; }).join('') +
+      return '<tr><td>' + esc(j) + '</td><td class="n">' + x.aset + '</td><td class="n">' + x.unit + '</td><td class="n">' + x.sewa + '</td><td class="n">' + x.kosong + '</td><td class="n">' + x.cari + '</td><td class="n">' + x.pakai + '</td></tr>'; }).join('') +
     '</table></div>';
-  if (r.jual) h += '<p class="info" style="margin-top:8px">' + r.jual + ' aset berstatus Terjual tidak dihitung.</p>';
+  if (r.jual) h += '<p class="info" style="margin-top:8px">' + r.jual + ' aset Sudah Terjual tidak dihitung.</p>';
   $('v-ringkasan').innerHTML = h;
 }
 function tile(cls, val, lbl, onclick){ return '<button class="tile ' + cls + '" onclick="' + onclick + '"><b>' + esc(val) + '</b><span>' + esc(lbl) + '</span></button>'; }
@@ -510,7 +523,8 @@ function gambarAset(){
     if (fj && a.JENIS !== fj) return false;
     if (fp && a.PEMILIK !== fp) return false;
     if (fs === 'disewa' && ['sewa','tempo','lewat'].indexOf(k) < 0) return false;
-    if (fs && fs !== 'disewa' && k !== fs) return false;
+    if (fs === 'cari' && !x.st.cari) return false;
+    if (fs && fs !== 'disewa' && fs !== 'cari' && k !== fs) return false;
     var penyewa = (x.st.kontrak || []).map(function(c){ return c.PENYEWA + ' ' + c.KODE; }).join(' ');
     return cocokCari(q, [a.ID, a.NAMA, a.ALAMAT, a.LOKASI, a.JENIS, a.PEMILIK_DETAIL, a.SERTIFIKAT_NAMA, a.SERTIFIKAT_NO, a.CATATAN, penyewa].join(' '));
   });
@@ -541,7 +555,7 @@ function tabelAset(rows){
     var akhir = pakai.map(function(k){ return k.AKHIR; }).filter(ada).sort()[0] || '';
     var hari = akhir ? selisihHari(S.hariIni, akhir) : null;
     var banyak = pakai.length > 1;
-    var statusTeks = st.kode === 'kosong' ? (ks.length ? 'Tidak aktif' : 'Tidak ada data sewa') : st.label;
+    var statusTeks = st.kode === 'kosong' && !st.cari ? 'Belum Disewa' + (ks.length ? ' (kontrak tidak aktif)' : '') : st.label;
     if (banyak && ['sewa', 'tempo', 'lewat'].indexOf(st.kode) >= 0) statusTeks += ' • ' + aktif.length + ' kontrak';
     var penyewa = unikUrut(pakai.map(function(k){ return k.PENYEWA; })).join(', ');
     var sisa = hari === null ? '' : hari < 0 ? 'Lewat' : blnTeks(hari);
@@ -550,7 +564,7 @@ function tabelAset(rows){
     var m = String(a.ID).match(/(\d+)$/);
     var sel = [
       ['n', m ? +m[1] : ''], ['', a.PEMILIK], ['', a.LOKASI], ['', a.JENIS], ['bungkus', a.ALAMAT], ['nama', a.NAMA], ['n', a.UNIT], ['bungkus', a.LUAS], ['', a.NILAI_PASAR || '-'], ['bungkus', a.PEMILIK_DETAIL],
-      ['bungkus', a.SERTIFIKAT_NAMA], ['bungkus', a.SERTIFIKAT_NO], ['bungkus', a.KODE_SEWA], ['st', '<span class="badge b-' + st.kode + '">' + esc(statusTeks) + '</span>'], ['lebar', penyewa],
+      ['bungkus', a.SERTIFIKAT_NAMA], ['bungkus', a.SERTIFIKAT_NO], ['bungkus', a.KODE_SEWA], ['st', '<span class="badge b-' + (st.kelas || st.kode) + '">' + esc(statusTeks) + '</span>'], ['lebar', penyewa],
       ['tgl', akhir ? tglTabel(akhir) + (banyak ? '*' : '') : ''], ['n', sisa], ['rp', ks.length ? nilai : ''], ['lebar', a.CATATAN]
     ];
     return '<tr onclick="detailAset(\'' + esc(a.ID) + '\')">' + sel.map(function(c, i){
@@ -575,7 +589,7 @@ function detailAset(id){
   var st = statusAset(a), ks = kontrakAset(a);
   var h = '<div class="sheet-head"><h3>' + esc(a.NAMA) + '<br>' + badge(st) + '</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
     '<dl class="dl">' + dl('ID', a.ID) + dl('Pemilik', a.PEMILIK) + dl('Pemilik (detail)', a.PEMILIK_DETAIL) + dl('Atas nama sertifikat', a.SERTIFIKAT_NAMA) + dl('No. sertifikat', a.SERTIFIKAT_NO) + dl('Lokasi', a.LOKASI) + dl('Jenis', a.JENIS) +
-    dl('Alamat', a.ALAMAT) + dl('Jumlah unit', a.UNIT) + dl('Luas', a.LUAS) + dl('Nilai pasar', a.NILAI_PASAR) + dl('Kondisi', a.KONDISI) +
+    dl('Alamat', a.ALAMAT) + dl('Jumlah unit', a.UNIT) + dl('Luas', a.LUAS) + dl('Nilai pasar', a.NILAI_PASAR) + dl('Kondisi', teksKondisi(a.KONDISI)) +
     dl('Catatan', a.CATATAN) + dl('Terakhir diubah', [a.DIUBAH_OLEH, a.DIUBAH_PADA].filter(ada).join(', ')) + '</dl>';
   h += '<h2>Kontrak sewa</h2>' + (ks.length ? '<div class="list">' + ks.map(itemKontrak).join('') + '</div>' : '<div class="panel kosong-teks">Belum ada kontrak yang ditautkan.</div>');
   if (kodeList(a.KODE_SEWA).length > ks.length) h += '<p class="info">Kode di aset tapi tidak ada di daftar kontrak: ' + esc(kodeList(a.KODE_SEWA).filter(function(x){ return !kontrakByKode(x); }).join(', ')) + '</p>';
@@ -584,7 +598,7 @@ function detailAset(id){
     (md.filter(function(m){ return m.GMAPS; })[0] ? '<p class="info" style="margin-top:6px"><a href="' + esc(md.filter(function(m){ return m.GMAPS; })[0].GMAPS) + '" target="_blank" rel="noopener">📍 Buka lokasi di Google Maps</a></p>' : '');
   h += '<div class="aksi"><button class="btn" onclick="bukaDetail(\'' + esc(a.ID) + '\')">📋 Detail lengkap</button><button class="btn ghost" onclick="formAset(\'' + esc(a.ID) + '\')">Ubah data aset</button>' +
     '<button class="btn ghost" onclick="formUpload(\'' + esc(a.ID) + '\')">+ Upload foto/video</button>' +
-    (a.KONDISI === 'Tersedia' ? '<button class="btn ghost" onclick="kontrakDariAset(\'' + esc(a.ID) + '\')">+ Penyewa / kontrak baru</button>' : '') +
+    (bisaDisewa(a) ? '<button class="btn ghost" onclick="kontrakDariAset(\'' + esc(a.ID) + '\')">+ Penyewa / kontrak baru</button>' : '') +
     '<button class="btn merah" onclick="hapusAset(\'' + esc(a.ID) + '\')">Hapus aset</button></div>';
   bukaModal(h);
 }
@@ -606,7 +620,7 @@ function formAset(id){
       inp('NILAI_PASAR', 'Nilai pasar sewa', a, '', null, 'text', 'mis. 65jt - 70jt') +
       inp('SERTIFIKAT_NAMA', 'Atas nama sertifikat', a) +
       inp('SERTIFIKAT_NO', 'No. sertifikat', a, '', null, 'text', 'mis. SHM No. 308') +
-      '<label>Kondisi<select id="f_KONDISI">' + ['Tersedia','Dipakai sendiri','Terjual'].map(function(v){ return '<option' + (a.KONDISI === v ? ' selected' : '') + '>' + v + '</option>'; }).join('') + '</select><em>Terjual / Dipakai sendiri tidak masuk laporan "belum disewa"</em></label>' +
+      '<label>Kondisi<select id="f_KONDISI">' + KONDISI_PILIH.map(function(v){ return '<option value="' + esc(v[0]) + '"' + (a.KONDISI === v[0] ? ' selected' : '') + '>' + esc(v[1]) + '</option>'; }).join('') + '</select><em>Kalau sudah ada kontrak Aktif, status otomatis jadi Sedang Disewa. Sudah terjual / Dipakai sendiri tidak masuk laporan "belum disewa".</em></label>' +
       '<label class="full">Catatan<textarea id="f_CATATAN">' + esc(a.CATATAN) + '</textarea></label>' +
       '</div>' + datalist('dlPemilik', semuaPemilik()) + datalist('dlLokasi', semuaLokasi()) + datalist('dlJenis', semuaJenis()) +
       '<p class="info" style="margin-top:10px">Penyewa &amp; tanggal sewa diisi lewat <b>kontrak</b> (tombol "+ Penyewa / kontrak baru" di detail aset).</p>' +
@@ -1729,7 +1743,7 @@ function dataTabel(id, f){
       {t: 'JML UNIT', w: 74, al: 'c'}, {t: 'LUAS', w: 230}, {t: 'NILAI PASAR', w: 150, al: 'c'}, {t: 'PENYEWA TERAKHIR', w: 230}, {t: 'SEWA BERAKHIR', w: 140, al: 'c'}, {t: 'CATATAN', w: 214}];
     grup.forEach(function(g){
       var aktif = g.kontrak.filter(function(k){ return k.STATUS === 'Aktif'; });
-      var as = g.aset.filter(function(a){ return a.KONDISI === 'Tersedia'; });
+      var as = g.aset.filter(bisaDisewa);
       if (!as.length) return;
       var gg = {aset: as};
       if (!cocokGrup(gg, f)) return;
@@ -1739,7 +1753,8 @@ function dataTabel(id, f){
         rows.push({idx: g.idx, jenis: as[0].JENIS, pemilikUtama: as[0].PEMILIK, unit: unit,
           sel: ['', gabungUnik(as.map(function(a){ return a.PEMILIK; }), ' & '), as[0].JENIS, gabungUnik(as.map(function(a){ return a.ALAMAT; })), as[0].NAMA,
             String(unit), as.length === 1 ? luasRapi(as[0]) : '', gabungUnik(as.map(function(a){ return a.NILAI_PASAR; })) || '-',
-            lama ? lama.PENYEWA : '-', lama && ada(lama.AKHIR) ? tglTabel(lama.AKHIR) : '-', gabungUnik(as.map(function(a){ return a.CATATAN; }), '; ')], warna: {}});
+            lama ? lama.PENYEWA : '-', lama && ada(lama.AKHIR) ? tglTabel(lama.AKHIR) : '-',
+            [as.some(function(a){ return a.KONDISI === KONDISI_CARI; }) ? 'PROSES MENCARI PENYEWA' : ''].concat(as.map(function(a){ return a.CATATAN; })).filter(ada).join('; ')], warna: {}});
       } else {
         // sebagian unit kosong: kontrak tidak aktif di aset yang masih punya kontrak aktif
         g.kontrak.filter(function(k){ return k.STATUS !== 'Aktif'; }).forEach(function(k){
@@ -1751,7 +1766,7 @@ function dataTabel(id, f){
       }
     });
     spec.ringkasJudul = 'BELUM DISEWA';
-    spec.sumber = 'Kondisi Tersedia & tidak ada kontrak Aktif. Tidak termasuk aset Terjual / Dipakai sendiri.';
+    spec.sumber = 'Kondisi Belum disewa / Proses mencari penyewa & tidak ada kontrak Aktif. Tidak termasuk aset Sudah terjual / Dipakai sendiri.';
     spec.catatan = [[{t: 'Kontrak yang sudah habis tapi masih Aktif tidak masuk daftar ini – lihat laporan '}, {t: 'Lewat tempo', b: 1}, {t: '.'}]];
     spec.kosongTeks = 'yang belum disewa';
   } else {
@@ -2002,10 +2017,11 @@ function kartuRingkasan(f){
   var L = LAP.filter(function(l){ return l.id === 'ringkasan'; })[0];
   var as = S.aset.filter(function(a){ return (!f.lokasi || a.LOKASI === f.lokasi) && (!f.pemilik || a.PEMILIK === f.pemilik) && statusAset(a).kode !== 'jual'; });
   var ks = S.kontrak.filter(function(k){ return (!f.lokasi || k.LOKASI === f.lokasi) && (!f.pemilik || pemilikKontrak(k) === f.pemilik) && k.STATUS === 'Aktif'; });
-  var r = {aset: as.length, unit: 0, sewa: 0, kosong: 0, pakai: 0, tempo: 0, lewat: 0, nilai: 0, unitPakai: 0, unitSewa: 0};
+  var r = {aset: as.length, unit: 0, sewa: 0, kosong: 0, pakai: 0, tempo: 0, lewat: 0, nilai: 0, unitPakai: 0, unitSewa: 0, cari: 0};
   var perJenis = {}, perLokasi = {};
   as.forEach(function(a){
     var c = statusAset(a).kode, u = Number(a.UNIT) || 0; r.unit += u;
+    if (statusAset(a).cari) r.cari++;
     var j = perJenis[a.JENIS] || (perJenis[a.JENIS] = {aset: 0, sewa: 0, kosong: 0, pakai: 0});
     var l = perLokasi[a.LOKASI] || (perLokasi[a.LOKASI] = {aset: 0, sewa: 0, kosong: 0, pakai: 0});
     j.aset++; l.aset++;
@@ -2018,9 +2034,9 @@ function kartuRingkasan(f){
   var k = kanvasBaru(), x = k.x;
   var y = kepala(x, L, f, 'ringkasan', [r.aset + ' aset • ' + r.unit + ' unit', rpSingkat(r.nilai) + ' sewa/tahun']);
   var tiles = [
-    {v: r.sewa, t: 'Aset disewa', w: '#1f8a4c'}, {v: r.kosong, t: 'Belum disewa', w: '#2f5d9e'}, {v: r.pakai, t: 'Dipakai sendiri', w: '#6b4fa0'},
+    {v: r.sewa, t: 'Aset sedang disewa', w: '#1f8a4c'}, {v: r.kosong, t: 'Belum disewa', w: '#2f5d9e'}, {v: r.pakai, t: 'Dipakai sendiri', w: '#6b4fa0'},
     {v: r.unitSewa, t: 'Unit disewa', w: '#1f8a4c'}, {v: unitBelum, t: 'Unit belum disewa', w: '#2f5d9e'}, {v: ks.length, t: 'Kontrak aktif', w: '#0f3d3e'},
-    {v: r.tempo, t: 'Jatuh tempo ≤ ' + S.batas + ' hr', w: '#c77700'}, {v: r.lewat, t: 'Lewat tempo', w: '#c62f2f'}];
+    {v: r.tempo, t: 'Jatuh tempo ≤ ' + S.batas + ' hr', w: '#c77700'}, {v: r.lewat, t: 'Lewat tempo', w: '#c62f2f'}, {v: r.cari, t: 'Mencari penyewa', w: '#0b7285'}];
   var tw = (KW - 80 - 2 * 16) / 3;
   tiles.forEach(function(t, i){
     var cx = 40 + (i % 3) * (tw + 16), cy = y + Math.floor(i / 3) * 126;
