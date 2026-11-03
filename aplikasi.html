@@ -384,7 +384,7 @@ function pemilikKontrak(k){
 /* ============ MUAT & NAV ============ */
 function muat(){ panggil('apiMuat', [], terima); }
 function terima(d){
-  S = {aset: d.aset || [], kontrak: d.kontrak || [], media: d.media || [], detailAset: d.detailAset || [], detailUnit: d.detailUnit || [], urlApp: d.urlApp || '', hariIni: d.hariIni, batas: Number(d.batasHari) || 90};
+  S = {aset: d.aset || [], kontrak: d.kontrak || [], media: d.media || [], detailAset: d.detailAset || [], detailUnit: d.detailUnit || [], penyewaUnit: d.penyewaUnit || [], urlApp: d.urlApp || '', hariIni: d.hariIni, batas: Number(d.batasHari) || 90};
   isiFilter(); gambarSemua();
 }
 function gambarSemua(){ gambarRingkasan(); gambarAset(); gambarKontrak(); gambarMedia(); gambarDetail(); }
@@ -1258,10 +1258,31 @@ function fotoUtama(id){
 }
 function fmtLuas(n){ return n === '' || n === null || n === undefined || isNaN(Number(n)) ? '' : Number(n).toLocaleString('id-ID', {maximumFractionDigits: 3}); }
 function totalLuas(units, k){ var t = 0, ada1 = false; units.forEach(function(u){ if (u[k] !== '' && !isNaN(Number(u[k]))) { t += Number(u[k]); ada1 = true; } }); return ada1 ? t : ''; }
-/** Kontrak aktif aset ini (yang No. HP & tujuan sewanya diisi dari tab Detail). */
+/**
+ * Daftar penyewa aset: baris tersimpan di PENYEWA_UNIT (urutan tim) + kontrak aktif yang belum ada di daftar.
+ * Baris ber-KODE mengambil nama/HP/tujuan dari kontraknya; kontrak yang sudah tidak aktif tidak ditampilkan.
+ */
 function penyewaAset(a){
-  if (a.KONDISI === 'Terjual' || a.KONDISI === 'Dipakai sendiri') return [];
-  return kontrakAset(a).filter(function(k){ return k.STATUS === 'Aktif'; });
+  if (a.KONDISI === 'Terjual') return [];
+  var aktif = a.KONDISI === 'Dipakai sendiri' ? [] : kontrakAset(a).filter(function(k){ return k.STATUS === 'Aktif'; });
+  var kodeAktif = {}; aktif.forEach(function(k){ kodeAktif[String(k.KODE).toUpperCase()] = k; });
+  var rows = [], sudah = {};
+  (S.penyewaUnit || []).filter(function(p){ return p.ID_ASET === a.ID; })
+    .sort(function(x, y){ return (Number(x.URUT) || 0) - (Number(y.URUT) || 0); })
+    .forEach(function(p){
+      var kd = String(p.KODE || '').toUpperCase();
+      if (!kd) { rows.push({UNIT: p.UNIT, KODE: '', PENYEWA: p.PENYEWA, HP_PENYEWA: p.HP_PENYEWA, TUJUAN_SEWA: p.TUJUAN_SEWA}); return; }
+      var k = kodeAktif[kd]; if (!k || sudah[kd]) return;
+      sudah[kd] = 1; rows.push(dariKontrak(k, p.UNIT));
+    });
+  aktif.forEach(function(k){ if (!sudah[String(k.KODE).toUpperCase()]) rows.push(dariKontrak(k, '')); });
+  return rows;
+}
+function dariKontrak(k, unit){ return {UNIT: unit, KODE: k.KODE, PENYEWA: k.PENYEWA, HP_PENYEWA: k.HP_PENYEWA, TUJUAN_SEWA: k.TUJUAN_SEWA, kontrak: k}; }
+function linkHp(hp){
+  if (!ada(hp)) return '';
+  var no = String(hp).split(/[\/,;]/)[0].replace(/\D/g, ''), wa = no.charAt(0) === '0' ? '62' + no.slice(1) : no;
+  return esc(hp) + (no.length >= 8 ? ' <a href="https://wa.me/' + esc(wa) + '" target="_blank" rel="noopener" title="Chat WhatsApp">💬</a> <a href="tel:' + esc(no) + '" title="Telepon">📞</a>' : '');
 }
 function kelengkapan(a){
   var u = unitsOf(a.ID).length, md = mediaAset(a.ID), f = md.filter(function(m){ return m.TIPE === 'Foto'; }).length, v = md.length - f, g = !!gmapsAset(a.ID).link;
@@ -1349,17 +1370,16 @@ function halamanDetail(id){
   if (d.CATATAN) h += '<p class="info" style="margin-top:8px"><b>Catatan:</b> ' + esc(d.CATATAN) + '</p>';
   // penyewa (No. HP & tujuan sewa disimpan di kontrak)
   var ps = penyewaAset(a);
-  h += '<div class="sub-judul"><h2>PENYEWA</h2>' + (ps.length ? '<button class="btn kecil" onclick="formPenyewa(\'' + esc(id) + '\')">✏️ ' + (k.penyewaIsi ? 'Ubah' : 'Isi') + ' No. HP &amp; tujuan sewa</button>' : '') + '</div>';
+  h += '<div class="sub-judul"><h2>PENYEWA (' + ps.length + ')</h2>' + (a.KONDISI !== 'Terjual' ? '<button class="btn kecil" onclick="formPenyewa(\'' + esc(id) + '\')">' + (ps.length ? '✏️ Ubah / tambah penyewa' : '+ Tambah penyewa') + '</button>' : '') + '</div>';
   if (ps.length) {
-    h += '<div class="tabel-excel rincian"><table><thead><tr><th>KODE</th><th>PENYEWA</th><th>UNIT</th><th>AKHIR SEWA</th><th>NO HP PENYEWA</th><th>TUJUAN SEWA</th></tr></thead><tbody>' +
+    var kosong = '<span style="color:var(--tempo);font-weight:700">belum diisi</span>';
+    h += '<div class="tabel-excel rincian"><table><thead><tr><th>UNIT</th><th>PENYEWA</th><th>NO HP PENYEWA</th><th>TUJUAN SEWA</th><th>KONTRAK</th></tr></thead><tbody>' +
       ps.map(function(x){
-        var no = String(x.HP_PENYEWA || '').split(/[\/,;]/)[0].replace(/\D/g, ''), wa = no.charAt(0) === '0' ? '62' + no.slice(1) : no;
-        var kosong = '<span style="color:var(--tempo);font-weight:700">belum diisi</span>';
-        return '<tr style="cursor:default"><td style="font-weight:700">' + esc(x.KODE) + '</td><td class="bungkus">' + esc(x.PENYEWA) + '</td><td class="n">' + esc(x.UNIT) + '</td><td>' + (ada(x.AKHIR) ? esc(tglTabel(x.AKHIR)) : '') + '</td>' +
-          '<td>' + (ada(x.HP_PENYEWA) ? esc(x.HP_PENYEWA) + (no.length >= 8 ? ' <a href="https://wa.me/' + esc(wa) + '" target="_blank" rel="noopener" title="Chat WhatsApp">💬</a> <a href="tel:' + esc(no) + '" title="Telepon">📞</a>' : '') : kosong) + '</td>' +
-          '<td class="lebar">' + (ada(x.TUJUAN_SEWA) ? esc(x.TUJUAN_SEWA) : kosong) + '</td></tr>';
+        return '<tr style="cursor:default"><td style="font-weight:700">' + (ada(x.UNIT) ? esc(x.UNIT) : '<span style="color:#b9b3a6">–</span>') + '</td><td class="bungkus">' + esc(x.PENYEWA) + '</td>' +
+          '<td>' + (ada(x.HP_PENYEWA) ? linkHp(x.HP_PENYEWA) : kosong) + '</td><td class="lebar">' + (ada(x.TUJUAN_SEWA) ? esc(x.TUJUAN_SEWA) : kosong) + '</td>' +
+          '<td>' + (x.kontrak ? '<a href="#" onclick="detailKontrak(\'' + esc(x.KODE) + '\');return false">' + esc(x.KODE) + '</a>' + (ada(x.kontrak.AKHIR) ? ' • s/d ' + esc(tglTabel(x.kontrak.AKHIR)) : '') : '<span style="color:#b9b3a6">tanpa kontrak</span>') + '</td></tr>';
       }).join('') + '</tbody></table></div>';
-  } else h += '<div class="panel kosong-teks">' + (a.KONDISI === 'Dipakai sendiri' ? 'Aset dipakai sendiri – tidak ada penyewa.' : 'Belum ada kontrak sewa aktif untuk aset ini. Penyewa ditambahkan dari tab Kontrak (+ Kontrak baru) lalu ditautkan ke aset ini.') + '</div>';
+  } else h += '<div class="panel kosong-teks">' + (a.KONDISI === 'Dipakai sendiri' ? 'Aset dipakai sendiri – tidak ada penyewa.' : a.KONDISI === 'Terjual' ? 'Aset sudah terjual.' : 'Belum ada penyewa. Tekan <b>+ Tambah penyewa</b> – 1 aset bisa banyak penyewa (per unit).') + '</div>';
   // lokasi
   h += '<div class="sub-judul"><h2>LOKASI</h2><button class="btn kecil ghost" onclick="formDetail(\'' + esc(id) + '\', true)">📍 ' + (g.link ? 'Ubah lokasi' : 'Isi lokasi') + '</button></div>';
   if (g.link) {
@@ -1415,24 +1435,47 @@ function jadikanFotoUtama(mediaId){
   mintaNama(false, function(){ panggil('apiSimpanDetail', [m.ID_ASET, {FOTO_UTAMA: m.ID}, namaSaya()], function(d){ terima(d); tutupModal(); toast('Foto tampak diganti'); }); });
 }
 
-/** Isi No. HP & tujuan sewa untuk semua penyewa aktif aset ini sekaligus. */
+/** Isi / tambah penyewa aset ini (banyak unit, penyewa berbeda-beda). */
 function formPenyewa(id){
   mintaNama(false, function(){
-    var a = asetById(id), ps = penyewaAset(a);
+    var a = asetById(id);
+    var rows = penyewaAset(a).map(function(x){ return {UNIT: x.UNIT || '', KODE: x.KODE, PENYEWA: x.PENYEWA || '', HP_PENYEWA: x.HP_PENYEWA || '', TUJUAN_SEWA: x.TUJUAN_SEWA || '', kontrak: x.kontrak}; });
+    if (!rows.length) rows.push({UNIT: '', KODE: '', PENYEWA: '', HP_PENYEWA: '', TUJUAN_SEWA: ''});
+    // pilihan unit dari rincian per unit (mis. "RUKO • SHM No.3494") + yang pernah diketik
+    var opsiUnit = unikUrut(unitsOf(id).map(function(u){ return [u.UNIT, u.DOKUMEN].filter(ada).join(' • '); }).concat(rows.map(function(r){ return r.UNIT; })));
     bukaModal('<div class="sheet-head"><h3>Penyewa ' + esc(a.NAMA) + '</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
-      '<p class="info">Isi No. HP dan tujuan sewa tiap penyewa. Data ini ikut tersimpan di kontrak sewanya (tab Kontrak).</p>' +
-      ps.map(function(k, i){
-        return '<div class="unit-box"><div class="unit-head"><b>' + esc(k.KODE + ' • ' + (k.PENYEWA || 'penyewa belum diisi')) + '</b><span class="info">' + esc([k.UNIT ? k.UNIT + ' unit' : '', ada(k.AKHIR) ? 's/d ' + fmtTgl(k.AKHIR) : ''].filter(ada).join(' • ')) + '</span></div><div class="form">' +
-          '<label>No. HP penyewa<input id="ps_hp_' + i + '" type="tel" value="' + esc(k.HP_PENYEWA) + '" placeholder="mis. 0812 3456 7890"></label>' +
-          '<label>Tujuan sewa<input id="ps_tj_' + i + '" list="dlTujuan" value="' + esc(k.TUJUAN_SEWA) + '" placeholder="mis. Toko HP / gudang / rumah tinggal"></label></div></div>';
-      }).join('') +
-      datalist('dlTujuan', unik(TUJUAN_SEWA_UMUM.concat(S.kontrak.map(function(x){ return x.TUJUAN_SEWA; })))) +
+      '<p class="info">1 aset bisa banyak penyewa – isi per unit yang disewa. Penyewa dari kontrak (ada kodenya) ikut memperbarui No. HP &amp; tujuan di tab Kontrak.</p>' +
+      '<div id="psRows"></div>' +
+      '<div class="aksi" style="margin-top:8px"><button class="btn ghost kecil" id="psTambah">+ Tambah penyewa</button></div>' +
+      datalist('dlTujuan', unik(TUJUAN_SEWA_UMUM.concat(S.kontrak.map(function(x){ return x.TUJUAN_SEWA; })).concat((S.penyewaUnit || []).map(function(x){ return x.TUJUAN_SEWA; })))) +
+      datalist('dlUnitSewa', opsiUnit) +
       '<div class="aksi"><button class="btn" id="psSimpan">Simpan</button><button class="btn ghost" onclick="tutupModal()">Batal</button></div>');
+    var gambar = function(){
+      $('psRows').innerHTML = rows.map(function(r, i){
+        var kepala = r.KODE ? '<b>' + esc(r.KODE + ' • ' + (r.PENYEWA || 'penyewa belum diisi')) + '</b><span class="info">dari kontrak' + (r.kontrak && ada(r.kontrak.AKHIR) ? ' • s/d ' + esc(fmtTgl(r.kontrak.AKHIR)) : '') + '</span>'
+          : '<b>Penyewa ' + (i + 1) + '</b><button type="button" class="tautan-hapus" data-hapus="' + i + '">✕ hapus</button>';
+        return '<div class="unit-box"><div class="unit-head">' + kepala + '</div><div class="form">' +
+          '<label>Unit / ruko yang disewa<input data-i="' + i + '" data-k="UNIT" list="dlUnitSewa" value="' + esc(r.UNIT) + '" placeholder="mis. Ruko 1 / SHM No.3494"></label>' +
+          (r.KODE ? '' : '<label>Nama penyewa *<input data-i="' + i + '" data-k="PENYEWA" value="' + esc(r.PENYEWA) + '" placeholder="mis. Budi Santoso"></label>') +
+          '<label>No. HP penyewa<input data-i="' + i + '" data-k="HP_PENYEWA" type="tel" value="' + esc(r.HP_PENYEWA) + '" placeholder="mis. 0812 3456 7890"></label>' +
+          '<label>Tujuan sewa<input data-i="' + i + '" data-k="TUJUAN_SEWA" list="dlTujuan" value="' + esc(r.TUJUAN_SEWA) + '" placeholder="mis. Toko HP / gudang"></label></div></div>';
+      }).join('');
+      $('psRows').querySelectorAll('input').forEach(function(inp){ inp.oninput = function(){ rows[+inp.dataset.i][inp.dataset.k] = inp.value; }; });
+      $('psRows').querySelectorAll('[data-hapus]').forEach(function(b){ b.onclick = function(){ rows.splice(+b.dataset.hapus, 1); gambar(); }; });
+    };
+    gambar();
+    $('psTambah').onclick = function(){
+      rows.push({UNIT: '', KODE: '', PENYEWA: '', HP_PENYEWA: '', TUJUAN_SEWA: ''}); gambar();
+      var el = $('psRows').querySelector('[data-i="' + (rows.length - 1) + '"]'); if (el) { el.scrollIntoView({block: 'center'}); el.focus(); }
+    };
     $('psSimpan').onclick = function(){
-      var list = ps.map(function(k, i){ return {KODE: k.KODE, HP_PENYEWA: $('ps_hp_' + i).value.trim(), TUJUAN_SEWA: $('ps_tj_' + i).value.trim()}; });
-      var pendek = list.filter(function(x){ return x.HP_PENYEWA && x.HP_PENYEWA.replace(/\D/g, '').length < 8; })[0];
-      if (pendek) { toast('No. HP penyewa ' + pendek.KODE + ' terlalu pendek (minimal 8 angka)', true); return; }
-      panggil('apiSimpanPenyewa', [list, namaSaya()], function(d){ terima(d); tutupModal(); toast('Data penyewa disimpan'); });
+      var list = rows.map(function(r){ return {UNIT: r.UNIT.trim(), KODE: r.KODE, PENYEWA: r.KODE ? '' : r.PENYEWA.trim(), HP_PENYEWA: r.HP_PENYEWA.trim(), TUJUAN_SEWA: r.TUJUAN_SEWA.trim()}; })
+        .filter(function(r){ return r.KODE || r.UNIT || r.PENYEWA || r.HP_PENYEWA || r.TUJUAN_SEWA; });
+      var tanpaNama = list.filter(function(r){ return !r.KODE && !r.PENYEWA; })[0];
+      if (tanpaNama) { toast('Nama penyewa wajib diisi' + (tanpaNama.UNIT ? ' (unit ' + tanpaNama.UNIT + ')' : ''), true); return; }
+      var pendek = list.filter(function(r){ return r.HP_PENYEWA && r.HP_PENYEWA.replace(/\D/g, '').length < 8; })[0];
+      if (pendek) { toast('No. HP ' + (pendek.PENYEWA || pendek.KODE) + ' terlalu pendek (minimal 8 angka)', true); return; }
+      panggil('apiSimpanPenyewaAset', [id, list, namaSaya()], function(d){ terima(d); tutupModal(); toast('Data penyewa disimpan'); });
     };
   });
 }
