@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Property SKN</title>
@@ -596,7 +597,7 @@ function detailAset(id){
   var md = mediaAset(a.ID);
   h += '<h2>Foto &amp; video (' + md.length + ')</h2>' + (md.length ? htmlThumbs(md) : '<div class="panel kosong-teks">Belum ada foto/video.</div>') +
     (md.filter(function(m){ return m.GMAPS; })[0] ? '<p class="info" style="margin-top:6px"><a href="' + esc(md.filter(function(m){ return m.GMAPS; })[0].GMAPS) + '" target="_blank" rel="noopener">📍 Buka lokasi di Google Maps</a></p>' : '');
-  h += '<div class="aksi"><button class="btn" onclick="bukaDetail(\'' + esc(a.ID) + '\')">📋 Detail lengkap</button><button class="btn ghost" onclick="formAset(\'' + esc(a.ID) + '\')">Ubah data aset</button>' +
+  h += '<div class="aksi"><button class="btn" onclick="bukaDetail(\'' + esc(a.ID) + '\')">📋 Detail lengkap</button><button class="btn" onclick="kartuAset(\'' + esc(a.ID) + '\')">🖼 Kartu laporan</button><button class="btn ghost" onclick="formAset(\'' + esc(a.ID) + '\')">Ubah data aset</button>' +
     '<button class="btn ghost" onclick="formUpload(\'' + esc(a.ID) + '\')">+ Upload foto/video</button>' +
     (bisaDisewa(a) ? '<button class="btn ghost" onclick="kontrakDariAset(\'' + esc(a.ID) + '\')">+ Penyewa / kontrak baru</button>' : '') +
     '<button class="btn merah" onclick="hapusAset(\'' + esc(a.ID) + '\')">Hapus aset</button></div>';
@@ -1363,7 +1364,7 @@ function halamanDetail(id){
   var jenisUnit = a.JENIS === 'TANAH' ? 'BIDANG TANAH' : a.JENIS === 'RUKO' ? 'UNIT RUKO' : 'UNIT';
   var tl = totalLuas(u, 'LUAS_TANAH'), tb = totalLuas(u, 'LUAS_BANGUNAN');
   var kor = (g.link.match(/[?&]q=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/) || []);
-  var h = '<button class="btn ghost kecil" onclick="tutupDetail()">← Semua aset</button>' +
+  var h = '<button class="btn ghost kecil" onclick="tutupDetail()">← Semua aset</button> <button class="btn kecil" onclick="kartuAset(\'' + esc(id) + '\')">🖼 Kartu laporan</button>' +
     '<div class="judul-detail"><div class="jd-1">DATA ' + esc(a.NAMA) + '</div><div class="jd-2">' + esc([a.JENIS, a.LOKASI, a.ALAMAT, a.PEMILIK].filter(ada).join(' • ')) + '</div>' +
     (k.kurang.length ? '<span class="badge b-tempo">Belum lengkap: ' + esc(k.kurang.join(', ')) + '</span>' : '<span class="badge b-sewa">Detail lengkap</span>') + '</div>';
   // kartu ringkas
@@ -2078,8 +2079,8 @@ function kartuRingkasan(f){
   return k.c;
 }
 function namaFile(id, i, n){ return 'Property-' + id + '-' + S.hariIni + (n > 1 ? '-hal' + (i + 1) : '') + '.png'; }
-function tampilkanKartu(kanvas, id){
-  var wadah = $('hasilKartu');
+function tampilkanKartu(kanvas, id, wadahLain){
+  var wadah = wadahLain || $('hasilKartu');
   var url = kanvas.map(function(c){ return c.toDataURL('image/png'); });
   wadah.innerHTML = '<div class="aksi" style="margin-top:0">' + (kanvas.length > 1 ? '<button class="btn" id="unduhSemua">Unduh semua (' + kanvas.length + ' kartu)</button>' : '') + '</div>' +
     '<div class="hasil-kartu' + (kanvas[0].width > kanvas[0].height ? ' lebar' : '') + '">' + url.map(function(u, i){
@@ -2097,8 +2098,172 @@ function tampilkanKartu(kanvas, id){
       } else { unduh(i); toast('Bagikan tidak didukung di browser ini, gambar diunduh'); }
     }, 'image/png');
   }; });
-  if ($('unduhSemua')) $('unduhSemua').onclick = function(){ url.forEach(function(u, i){ setTimeout(function(){ unduh(i); }, i * 600); }); };
-  wadah.scrollIntoView({behavior: 'smooth', block: 'start'});
+  if (kanvas.length > 1 && $('unduhSemua')) $('unduhSemua').onclick = function(){ url.forEach(function(u, i){ setTimeout(function(){ unduh(i); }, i * 600); }); };
+  if (!wadahLain) wadah.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+/* ============ KARTU LAPORAN PER ASET ============ */
+var WARNA_STATUS = {sewa: '#1f8a4c', tempo: '#c77700', lewat: '#c62f2f', kosong: '#2f5d9e', cari: '#0b7285', pakai: '#6b4fa0', jual: '#667476'};
+function siapFont(){
+  return (document.fonts && document.fonts.load) ? Promise.all([
+    document.fonts.load('800 40px "Plus Jakarta Sans"'), document.fonts.load('700 28px "Plus Jakarta Sans"'),
+    document.fonts.load('500 22px "Plus Jakarta Sans"'), document.fonts.load('600 22px "Plus Jakarta Sans"')]).catch(function(){}) : Promise.resolve();
+}
+/** Foto untuk kartu: foto tampak dulu, lalu foto lain terbaru (maks 3). */
+function fotoKartuAset(id){
+  var utama = fotoUtama(id), lain = mediaAset(id).filter(function(m){ return m.TIPE === 'Foto' && (!utama || m.ID !== utama.ID); })
+    .sort(function(a, b){ return String(b.WAKTU).localeCompare(String(a.WAKTU)); });
+  return (utama ? [utama] : []).concat(lain).slice(0, 3);
+}
+function kartuAset(id){
+  var a = asetById(id); if (!a) return;
+  bukaModal('<div class="sheet-head"><h3>🖼 Kartu laporan aset</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+    '<p class="info" style="margin-top:0">' + esc(a.NAMA) + '</p><div id="hasilKartuAset"><p class="info">Menyiapkan kartu (mengambil foto)...</p></div>');
+  var foto = fotoKartuAset(id);
+  var gambar = function(dataUrl){
+    Promise.all((dataUrl || []).map(function(u){
+      return new Promise(function(ok){ if (!u) return ok(null); var im = new Image(); im.onload = function(){ ok(im); }; im.onerror = function(){ ok(null); }; im.src = u; });
+    })).then(function(img){
+      return siapFont().then(function(){ return img.filter(Boolean); });
+    }).then(function(img){
+      if (!$('hasilKartuAset')) return;
+      tampilkanKartu([gambarKartuAset(a, img)], a.ID, $('hasilKartuAset'));
+    });
+  };
+  if (!foto.length) { gambar([]); return; }
+  google.script.run.withSuccessHandler(gambar).withFailureHandler(function(){ gambar([]); })
+    .apiFotoKartu(foto.map(function(m){ return m.FILE_ID; }));
+}
+/** Gambar foto memenuhi kotak (dipotong tengah). */
+function fotoKotak(x, im, X, Y, w, h, r){
+  x.save(); bulat(x, X, Y, w, h, r); x.clip();
+  var s = Math.max(w / im.width, h / im.height), iw = im.width * s, ih = im.height * s;
+  x.drawImage(im, X + (w - iw) / 2, Y + (h - ih) / 2, iw, ih);
+  x.restore();
+}
+function gambarKartuAset(a, foto){
+  var st = statusAset(a), warna = WARNA_STATUS[st.cari ? 'cari' : st.kode] || '#0f3d3e';
+  var c = document.createElement('canvas'); c.width = KW * SKALA; c.height = 2600 * SKALA;
+  var x = c.getContext('2d'); x.scale(SKALA, SKALA); x.textBaseline = 'alphabetic';
+  x.fillStyle = '#f3f1ec'; x.fillRect(0, 0, KW, 2600);
+  // kepala
+  font(x, 800, 42); var judul = bungkus(x, a.NAMA, KW - 112, 2);
+  var hk = 150 + judul.length * 50;
+  x.fillStyle = '#0f3d3e'; x.fillRect(0, 0, KW, hk);
+  x.fillStyle = warna; x.fillRect(0, hk - 6, KW, 6);
+  x.fillStyle = 'rgba(255,255,255,.72)'; font(x, 700, 19); x.fillText('PT SATELIT KOMUNIKA NUSANTARA • LAPORAN ASET', 56, 50);
+  x.fillStyle = '#ffffff'; font(x, 800, 42); judul.forEach(function(s, i){ x.fillText(s, 56, 104 + i * 50); });
+  x.fillStyle = 'rgba(255,255,255,.85)'; font(x, 500, 22);
+  x.fillText([a.ID, a.JENIS, a.LOKASI, 'Per ' + fmtTgl(S.hariIni, true)].filter(ada).join('  •  '), 56, hk - 30, KW - 112);
+  var y = hk + 20;
+  // chip status & ringkas
+  var ks = kontrakAset(a), aktif = ks.filter(function(k){ return k.STATUS === 'Aktif'; });
+  var unitSewa = aktif.reduce(function(s, k){ return s + (Number(k.UNIT) || 1); }, 0);
+  var chips = [st.label, (Number(a.UNIT) || 0) + ' unit'];
+  if (aktif.length) chips.push(unitSewa + ' unit disewa');
+  var nilai = aktif.reduce(function(s, k){ return s + (Number(k.NILAI_SEWA) || 0) * (Number(k.UNIT) || 1); }, 0);
+  if (nilai) chips.push(rpSingkat(nilai) + ' sewa/tahun');
+  var cx = 56;
+  chips.forEach(function(t, i){
+    font(x, 700, 22); var w = x.measureText(t).width + 36;
+    if (cx + w > KW - 40) return;
+    bulat(x, cx, y, w, 44, 22); x.fillStyle = i === 0 ? warna : '#ffffff'; x.fill();
+    if (i) { x.strokeStyle = '#d8d2c6'; x.lineWidth = 2; x.stroke(); }
+    x.fillStyle = i === 0 ? '#ffffff' : '#1d2a2b'; x.fillText(t, cx + 18, y + 29);
+    cx += w + 10;
+  });
+  y += 66;
+  // foto
+  var fw = KW - 80;
+  if (foto.length) {
+    var fh = 400;
+    if (foto.length === 1) fotoKotak(x, foto[0], 40, y, fw, fh, 16);
+    else {
+      var bw = Math.round(fw * 0.64), sw = fw - bw - 12, sh = foto.length > 2 ? (fh - 12) / 2 : fh;
+      fotoKotak(x, foto[0], 40, y, bw, fh, 16);
+      fotoKotak(x, foto[1], 40 + bw + 12, y, sw, sh, 16);
+      if (foto[2]) fotoKotak(x, foto[2], 40 + bw + 12, y + sh + 12, sw, sh, 16);
+    }
+    y += fh + 18;
+  } else {
+    bulat(x, 40, y, fw, 90, 16); x.fillStyle = '#e8e4da'; x.fill();
+    x.fillStyle = '#7a8586'; font(x, 600, 22); x.fillText('Belum ada foto aset', 72, y + 54);
+    y += 108;
+  }
+  // panel data aset
+  function panel(judulP, baris, kol2){
+    var lebarK = kol2 ? (fw - 48) / 2 : fw - 48, ys = [], tinggi = 0;
+    font(x, 600, 21);
+    var isi = baris.filter(function(b){ return ada(b[1]); }).map(function(b){ return {k: b[0], v: bungkus(x, b[1], lebarK - 20, 3)}; });
+    if (!isi.length) return;
+    var kolY = [0, 0];
+    isi.forEach(function(b, i){
+      var k = kol2 ? i % 2 : 0; ys.push({k: k, y: kolY[k]}); kolY[k] += 30 + b.v.length * 28 + 14;
+    });
+    tinggi = Math.max(kolY[0], kolY[1]);
+    var h = 62 + tinggi;
+    bulat(x, 40, y, fw, h, 16); x.fillStyle = '#fff'; x.fill();
+    x.fillStyle = '#0f3d3e'; font(x, 800, 24); x.fillText(judulP, 64, y + 42);
+    isi.forEach(function(b, i){
+      var X = 64 + ys[i].k * (lebarK + 24), Y = y + 62 + ys[i].y;
+      x.fillStyle = '#7a8586'; font(x, 700, 17); x.fillText(b.k.toUpperCase(), X, Y + 18);
+      x.fillStyle = '#1d2a2b'; font(x, 600, 21); b.v.forEach(function(s, j){ x.fillText(s, X, Y + 46 + j * 28); });
+    });
+    y += h + 14;
+  }
+  var units = unitsOf(a.ID), lt = totalLuas(units, 'LUAS_TANAH'), lb = totalLuas(units, 'LUAS_BANGUNAN');
+  var gm = gmapsAset(a.ID).link;
+  panel('Data aset', [
+    ['Pemilik', [a.PEMILIK, a.PEMILIK_DETAIL].filter(ada).filter(function(v, i, s){ return s.indexOf(v) === i; }).join(' – ')],
+    ['Alamat', a.ALAMAT],
+    ['Atas nama sertifikat', a.SERTIFIKAT_NAMA], ['No. sertifikat', a.SERTIFIKAT_NO],
+    ['Luas', lt !== '' || lb !== '' ? [lt !== '' ? 'Tanah ' + fmtLuas(lt) + ' m²' : '', lb !== '' ? 'Bangunan ' + fmtLuas(lb) + ' m²' : ''].filter(ada).join(' • ') : teksLuas(a).replace(/^Luas /, '')],
+    ['Nilai pasar sewa', a.NILAI_PASAR],
+    ['Lokasi Maps', gm ? gm.replace(/^https?:\/\/(www\.)?/, '') : '']
+  ], true);
+  // penyewa / kontrak
+  var urut = ks.slice().sort(function(p, q){ return (p.STATUS === 'Aktif' ? 0 : 1) - (q.STATUS === 'Aktif' ? 0 : 1) || String(q.AKHIR).localeCompare(String(p.AKHIR)); });
+  var tampil = urut.slice(0, 8);
+  if (tampil.length) {
+    var hb = 0; font(x, 500, 19);
+    var baris = tampil.map(function(k){
+      var sk = statusKontrak(k);
+      var l2 = [ada(k.AWAL) || ada(k.AKHIR) ? fmtTgl(k.AWAL) + ' – ' + fmtTgl(k.AKHIR) : '', (Number(k.UNIT) || 1) + ' unit', k.NILAI_SEWA ? rpPenuh(k.NILAI_SEWA) + '/thn/unit' : ''].filter(ada).join('  •  ');
+      var l3 = [k.HP_PENYEWA ? 'HP ' + k.HP_PENYEWA : '', k.TUJUAN_SEWA ? 'Tujuan: ' + k.TUJUAN_SEWA : ''].filter(ada).join('  •  ');
+      var b = {k: k, sk: sk, l2: l2, l3: l3 ? bungkus(x, l3, fw - 80, 2) : []};
+      b.h = 30 + 28 + b.l3.length * 26 + 18; hb += b.h; return b;
+    });
+    var hp = 62 + hb + (urut.length > tampil.length ? 34 : 0);
+    bulat(x, 40, y, fw, hp, 16); x.fillStyle = '#fff'; x.fill();
+    x.fillStyle = '#0f3d3e'; font(x, 800, 24); x.fillText('Kontrak & penyewa (' + aktif.length + ' aktif dari ' + ks.length + ')', 64, y + 42);
+    var ry = y + 62;
+    baris.forEach(function(b, i){
+      if (i) { x.fillStyle = '#ece8df'; x.fillRect(64, ry - 8, fw - 48, 2); }
+      var wk = WARNA_STATUS[b.sk.kode] || '#7a8586';
+      x.fillStyle = wk; x.fillRect(48, ry, 6, b.h - 22);
+      font(x, 700, 18); var lab = b.sk.label, lw = x.measureText(lab).width + 24;
+      bulat(x, KW - 64 - lw, ry, lw, 30, 15); x.fillStyle = b.k.STATUS === 'Aktif' ? wk : '#e8e4da'; x.fill();
+      x.fillStyle = b.k.STATUS === 'Aktif' ? '#fff' : '#5b6869'; x.fillText(lab, KW - 64 - lw + 12, ry + 21);
+      x.fillStyle = '#1d2a2b'; font(x, 800, 22); x.fillText(bungkus(x, b.k.KODE + ' • ' + (b.k.PENYEWA || 'Penyewa belum diisi'), fw - 80 - lw - 20, 1)[0], 64, ry + 22);
+      x.fillStyle = '#4b5758'; font(x, 500, 19); x.fillText(b.l2, 64, ry + 52, fw - 80);
+      x.fillStyle = '#4b5758'; b.l3.forEach(function(s, j){ x.fillText(s, 64, ry + 78 + j * 26); });
+      ry += b.h;
+    });
+    if (urut.length > tampil.length) { x.fillStyle = '#7a8586'; font(x, 600, 19); x.fillText('+ ' + (urut.length - tampil.length) + ' kontrak lainnya (lihat di aplikasi)', 64, ry + 10); }
+    y += hp + 14;
+  } else if (a.KONDISI !== 'Terjual' && a.KONDISI !== 'Dipakai sendiri') {
+    panel('Kontrak & penyewa', [['Status', 'Belum ada kontrak sewa yang ditautkan']]);
+  }
+  if (ada(a.CATATAN)) panel('Catatan', [['', a.CATATAN]]);
+  // kaki
+  y += 10;
+  x.fillStyle = '#d8d2c6'; x.fillRect(56, y, KW - 112, 2);
+  x.fillStyle = '#667476'; font(x, 500, 20);
+  x.fillText('Sumber: App Property SKN • dibuat ' + fmtTgl(S.hariIni), 56, y + 36);
+  var tinggi = Math.ceil(y + 60);
+  var hasil = document.createElement('canvas'); hasil.width = KW * SKALA; hasil.height = tinggi * SKALA;
+  hasil.getContext('2d').drawImage(c, 0, 0);
+  return hasil;
 }
 
 /* ============ MULAI ============ */
