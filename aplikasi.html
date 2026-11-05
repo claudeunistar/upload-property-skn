@@ -238,6 +238,7 @@ details.rinci .beda{font-size:12px;color:#4b5758;margin-top:2px;word-break:break
     <div class="alat">
       <input type="search" id="cariKontrak" placeholder="Cari kode, aset, penyewa..." oninput="gambarKontrak()">
       <button class="btn" onclick="formKontrak()">+ Kontrak baru</button>
+      <button class="btn ghost" onclick="suratKontrak()">📝 Surat kontrak</button>
     </div>
     <div class="alat">
       <select id="fKStatus" onchange="gambarKontrak()">
@@ -620,7 +621,7 @@ function detailAset(id){
   var md = mediaAset(a.ID);
   h += '<h2>Foto &amp; video (' + md.length + ')</h2>' + (md.length ? htmlThumbs(md) : '<div class="panel kosong-teks">Belum ada foto/video.</div>') +
     (md.filter(function(m){ return m.GMAPS; })[0] ? '<p class="info" style="margin-top:6px"><a href="' + esc(md.filter(function(m){ return m.GMAPS; })[0].GMAPS) + '" target="_blank" rel="noopener">📍 Buka lokasi di Google Maps</a></p>' : '');
-  h += '<div class="aksi"><button class="btn" onclick="bukaDetail(\'' + esc(a.ID) + '\')">📋 Detail lengkap</button><button class="btn" onclick="kartuAset(\'' + esc(a.ID) + '\')">🖼 Kartu laporan</button><button class="btn ghost" onclick="formAset(\'' + esc(a.ID) + '\')">Ubah data aset</button>' +
+  h += '<div class="aksi"><button class="btn" onclick="bukaDetail(\'' + esc(a.ID) + '\')">📋 Detail lengkap</button><button class="btn" onclick="kartuAset(\'' + esc(a.ID) + '\')">🖼 Kartu laporan</button><button class="btn ghost" onclick="suratKontrak({ID_ASET: \'' + esc(a.ID) + '\'})">📝 Surat kontrak</button><button class="btn ghost" onclick="formAset(\'' + esc(a.ID) + '\')">Ubah data aset</button>' +
     '<button class="btn ghost" onclick="formUpload(\'' + esc(a.ID) + '\')">+ Upload foto/video</button>' +
     (bisaDisewa(a) ? '<button class="btn ghost" onclick="kontrakDariAset(\'' + esc(a.ID) + '\')">+ Penyewa / kontrak baru</button>' : '') +
     '<button class="btn merah" onclick="hapusAset(\'' + esc(a.ID) + '\')">Hapus aset</button></div>';
@@ -765,7 +766,7 @@ function detailKontrak(kode){
     dl('Harga pasar', k.HARGA_PASAR) + dl('History sewa', k.HISTORY) + dl('Keterangan', k.KET) + dl('Update terakhir', k.KET_UPDATE) +
     dl('Terakhir diubah', [k.DIUBAH_OLEH, k.DIUBAH_PADA].filter(ada).join(', ')) + '</dl>';
   h += '<h2>Aset yang ditautkan</h2>' + (as.length ? '<div class="list">' + as.map(function(a){ return itemAset(a); }).join('') + '</div>' : '<div class="panel kosong-teks">Belum ditautkan ke aset mana pun.</div>');
-  h += '<div class="aksi"><button class="btn" onclick="formKontrak(\'' + esc(k.KODE) + '\')">Ubah</button>' +
+  h += '<div class="aksi"><button class="btn" onclick="formKontrak(\'' + esc(k.KODE) + '\')">Ubah</button><button class="btn ghost" onclick="suratKontrak({KODE: \'' + esc(k.KODE) + '\'})">📝 Buat surat kontrak</button>' +
     (k.STATUS === 'Aktif' ? '<button class="btn ghost" onclick="formKontrak(\'' + esc(k.KODE) + '\', \'perpanjang\')">Perpanjang sewa</button>' +
       '<button class="btn ghost" onclick="selesaikan(\'' + esc(k.KODE) + '\')">Sewa berakhir</button>' : '') +
     '<button class="btn merah" onclick="hapusKontrak(\'' + esc(k.KODE) + '\')">Hapus</button></div>';
@@ -2322,7 +2323,315 @@ function gambarKartuAset(a, foto){
   return hasil;
 }
 
-/* ============ MULAI ============ */
+/* ============ SURAT KONTRAK SEWA (Word) ============ */
+var DK = null; // {template, pemilik:[...], surat:[...]} dari apiDataKontrak
+var SURAT = null; // isi form surat yang sedang dibuat
+var SEBUTAN_OBJEK = ['RUKO', 'RUMAH', 'GUDANG', 'APARTEMEN', 'KIOS', 'TANAH', 'BANGUNAN'];
+var URAIAN_JENIS = {RUKO: 'bangunan rumah toko', RUMAH: 'bangunan rumah tinggal', GUDANG: 'bangunan gudang', APARTEMEN: 'unit apartemen', KIOS: 'unit kios', TANAH: 'bidang tanah', BANGUNAN: 'bangunan'};
+var HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+function muatJszip(){
+  if (window.JSZip) return Promise.resolve();
+  return new Promise(function(ok, gagal){
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    s.onload = ok; s.onerror = function(){ gagal(new Error('Pustaka Word gagal dimuat. Cek internet lalu coba lagi.')); };
+    document.head.appendChild(s);
+  });
+}
+
+/* ---------- terbilang (bahasa Indonesia) ---------- */
+var SATUAN_TB = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
+function terbilang(n){
+  n = Math.floor(Math.abs(Number(n) || 0));
+  if (n === 0) return 'nol';
+  function t(x){
+    if (x < 12) return SATUAN_TB[x];
+    if (x < 20) return SATUAN_TB[x - 10] + ' belas';
+    if (x < 100) return SATUAN_TB[Math.floor(x / 10)] + ' puluh' + (x % 10 ? ' ' + SATUAN_TB[x % 10] : '');
+    if (x < 200) return 'seratus' + (x % 100 ? ' ' + t(x % 100) : '');
+    if (x < 1000) return SATUAN_TB[Math.floor(x / 100)] + ' ratus' + (x % 100 ? ' ' + t(x % 100) : '');
+    if (x < 2000) return 'seribu' + (x % 1000 ? ' ' + t(x % 1000) : '');
+    if (x < 1e6) return t(Math.floor(x / 1000)) + ' ribu' + (x % 1000 ? ' ' + t(x % 1000) : '');
+    if (x < 1e9) return t(Math.floor(x / 1e6)) + ' juta' + (x % 1e6 ? ' ' + t(x % 1e6) : '');
+    if (x < 1e12) return t(Math.floor(x / 1e9)) + ' miliar' + (x % 1e9 ? ' ' + t(x % 1e9) : '');
+    return t(Math.floor(x / 1e12)) + ' triliun' + (x % 1e12 ? ' ' + t(x % 1e12) : '');
+  }
+  return t(n);
+}
+/** 112,5 -> "seratus dua belas koma lima" */
+function terbilangDesimal(n){
+  var s = String(Number(n)).split('.');
+  return terbilang(+s[0]) + (s[1] ? ' koma ' + s[1].split('').map(function(d){ return d === '0' ? 'nol' : SATUAN_TB[+d]; }).join(' ') : '');
+}
+function hurufBesarAwal(s){ return String(s).replace(/(^|\s)\S/g, function(c){ return c.toUpperCase(); }); }
+/** "2026-04-15" -> "15-04-2026" */
+function tglAngka(s){ var m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? m[3] + '-' + m[2] + '-' + m[1] : ''; }
+/** "2026-04-15" -> "lima belas April dua ribu dua puluh enam" */
+function tglHuruf(s){ var d = tglObj(s); return d ? terbilang(d.getUTCDate()) + ' ' + BULAN_PANJANG[d.getUTCMonth()] + ' ' + terbilang(d.getUTCFullYear()) : ''; }
+/** "15-04-2026 (lima belas April dua ribu dua puluh enam)" */
+function tglLengkap(s){ return s ? tglAngka(s) + ' (' + tglHuruf(s) + ')' : '…'; }
+/** "Rp. 320.000.000,- (Tiga Ratus Dua Puluh Juta Rupiah)" */
+function rpLengkap(n){ n = Math.round(Number(n) || 0); return 'Rp. ' + n.toLocaleString('id-ID') + ',- (' + hurufBesarAwal(terbilang(n)) + ' Rupiah)'; }
+function angkaRp(s){ return Math.round(Number(String(s || '').replace(/[^\d]/g, ''))) || 0; }
+/** jangka waktu dari tanggal mulai & akhir: "2 (dua) tahun" / "18 (delapan belas) bulan" */
+function jangkaWaktu(awal, akhir){
+  var a = tglObj(awal), b = tglObj(akhir); if (!a || !b || b <= a) return '';
+  var bln = (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + (b.getUTCMonth() - a.getUTCMonth());
+  if (b.getUTCDate() < a.getUTCDate() - 1) bln--;
+  if (bln <= 0) { var h = selisihHari(awal, akhir); return h + ' (' + terbilang(h) + ') hari'; }
+  return bln % 12 === 0 ? (bln / 12) + ' (' + terbilang(bln / 12) + ') tahun' : bln + ' (' + terbilang(bln) + ') bulan';
+}
+
+/* ---------- isi paragraf kontrak ---------- */
+function pemilikKontrakData(kunci){ return ((DK && DK.pemilik) || []).filter(function(p){ return p.KUNCI === kunci; })[0] || {}; }
+function teksOrang(p, nomor){
+  var ktp = '';
+  if (p.KTP_LAMA && p.KTP_BERLAKU) ktp = ', yang tertulis dalam Kartu Tanda Penduduk berlaku sampai dengan tanggal ' + tglLengkap(p.KTP_BERLAKU) +
+    ', akan tetapi berdasarkan Pasal 64 ayat (7) huruf a juncto pasal 101 huruf c undang-undang Nomor 24 Tahun 2013 tentang Administrasi Kependudukan dan berdasarkan Surat Edaran Menteri Dalam Negeri Republik Indonesia Nomor 470/296/Sc tanggal 29-01-2016 (dua puluh sembilan Januari dua ribu enam belas) berlaku seumur hidup';
+  return nomor + (p.SEBUTAN || 'Tuan') + ' ' + String(p.NAMA || '…').toUpperCase() + ', lahir di ' + (p.TEMPAT_LAHIR || '…') + ' pada tanggal ' + tglLengkap(p.TGL_LAHIR) + ', ' +
+    (p.PEKERJAAN || '…') + ', bertempat tinggal di ' + (p.ALAMAT || '…') + ', pemegang Nomor Induk Kependudukan ' + (p.NIK || '…') + ktp + ', Warga Negara Indonesia.';
+}
+function teksSertifikat(c, i, banyak){
+  var hak = c.HAK || 'Hak Milik', luas = Number(String(c.LUAS || '').replace(',', '.'));
+  return (banyak ? (i + 1) + '. ' : '') + (c.KET ? c.KET + ' ' : '') + (banyak || c.KET ? 'terletak diatas ' : '') + 'sebidang Tanah ' + hak + ' Nomor ' + (c.NOMOR || '…') +
+    (c.SU_TGL || c.SU_NO ? ', sebagaimana diuraikan dalam Surat Ukur' + (c.SU_TGL ? ' tertanggal ' + tglLengkap(c.SU_TGL) : '') + (c.SU_NO ? ' Nomor: ' + c.SU_NO : '') : '') +
+    (luas > 0 ? ', seluas ' + String(c.LUAS).replace('.', ',') + ' M2 (' + terbilangDesimal(luas) + ' meter persegi)' : '') +
+    (c.ATAS_NAMA ? ' tercatat atas nama ' + String(c.ATAS_NAMA).toUpperCase() : '') +
+    ', sebagaimana tersebut dalam Sertifikat ' + hak + (c.TGL_TERBIT ? ' yang dikeluarkan oleh pihak yang berwenang pada tanggal ' + tglLengkap(c.TGL_TERBIT) : '') + ';';
+}
+function paragrafKontrak(d){
+  var owner = pemilikKontrakData(d.OWNER), sebut = d.SEBUTAN || 'RUKO', kecil = sebut.toLowerCase();
+  var jw = jangkaWaktu(d.AWAL, d.AKHIR) || '…', sewa = angkaRp(d.NILAI_SEWA), dep = angkaRp(d.DEPOSIT), total = sewa + dep;
+  var serti = (d.SERTIFIKAT || []).filter(function(c){ return c.NOMOR || c.LUAS || c.ATAS_NAMA; });
+  var p = {};
+  p.P2 = '- Pada hari ini ' + (tglObj(d.TGL_TTD) ? HARI[tglObj(d.TGL_TTD).getUTCDay()] : '…') + ', tanggal ' + tglLengkap(d.TGL_TTD) + ',';
+  p.P4 = teksOrang(owner, 'I. –');
+  p.P7 = teksOrang({SEBUTAN: d.PENYEWA_SEBUTAN, NAMA: d.PENYEWA_NAMA, TEMPAT_LAHIR: d.PENYEWA_TEMPAT, TGL_LAHIR: d.PENYEWA_TGL, PEKERJAAN: d.PENYEWA_KERJA,
+    ALAMAT: d.PENYEWA_ALAMAT, NIK: d.PENYEWA_NIK, KTP_LAMA: d.KTP_LAMA, KTP_BERLAKU: d.KTP_BERLAKU}, 'II.-');
+  p.P11 = '- ' + String(d.URAIAN || '…').trim().replace(/[.,;:\s]+$/, '') + ', berikut dengan segenap bagian dan turutan-turutannya' +
+    (String(d.FASILITAS || '').trim() ? ' ' + String(d.FASILITAS).trim().replace(/[.,;:\s]+$/, '') : '') +
+    (serti.length ? ', yang didirikan diatas bidang tanah yaitu sebagai berikut: ' + serti.map(function(c, i){ return teksSertifikat(c, i, serti.length > 1); }).join(' ').replace(/;$/, ',') +
+      ' yang batas-batas dan ukurannya telah diketahui oleh pihak kedua.' : '.') +
+    ' Untuk selanjutnya disebut juga “' + sebut + '”. Selanjutnya para pihak menerangkan bahwa perjanjian Sewa Menyewa ini dilangsungkan untuk jangka waktu ' + jw +
+    ' lamanya dengan harga sewa untuk ' + kecil + ' seluruhnya sebesar ' + rpLengkap(sewa) + (dep ? ', beserta deposit sewa sebesar ' + rpLengkap(dep) : '') + '.';
+  var bayar = (d.BAYAR || []).filter(function(b){ return angkaRp(b.JUMLAH) > 0; }), sudah = bayar.reduce(function(s, b){ return s + angkaRp(b.JUMLAH); }, 0);
+  var apa = dep ? 'sewa dan deposit' : 'sewa';
+  if (!bayar.length) p.P12 = '- Seluruh uang ' + apa + ' sebesar ' + rpLengkap(total) + ' dibayarkan oleh Pihak Kedua kepada Pihak Pertama pada tanggal ' + tglLengkap(d.TGL_TTD) + ' pada saat perjanjian sewa menyewa ini ditandatangani.';
+  else p.P12 = '- Jumlah uang yang telah dibayarkan oleh Pihak Kedua kepada Pihak Pertama adalah sebagai berikut: ' +
+    bayar.map(function(b){ return 'Pada tanggal ' + tglLengkap(b.TGL) + ' sebesar ' + rpLengkap(angkaRp(b.JUMLAH)); }).join(', ') +
+    (bayar.length > 1 ? ', sehingga total keseluruhan pembayaran berjumlah ' + rpLengkap(sudah) : '') +
+    (sudah >= total ? ', dengan demikian uang ' + apa + ' telah dibayar lunas oleh Pihak Kedua kepada Pihak Pertama.'
+      : ', dengan demikian sisa ' + apa + ' yang harus dibayarkan Pihak Kedua kepada Pihak Pertama adalah sebesar ' + rpLengkap(total - sudah) +
+        ' dan akan dibayarkan pada tanggal ' + tglLengkap(d.TGL_TTD) + ' pada saat perjanjian sewa menyewa ini ditandatangani.');
+  p.P14 = '1. –Perjanjian sewa-menyewa ini berlaku selama jangka waktu ' + jw + ' lamanya, terhitung mulai dari tanggal ' + tglLengkap(d.AWAL) +
+    ' hingga berakhir pada tanggal ' + tglLengkap(d.AKHIR) + ' dengan ketentuan dapat diperpanjang untuk jangka waktu dan uang sewa yang disesuaikan dengan harga pasar.';
+  var pn = hurufBesarAwal(String(d.PENGADILAN || '…').toLowerCase());
+  p.P48 = '-Hal yang berkaitan dengan akta ini dan segala akibat hukumnya serta pelaksanaannya, para pihak telah memilih tempat kediaman hukum yang umum dan tetap di kepaniteraan Pengadilan Negeri ' + pn + ', di ' + pn + '.';
+  p.P56 = '  (' + String(d.PENYEWA_NAMA || '…').toUpperCase() + ')\t               (' + String(owner.NAMA || '…').toUpperCase() + ')';
+  return p;
+}
+function escXml(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+/** Isi template Word -> Blob .docx */
+function buatDocxKontrak(d){
+  return muatJszip().then(function(){ return JSZip.loadAsync(DK.template, {base64: true}); }).then(function(zip){
+    return zip.file('word/document.xml').async('string').then(function(xml){
+      var sebut = d.SEBUTAN || 'RUKO';
+      if (sebut !== 'RUKO') { // kata "ruko" di pasal-pasal ikut jenis objek
+        var kata = sebut.toLowerCase();
+        xml = xml.replace(/(<w:t(?: [^>]*)?>)([^<]*)(<\/w:t>)/g, function(m, a, t, b){
+          return a + t.replace(/\bruko\b/g, kata).replace(/\bRuko\b/g, kata.charAt(0).toUpperCase() + kata.slice(1)).replace(/\bRUKO\b/g, sebut) + b;
+        });
+      }
+      var p = paragrafKontrak(d);
+      Object.keys(p).forEach(function(k){
+        var isi = p[k].split('\t').map(function(s){ return '<w:t xml:space="preserve">' + escXml(s) + '</w:t>'; }).join('<w:tab/>');
+        if (k !== 'P56') isi += '<w:tab/>'; // tab kanan berleader "-" mengisi sisa baris dengan garis (gaya akta)
+        xml = xml.replace('<w:t xml:space="preserve">{{' + k + '}}</w:t>', isi);
+      });
+      if (/\{\{P\d+\}\}/.test(xml)) throw new Error('Template kontrak tidak lengkap.');
+      zip.file('word/document.xml', xml);
+      return zip.generateAsync({type: 'blob', compression: 'DEFLATE', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+    });
+  });
+}
+function namaFileKontrak(d){
+  var yy = function(s){ var t = tglAngka(s); return t ? t.slice(0, 6) + t.slice(8) : '…'; };
+  return (String(d.JUDUL || d.SEBUTAN || 'KONTRAK').toUpperCase() + ' PERIODE ' + yy(d.AWAL) + ' S.D ' + yy(d.AKHIR) + ' (' + hurufBesarAwal(String(d.PENYEWA_NAMA || 'Penyewa').toLowerCase()) + ')')
+    .replace(/[\\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim() + '.docx';
+}
+function unduhBlob(blob, nama){
+  var url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = nama; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+}
+
+/* ---------- buka form ---------- */
+/** Buka form surat. awal = {ID_ASET, KODE} untuk mengisi otomatis dari aset / kontrak. */
+function suratKontrak(awal){
+  mintaNama(false, function(){
+    var lanjut = function(){ SURAT = isiAwalSurat(awal || {}); gambarFormSurat(); };
+    if (DK) { lanjut(); return; }
+    panggil('apiDataKontrak', [], function(d){ DK = d; lanjut(); });
+  });
+}
+function isiAwalSurat(awal){
+  var d = {OWNER: 'ROBEN', TGL_TTD: S.hariIni, PENYEWA_SEBUTAN: 'Tuan', SEBUTAN: 'RUKO', SERTIFIKAT: [{HAK: 'Hak Milik'}], BAYAR: []};
+  var k = awal.KODE ? kontrakByKode(awal.KODE) : null;
+  var a = awal.ID_ASET ? asetById(awal.ID_ASET) : (k ? asetKontrak(k)[0] : null);
+  if (a) isiDariAset(d, a);
+  if (k) {
+    d.KODE = k.KODE; d.PENYEWA_NAMA = k.PENYEWA || ''; d.AWAL = k.AWAL || ''; d.AKHIR = k.AKHIR || '';
+    var th = Math.max(1, Math.round((selisihHari(k.AWAL, k.AKHIR) || 365) / 365));
+    if (k.NILAI_SEWA) d.NILAI_SEWA = String((Number(k.NILAI_SEWA) || 0) * (Number(k.UNIT) || 1) * th);
+    if (/bastian/i.test(k.OWNER)) d.OWNER = 'BASTIAN';
+  }
+  return d;
+}
+function isiDariAset(d, a){
+  d.ID_ASET = a.ID; d.JUDUL = a.NAMA;
+  d.OWNER = /bastian/i.test(a.PEMILIK) ? 'BASTIAN' : /roben/i.test(a.PEMILIK) ? 'ROBEN' : d.OWNER;
+  var j = String(a.JENIS || '').toUpperCase().replace('KIOS MP', 'KIOS');
+  d.SEBUTAN = SEBUTAN_OBJEK.indexOf(j) >= 0 ? j : 'BANGUNAN';
+  var u = Number(a.UNIT) || 1;
+  d.URAIAN = u + ' (' + terbilang(u) + ') unit ' + (URAIAN_JENIS[d.SEBUTAN] || 'bangunan') + ' yang terletak di ' + [a.ALAMAT, a.LOKASI ? 'Kota ' + hurufBesarAwal(String(a.LOKASI).toLowerCase()) : ''].filter(ada).join(', ');
+  var units = unitsOf(a.ID), daya = unikUrut(units.map(function(x){ return x.DAYA_LISTRIK; }).filter(ada));
+  d.FASILITAS = daya.length ? 'dengan aliran listrik dari Perusahaan Listrik Negara (PLN) dengan daya ' + daya.join(' / ') : '';
+  var serti = units.filter(function(x){ return x.DOKUMEN || x.ATAS_NAMA || x.LUAS_TANAH !== ''; }).map(function(x){
+    return {HAK: /hgb|guna/i.test(x.DOKUMEN) ? 'Hak Guna Bangunan' : 'Hak Milik', NOMOR: String(x.DOKUMEN || '').replace(/^(SHM|SHGB|HGB)\s*/i, ''), LUAS: x.LUAS_TANAH === '' ? '' : String(x.LUAS_TANAH), ATAS_NAMA: x.ATAS_NAMA || '', KET: x.UNIT ? 'Untuk ' + x.UNIT : ''};
+  });
+  if (!serti.length && (a.SERTIFIKAT_NO || a.SERTIFIKAT_NAMA)) serti = [{HAK: 'Hak Milik', NOMOR: String(a.SERTIFIKAT_NO || '').replace(/^(SHM|SHGB|HGB)\s*(No\.?)?\s*/i, ''), ATAS_NAMA: a.SERTIFIKAT_NAMA || ''}];
+  d.SERTIFIKAT = serti.length ? serti : [{HAK: 'Hak Milik'}];
+  d.PENGADILAN = a.LOKASI ? hurufBesarAwal(String(a.LOKASI).toLowerCase()) : '';
+}
+
+/* ---------- tampilan form ---------- */
+function inS(k, label, cls, type, ph){
+  return '<label class="' + (cls || '') + '">' + esc(label) + '<input data-s="' + k + '" type="' + (type || 'text') + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + ' value="' + esc(SURAT[k] || '') + '"></label>';
+}
+function gambarFormSurat(){
+  var d = SURAT, own = pemilikKontrakData(d.OWNER);
+  var kurangOwner = ['NAMA', 'TEMPAT_LAHIR', 'TGL_LAHIR', 'PEKERJAAN', 'ALAMAT', 'NIK'].filter(function(k){ return !own[k]; });
+  var asetOpsi = S.aset.filter(function(a){ return a.KONDISI !== 'Terjual'; });
+  var h = '<div class="sheet-head"><h3>📝 Surat kontrak sewa</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+    (DK.surat.length ? '<details class="rinci" style="margin-bottom:10px"><summary>📂 Buka surat yang pernah dibuat (' + DK.surat.length + ')</summary><div class="list" style="margin-top:6px">' +
+      DK.surat.map(function(s){ return '<button class="item" onclick="bukaSuratLama(\'' + esc(s.ID) + '\')"><div class="t"><b>' + esc(s.JUDUL || '-') + '</b><span class="info">' + esc(s.ID) + '</span></div><div class="s">' + esc(['Penyewa ' + s.PENYEWA, tglAngka(s.AWAL) + ' s/d ' + tglAngka(s.AKHIR), 'dibuat ' + s.WAKTU + ' oleh ' + s.DIBUAT_OLEH].join(' • ')) + '</div></button>'; }).join('') + '</div></details>' : '') +
+    '<h2 style="margin-top:0">1. Pemilik (Pihak Pertama)</h2><div class="aksi" style="margin-top:0">' +
+    DK.pemilik.map(function(p){ return '<button class="btn' + (p.KUNCI === d.OWNER ? '' : ' ghost') + '" onclick="pilihOwnerSurat(\'' + esc(p.KUNCI) + '\')">' + esc(p.LABEL) + '</button>'; }).join('') +
+    '<button class="btn ghost kecil" onclick="formPemilikKontrak(\'' + esc(d.OWNER) + '\')">✏️ Ubah data ' + esc(own.LABEL || '') + '</button></div>' +
+    '<p class="info" style="margin:6px 0 0">' + esc([own.NAMA, own.NIK ? 'NIK ' + own.NIK : '', own.ALAMAT].filter(ada).join(' • ')) + '</p>' +
+    (kurangOwner.length ? '<p class="info" style="color:var(--lewat);margin:4px 0 0">⚠ Data ' + esc(own.LABEL) + ' belum lengkap (' + kurangOwner.length + ' isian kosong). Tekan "Ubah data" — cukup sekali.</p>' : '') +
+    '<h2>2. Tanggal tanda tangan</h2><div class="form">' + inS('TGL_TTD', 'Tanggal perjanjian', '', 'date') + '<label>Penyebutan<em id="sTglTeks" style="font-style:normal;font-size:14px;color:var(--ink)"></em></label></div>' +
+    '<h2>3. Data penyewa (sesuai KTP)</h2><div class="form">' +
+    '<label>Sebutan<select data-s="PENYEWA_SEBUTAN">' + ['Tuan', 'Nyonya', 'Nona'].map(function(v){ return '<option' + (d.PENYEWA_SEBUTAN === v ? ' selected' : '') + '>' + v + '</option>'; }).join('') + '</select></label>' +
+    inS('PENYEWA_NAMA', 'Nama lengkap *', '') + inS('PENYEWA_TEMPAT', 'Tempat lahir', '') + inS('PENYEWA_TGL', 'Tanggal lahir', '', 'date') +
+    inS('PENYEWA_KERJA', 'Pekerjaan', '', 'text', 'mis. Wiraswasta') + inS('PENYEWA_NIK', 'NIK (16 angka)', '', 'text') +
+    '<label class="full">Alamat (sesuai KTP)<textarea data-s="PENYEWA_ALAMAT" placeholder="mis. Kota Bukittinggi, Jalan By Pass Bonjo Baru, Rukun Tetangga 003, Rukun Warga 005, Kelurahan Tarok Dipo, Kecamatan Guguak Panjang">' + esc(d.PENYEWA_ALAMAT || '') + '</textarea></label>' +
+    '<label class="full" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" data-s="KTP_LAMA" style="width:auto"' + (d.KTP_LAMA ? ' checked' : '') + '> KTP lama (masa berlaku sudah lewat → berlaku seumur hidup)</label>' +
+    (d.KTP_LAMA ? inS('KTP_BERLAKU', 'Berlaku s/d (tertulis di KTP)', '', 'date') : '') + '</div>' +
+    '<h2>4. Objek sewa (sesuai sertifikat)</h2><div class="form">' +
+    '<label class="full">Aset<select id="sAset"><option value="">— pilih aset —</option>' + asetOpsi.map(function(a){ return '<option value="' + esc(a.ID) + '"' + (a.ID === d.ID_ASET ? ' selected' : '') + '>' + esc(a.NAMA + ' • ' + a.LOKASI) + '</option>'; }).join('') + '</select><em>Memilih aset mengisi otomatis uraian, sertifikat (dari tab Detail) &amp; kota pengadilan.</em></label>' +
+    inS('JUDUL', 'Judul (nama file)', '', 'text', 'mis. RUKO PAUS') +
+    '<label>Disebut sebagai<select data-s="SEBUTAN">' + SEBUTAN_OBJEK.map(function(v){ return '<option' + (d.SEBUTAN === v ? ' selected' : '') + '>' + v + '</option>'; }).join('') + '</select></label>' +
+    '<label class="full">Uraian objek<textarea data-s="URAIAN" style="min-height:70px">' + esc(d.URAIAN || '') + '</textarea><em>mis. 3 (tiga) unit bangunan rumah toko 1 (satu) lantai yang terletak di Propinsi Riau, Kota Pekanbaru, Kecamatan …</em></label>' +
+    '<label class="full">Listrik / fasilitas (boleh kosong)<textarea data-s="FASILITAS">' + esc(d.FASILITAS || '') + '</textarea></label></div>' +
+    '<div class="sub-judul"><h2 style="margin:10px 0 6px">Sertifikat tanah</h2><button class="btn ghost kecil" onclick="ubahBarisSurat(\'SERTIFIKAT\', 1)">+ Tambah sertifikat</button></div>' +
+    d.SERTIFIKAT.map(function(c, i){
+      var f = function(k, label, type, ph, cls){ return '<label class="' + (cls || '') + '">' + esc(label) + '<input data-c="' + i + '" data-k="' + k + '" type="' + (type || 'text') + '" value="' + esc(c[k] || '') + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + '></label>'; };
+      return '<div class="unit-box"><div class="unit-head"><b>Sertifikat ' + (i + 1) + '</b>' + (d.SERTIFIKAT.length > 1 ? '<button type="button" class="tautan-hapus" onclick="ubahBarisSurat(\'SERTIFIKAT\', -1, ' + i + ')">✕ hapus</button>' : '') + '</div><div class="form">' +
+        f('KET', 'Keterangan (boleh kosong)', 'text', 'mis. Untuk 3 (tiga) unit ruko 1 (satu) lantai', 'full') +
+        '<label>Jenis hak<select data-c="' + i + '" data-k="HAK">' + ['Hak Milik', 'Hak Guna Bangunan'].map(function(v){ return '<option' + (c.HAK === v ? ' selected' : '') + '>' + v + '</option>'; }).join('') + '</select></label>' +
+        f('NOMOR', 'Nomor / NIB', 'text', 'mis. NIB. 05.01.000028064.0') + f('SU_TGL', 'Surat ukur tanggal', 'date') + f('SU_NO', 'Surat ukur nomor', 'text', 'mis. 1888/08') +
+        f('LUAS', 'Luas (m²)', 'text', 'mis. 323') + f('ATAS_NAMA', 'Atas nama', 'text') + f('TGL_TERBIT', 'Tanggal sertifikat dikeluarkan', 'date') + '</div></div>';
+    }).join('') +
+    '<h2>5. Nilai sewa &amp; periode</h2><div class="form">' + inS('AWAL', 'Mulai sewa *', '', 'date') + inS('AKHIR', 'Berakhir *', '', 'date') +
+    '<label class="full">Jangka waktu<em id="sJangka" style="font-style:normal;font-size:14px;color:var(--ink)"></em></label>' +
+    inS('NILAI_SEWA', 'Harga sewa seluruhnya (Rp) *', '', 'text', 'mis. 320.000.000') + inS('DEPOSIT', 'Deposit (Rp)', '', 'text', 'mis. 20.000.000') +
+    '<label class="full"><em id="sTotal" style="font-style:normal;font-size:14px;color:var(--ink)"></em></label></div>' +
+    '<div class="sub-judul"><h2 style="margin:10px 0 6px">Pembayaran yang sudah masuk (boleh kosong)</h2><button class="btn ghost kecil" onclick="ubahBarisSurat(\'BAYAR\', 1)">+ Tambah pembayaran</button></div>' +
+    (d.BAYAR.length ? d.BAYAR.map(function(b, i){
+      return '<div class="form" style="align-items:end"><label>Tanggal bayar<input type="date" data-b="' + i + '" data-k="TGL" value="' + esc(b.TGL || '') + '"></label><label>Jumlah (Rp)<input data-b="' + i + '" data-k="JUMLAH" value="' + esc(b.JUMLAH || '') + '" placeholder="mis. 20.000.000"></label>' +
+        '<button type="button" class="tautan-hapus" onclick="ubahBarisSurat(\'BAYAR\', -1, ' + i + ')">✕ hapus</button></div>';
+    }).join('') : '<p class="info" style="margin:0">Kosong = seluruh uang dibayar saat perjanjian ditandatangani.</p>') +
+    '<p class="info" id="sSisa" style="margin:6px 0 0"></p>' +
+    '<h2>6. Pengadilan Negeri</h2><div class="form">' + inS('PENGADILAN', 'Kota Pengadilan Negeri', '', 'text', 'mis. Pekanbaru') + '</div>' +
+    '<div class="aksi"><button class="btn" id="sUnduh">⬇ Unduh kontrak (Word)</button><button class="btn ghost" onclick="tutupModal()">Batal</button></div>' +
+    '<p class="info">Surat disimpan di aplikasi (bisa dibuka &amp; diunduh lagi). File Word bisa dirapikan lagi sebelum dicetak.</p>';
+  bukaModal(h);
+  var segar = function(){
+    var t = tglObj(d.TGL_TTD);
+    $('sTglTeks').textContent = t ? HARI[t.getUTCDay()] + ', ' + tglLengkap(d.TGL_TTD) : '-';
+    $('sJangka').textContent = jangkaWaktu(d.AWAL, d.AKHIR) || '— isi tanggal mulai & berakhir —';
+    var sewa = angkaRp(d.NILAI_SEWA), dep = angkaRp(d.DEPOSIT), sudah = (d.BAYAR || []).reduce(function(s, b){ return s + angkaRp(b.JUMLAH); }, 0);
+    $('sTotal').textContent = sewa ? 'Sewa ' + rpLengkap(sewa) + (dep ? ' + deposit ' + rpLengkap(dep) : '') : '';
+    $('sSisa').textContent = sudah ? 'Sudah dibayar ' + rpPenuh(sudah) + ' • ' + (sudah >= sewa + dep ? 'LUNAS' : 'sisa ' + rpPenuh(sewa + dep - sudah)) : '';
+  };
+  document.querySelectorAll('#sheet [data-s]').forEach(function(el){
+    el.oninput = el.onchange = function(){
+      d[el.dataset.s] = el.type === 'checkbox' ? el.checked : el.value;
+      if (el.dataset.s === 'KTP_LAMA') { gambarFormSurat(); return; }
+      segar();
+    };
+  });
+  document.querySelectorAll('#sheet [data-c]').forEach(function(el){ el.oninput = el.onchange = function(){ d.SERTIFIKAT[+el.dataset.c][el.dataset.k] = el.value; }; });
+  document.querySelectorAll('#sheet [data-b]').forEach(function(el){ el.oninput = el.onchange = function(){ d.BAYAR[+el.dataset.b][el.dataset.k] = el.value; segar(); }; });
+  $('sAset').onchange = function(){ var a = asetById(this.value); if (a) { isiDariAset(d, a); gambarFormSurat(); } };
+  $('sUnduh').onclick = unduhSuratKontrak;
+  segar();
+}
+function pilihOwnerSurat(k){ SURAT.OWNER = k; gambarFormSurat(); }
+function ubahBarisSurat(kunci, arah, i){
+  var list = SURAT[kunci];
+  if (arah > 0) list.push(kunci === 'SERTIFIKAT' ? {HAK: 'Hak Milik'} : {TGL: S.hariIni, JUMLAH: ''});
+  else list.splice(i, 1);
+  if (kunci === 'SERTIFIKAT' && !list.length) list.push({HAK: 'Hak Milik'});
+  var y = $('sheet').scrollTop; gambarFormSurat(); $('sheet').scrollTop = y;
+}
+function bukaSuratLama(id){
+  var s = DK.surat.filter(function(x){ return x.ID === id; })[0]; if (!s) return;
+  try { SURAT = JSON.parse(s.DATA); SURAT.ID = s.ID; } catch (e) { toast('Isi surat tidak terbaca', true); return; }
+  SURAT.SERTIFIKAT = SURAT.SERTIFIKAT && SURAT.SERTIFIKAT.length ? SURAT.SERTIFIKAT : [{HAK: 'Hak Milik'}]; SURAT.BAYAR = SURAT.BAYAR || [];
+  gambarFormSurat(); toast('Surat ' + id + ' dibuka – ubah lalu unduh lagi');
+}
+function unduhSuratKontrak(){
+  var d = SURAT, own = pemilikKontrakData(d.OWNER), kurang = [];
+  if (!own.NAMA || !own.NIK || !own.ALAMAT) kurang.push('data ' + (own.LABEL || 'owner'));
+  if (!String(d.PENYEWA_NAMA || '').trim()) kurang.push('nama penyewa');
+  if (!d.TGL_TTD) kurang.push('tanggal perjanjian');
+  if (!d.AWAL || !d.AKHIR || !jangkaWaktu(d.AWAL, d.AKHIR)) kurang.push('periode sewa');
+  if (!angkaRp(d.NILAI_SEWA)) kurang.push('harga sewa');
+  if (d.PENYEWA_NIK && !/^\d{16}$/.test(String(d.PENYEWA_NIK).replace(/\s/g, ''))) kurang.push('NIK penyewa 16 angka');
+  if (kurang.length) { toast('Lengkapi: ' + kurang.join(', '), true); return; }
+  var simpan = JSON.parse(JSON.stringify(d)); delete simpan.ID;
+  memuat(true);
+  buatDocxKontrak(d).then(function(blob){
+    var nama = namaFileKontrak(d);
+    google.script.run.withSuccessHandler(function(r){
+      memuat(false); DK = r; SURAT.ID = r.idBaru; unduhBlob(blob, nama); toast('Kontrak diunduh: ' + nama);
+    }).withFailureHandler(function(e){
+      memuat(false); unduhBlob(blob, nama); toast('Kontrak diunduh, tapi gagal disimpan di aplikasi: ' + ((e && e.message) || e), true);
+    }).apiSimpanSuratKontrak(Object.assign(simpan, {ID: d.ID || ''}), namaSaya());
+  }).catch(function(e){ memuat(false); toast((e && e.message) || String(e), true); });
+}
+function formPemilikKontrak(kunci){
+  var p = JSON.parse(JSON.stringify(pemilikKontrakData(kunci)));
+  var f = function(k, label, type, cls, ph){ return '<label class="' + (cls || '') + '">' + esc(label) + '<input id="po_' + k + '" type="' + (type || 'text') + '" value="' + esc(p[k] || '') + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + '></label>'; };
+  bukaModal('<div class="sheet-head"><h3>Data ' + esc(p.LABEL) + ' (Pihak Pertama)</h3><button class="tutup" onclick="gambarFormSurat()">&times;</button></div>' +
+    '<p class="info" style="margin-top:0">Sesuai KTP. Cukup diisi sekali — dipakai otomatis di setiap surat kontrak ' + esc(p.LABEL) + '.</p><div class="form">' +
+    '<label>Sebutan<select id="po_SEBUTAN">' + ['Tuan', 'Nyonya'].map(function(v){ return '<option' + (p.SEBUTAN === v ? ' selected' : '') + '>' + v + '</option>'; }).join('') + '</select></label>' +
+    f('NAMA', 'Nama lengkap *', 'text', '') + f('TEMPAT_LAHIR', 'Tempat lahir') + f('TGL_LAHIR', 'Tanggal lahir', 'date') + f('PEKERJAAN', 'Pekerjaan', 'text', '', 'mis. Wiraswasta') + f('NIK', 'NIK (16 angka)') +
+    '<label class="full">Alamat (sesuai KTP)<textarea id="po_ALAMAT">' + esc(p.ALAMAT || '') + '</textarea></label></div>' +
+    '<div class="aksi"><button class="btn" id="poSimpan">Simpan</button><button class="btn ghost" onclick="gambarFormSurat()">Kembali</button></div>');
+  $('poSimpan').onclick = function(){
+    ['SEBUTAN', 'NAMA', 'TEMPAT_LAHIR', 'TGL_LAHIR', 'PEKERJAAN', 'NIK', 'ALAMAT'].forEach(function(k){ p[k] = $('po_' + k).value.trim(); });
+    p.NIK = p.NIK.replace(/\s/g, '');
+    if (!p.NAMA) { toast('Nama wajib diisi', true); return; }
+    if (p.NIK && !/^\d{16}$/.test(p.NIK)) { toast('NIK harus 16 angka', true); return; }
+    panggil('apiSimpanPemilikKontrak', [p, namaSaya()], function(r){ DK = r; toast('Data ' + p.LABEL + ' disimpan'); gambarFormSurat(); });
+  };
+}
+
+
 tampilNama();
 gambarPilihLap();
 bukaTab(lsGet('propTab') || 'ringkasan');
