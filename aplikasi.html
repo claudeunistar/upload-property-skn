@@ -504,7 +504,7 @@ function gambarRingkasan(){
     tile('kosong', r.kosong, 'Aset belum disewa', "keAset('kosong')") +
     tile('cari', r.cari, 'Proses mencari penyewa (' + r.unitCari + ' unit)', "keAset('cari')") +
     tile('pakai', r.pakai, 'Aset dipakai sendiri (' + r.unitPakai + ' unit)', "keAset('pakai')") +
-    tile('sewa', r.unitSewa, 'Unit disewa (' + r.kAktif + ' kontrak Aktif)', "keKontrak('aktif')") +
+    tile('sewa', r.unitSewa, 'Unit disewa (' + r.kAktif + ' kontrak' + (r.unitManual ? ' + ' + r.unitManual + ' via agen' : ' Aktif') + ')', "keKontrak('aktif')") +
     tile('kosong', r.unitBelum, 'Unit belum disewa', "keAset('kosong')") +
     tile('tempo', r.tempo, 'Kontrak jatuh tempo ≤ ' + S.batas + ' hari', "keKontrak('tempo')") +
     tile('lewat', r.lewat, 'Kontrak lewat tempo (masih Aktif)', "keKontrak('lewat')") +
