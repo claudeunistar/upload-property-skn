@@ -386,9 +386,9 @@ function badge(st){ return '<span class="badge b-' + (st.kelas || st.kode) + '">
 var KONDISI_CARI = 'Proses mencari penyewa', KONDISI_SEWA = 'Disewakan';
 function unitDisewaManual(a){ var n = Math.round(Number(a.UNIT_DISEWA)) || 0, u = Number(a.UNIT) || 0; return Math.max(0, Math.min(n || u, u)); }
 /** Teks kondisi lengkap untuk detail, mis. "Disewakan: 9 dari 13 unit". */
-function teksKondisiAset(a){ return a.KONDISI === KONDISI_SEWA ? 'Disewakan tanpa kontrak: ' + unitDisewaManual(a) + ' dari ' + (Number(a.UNIT) || 0) + ' unit' : teksKondisi(a.KONDISI); }
+function teksKondisiAset(a){ return a.KONDISI === KONDISI_SEWA ? 'Disewakan via agen: ' + unitDisewaManual(a) + ' dari ' + (Number(a.UNIT) || 0) + ' unit' : teksKondisi(a.KONDISI); }
 /** Pilihan kondisi aset: nilai di sheet -> teks di layar. */
-var KONDISI_PILIH = [['Tersedia', 'Belum disewa (tersedia)'], [KONDISI_CARI, 'Proses mencari penyewa'], [KONDISI_SEWA, 'Disewakan (tanpa kontrak)'], ['Dipakai sendiri', 'Dipakai sendiri'], ['Terjual', 'Sudah terjual']];
+var KONDISI_PILIH = [['Tersedia', 'Belum disewa (tersedia)'], [KONDISI_CARI, 'Proses mencari penyewa'], [KONDISI_SEWA, 'Disewakan (via agen)'], ['Dipakai sendiri', 'Dipakai sendiri'], ['Terjual', 'Sudah terjual']];
 function teksKondisi(v){ var p = KONDISI_PILIH.filter(function(x){ return x[0] === v; })[0]; return p ? p[1] : v; }
 /** Aset yang bisa disewakan (belum disewa atau sedang dicarikan penyewa). */
 function bisaDisewa(a){ return a.KONDISI === 'Tersedia' || a.KONDISI === KONDISI_CARI; }
@@ -510,7 +510,7 @@ function gambarRingkasan(){
     tile('lewat', r.lewat, 'Kontrak lewat tempo (masih Aktif)', "keKontrak('lewat')") +
     tile('', rpSingkat(r.nilai), 'Nilai sewa aktif per tahun', "keKontrak('aktif')") +
     '</div>' +
-    '<p class="info" style="margin-top:6px">Unit disewa = jumlah unit di kontrak berstatus <b>Aktif</b>' + (r.unitManual ? ' + ' + r.unitManual + ' unit Disewakan tanpa kontrak (mis. lewat agen)' : '') + '. Unit belum disewa = ' + r.unit + ' unit dimiliki' + (r.unitPakai ? ' − ' + r.unitPakai + ' dipakai sendiri' : '') + ' − ' + r.unitSewa + ' unit disewa. <b>Proses mencari penyewa</b> termasuk aset belum disewa.</p>';
+    '<p class="info" style="margin-top:6px">Unit disewa = jumlah unit di kontrak berstatus <b>Aktif</b>' + (r.unitManual ? ' + ' + r.unitManual + ' unit Disewakan via agen' : '') + '. Unit belum disewa = ' + r.unit + ' unit dimiliki' + (r.unitPakai ? ' − ' + r.unitPakai + ' dipakai sendiri' : '') + ' − ' + r.unitSewa + ' unit disewa. <b>Proses mencari penyewa</b> termasuk aset belum disewa.</p>';
   h += '<h2>Perlu tindakan</h2>';
   if (!tindakan.length) h += '<div class="panel kosong-teks">Tidak ada kontrak yang jatuh tempo dalam ' + S.batas + ' hari.</div>';
   else h += '<div class="list">' + tindakan.map(itemKontrak).join('') + '</div>';
@@ -569,7 +569,7 @@ function tabelAset(rows){
     var banyak = pakai.length > 1;
     var statusTeks = st.kode === 'kosong' && !st.cari ? 'Belum Disewa' + (ks.length ? ' (kontrak tidak aktif)' : '') : st.label;
     if (banyak && ['sewa', 'tempo', 'lewat'].indexOf(st.kode) >= 0) statusTeks += ' • ' + aktif.length + ' kontrak';
-    var penyewa = st.manual ? 'Tanpa data kontrak (lihat catatan)' : unikUrut(pakai.map(function(k){ return k.PENYEWA; })).join(', ');
+    var penyewa = st.manual ? 'Via agen (lihat catatan)' : unikUrut(pakai.map(function(k){ return k.PENYEWA; })).join(', ');
     var sisa = hari === null ? '' : hari < 0 ? 'Lewat' : blnTeks(hari);
     var nilai = rentangRp(pakai.map(function(k){ return k.NILAI_SEWA; }));
     var w = st.kode === 'kosong' ? '' : warnaSisa(hari);
@@ -1755,7 +1755,7 @@ function dataTabel(id, f){
         g.aset.forEach(function(a){
           var st = statusAset(a); if (!st.manual || !cocokGrup({aset: [a]}, f)) return;
           rows.push({idx: g.idx, jenis: a.JENIS, pemilikUtama: a.PEMILIK, unit: st.unitSewa, akhir: '',
-            sel: ['', a.PEMILIK, a.JENIS, a.ALAMAT, a.NAMA, String(st.unitSewa) + (st.sebagian ? ' dari ' + a.UNIT : ''), luasRapi(a), 'Tanpa data kontrak' + (ada(a.CATATAN) ? ' – ' + a.CATATAN : ''), '-', '-', '-'], warna: {}});
+            sel: ['', a.PEMILIK, a.JENIS, a.ALAMAT, a.NAMA, String(st.unitSewa) + (st.sebagian ? ' dari ' + a.UNIT : ''), luasRapi(a), 'Via agen' + (ada(a.CATATAN) ? ' – ' + a.CATATAN : ''), '-', '-', '-'], warna: {}});
         });
         return;
       }
@@ -1771,7 +1771,7 @@ function dataTabel(id, f){
         warna: w ? {8: w, 9: w} : {}});
     });
     spec.ringkasJudul = 'DISEWAKAN';
-    spec.sumber = 'Kontrak Aktif yang akhir sewanya belum lewat + aset Disewakan tanpa kontrak (mis. lewat agen).';
+    spec.sumber = 'Kontrak Aktif yang akhir sewanya belum lewat + aset Disewakan via agen.';
     spec.catatan = [[{t: 'Warna AKHIR SEWA / SISA: ', b: 1}, {t: 'merah', b: 1, bg: W_MERAH.bg}, {t: ' habis ≤ 3 bulan (' + rows.filter(function(r){ return r.warna[8] === W_MERAH; }).length + ' aset) · '}, {t: 'kuning', b: 1, bg: W_KUNING.bg}, {t: ' ≤ 6 bulan · '}, {t: 'hijau', b: 1, bg: W_HIJAU.bg}, {t: ' masih lama.'}]];
     if (bintang) spec.catatan.push([{t: '* Aset dengan beberapa kontrak: tanggal = kontrak yang paling cepat habis; nilai sewa = terendah – tertinggi.'}]);
     spec.kosongTeks = 'yang sedang disewa';
@@ -2296,7 +2296,7 @@ function gambarKartuAset(a, foto){
     if (urut.length > tampil.length) { x.fillStyle = '#7a8586'; font(x, 600, 19); x.fillText('+ ' + (urut.length - tampil.length) + ' kontrak lainnya (lihat di aplikasi)', 64, ry + 10); }
     y += hp + 14;
   } else if (a.KONDISI !== 'Terjual' && a.KONDISI !== 'Dipakai sendiri') {
-    panel('Kontrak & penyewa', [['Status', st.manual ? 'Disewakan tanpa data kontrak (mis. lewat agen): ' + st.unitSewa + ' dari ' + (Number(a.UNIT) || 0) + ' unit. Keterangan di Catatan.' : 'Belum ada kontrak sewa yang ditautkan']]);
+    panel('Kontrak & penyewa', [['Status', st.manual ? 'Disewakan via agen: ' + st.unitSewa + ' dari ' + (Number(a.UNIT) || 0) + ' unit. Keterangan di Catatan.' : 'Belum ada kontrak sewa yang ditautkan']]);
   }
   if (ada(a.CATATAN)) panel('Catatan', [['', a.CATATAN]]);
   // kaki
