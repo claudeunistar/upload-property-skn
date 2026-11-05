@@ -195,6 +195,7 @@ details.rinci .beda{font-size:12px;color:#4b5758;margin-top:2px;word-break:break
     <button data-v="aset">Aset</button>
     <button data-v="detail">Detail</button>
     <button data-v="kontrak">Kontrak</button>
+    <button data-v="surat">Surat Kontrak</button>
     <button data-v="media">Foto</button>
     <button data-v="laporan">Laporan</button>
     <button data-v="riwayat">Riwayat</button>
@@ -257,6 +258,7 @@ details.rinci .beda{font-size:12px;color:#4b5758;margin-top:2px;word-break:break
     <div class="list" id="listKontrak"></div>
   </section>
 
+  <section class="view" id="v-surat"></section>
   <section class="view" id="v-media">
     <div class="panel" id="kotakLinkUpload" style="padding:12px 14px;margin-bottom:12px;display:none"></div>
     <div class="alat">
@@ -428,11 +430,12 @@ function isiFilter(){
 function bukaTab(v){
   document.querySelectorAll('#nav button').forEach(function(b){ b.classList.toggle('on', b.dataset.v === v); });
   document.querySelectorAll('.view').forEach(function(s){ s.classList.toggle('on', s.id === 'v-' + v); });
-  document.querySelector('main').classList.toggle('lebar', (v === 'aset' && modeTampilAset() === 'tabel') || (v === 'kontrak' && modeTampilKontrak() === 'tabel'));
+  document.querySelector('main').classList.toggle('lebar', (v === 'aset' && modeTampilAset() === 'tabel') || (v === 'kontrak' && modeTampilKontrak() === 'tabel') || v === 'surat');
   document.querySelector('main').classList.toggle('sedang', v === 'detail');
   if (v === 'detail' && S.hariIni) gambarDetail();
   lsSet('propTab', v);
   if (v === 'riwayat') muatRiwayat();
+  if (v === 'surat') muatTabSurat();
   window.scrollTo(0, 0);
 }
 document.querySelectorAll('#nav button').forEach(function(b){ b.onclick = function(){ bukaTab(b.dataset.v); }; });
@@ -2607,31 +2610,80 @@ function unduhSuratKontrak(){
   buatDocxKontrak(d).then(function(blob){
     var nama = namaFileKontrak(d);
     google.script.run.withSuccessHandler(function(r){
-      memuat(false); DK = r; SURAT.ID = r.idBaru; unduhBlob(blob, nama); toast('Kontrak diunduh: ' + nama);
+      memuat(false); DK = r; SURAT.ID = r.idBaru; unduhBlob(blob, nama); toast('Kontrak diunduh: ' + nama); gambarTabSurat();
     }).withFailureHandler(function(e){
       memuat(false); unduhBlob(blob, nama); toast('Kontrak diunduh, tapi gagal disimpan di aplikasi: ' + ((e && e.message) || e), true);
     }).apiSimpanSuratKontrak(Object.assign(simpan, {ID: d.ID || ''}), namaSaya());
   }).catch(function(e){ memuat(false); toast((e && e.message) || String(e), true); });
 }
-function formPemilikKontrak(kunci){
+function formPemilikKontrak(kunci, dariTab){
+  var kembali = function(){ if (dariTab) { tutupModal(); gambarTabSurat(); } else gambarFormSurat(); };
   var p = JSON.parse(JSON.stringify(pemilikKontrakData(kunci)));
   var f = function(k, label, type, cls, ph){ return '<label class="' + (cls || '') + '">' + esc(label) + '<input id="po_' + k + '" type="' + (type || 'text') + '" value="' + esc(p[k] || '') + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + '></label>'; };
-  bukaModal('<div class="sheet-head"><h3>Data ' + esc(p.LABEL) + ' (Pihak Pertama)</h3><button class="tutup" onclick="gambarFormSurat()">&times;</button></div>' +
+  bukaModal('<div class="sheet-head"><h3>Data ' + esc(p.LABEL) + ' (Pihak Pertama)</h3><button class="tutup" id="poTutup">&times;</button></div>' +
     '<p class="info" style="margin-top:0">Sesuai KTP. Cukup diisi sekali — dipakai otomatis di setiap surat kontrak ' + esc(p.LABEL) + '.</p><div class="form">' +
     '<label>Sebutan<select id="po_SEBUTAN">' + ['Tuan', 'Nyonya'].map(function(v){ return '<option' + (p.SEBUTAN === v ? ' selected' : '') + '>' + v + '</option>'; }).join('') + '</select></label>' +
     f('NAMA', 'Nama lengkap *', 'text', '') + f('TEMPAT_LAHIR', 'Tempat lahir') + f('TGL_LAHIR', 'Tanggal lahir', 'date') + f('PEKERJAAN', 'Pekerjaan', 'text', '', 'mis. Wiraswasta') + f('NIK', 'NIK (16 angka)') +
     '<label class="full">Alamat (sesuai KTP)<textarea id="po_ALAMAT">' + esc(p.ALAMAT || '') + '</textarea></label></div>' +
-    '<div class="aksi"><button class="btn" id="poSimpan">Simpan</button><button class="btn ghost" onclick="gambarFormSurat()">Kembali</button></div>');
+    '<div class="aksi"><button class="btn" id="poSimpan">Simpan</button><button class="btn ghost" id="poKembali">Kembali</button></div>');
+  $('poTutup').onclick = $('poKembali').onclick = kembali;
   $('poSimpan').onclick = function(){
     ['SEBUTAN', 'NAMA', 'TEMPAT_LAHIR', 'TGL_LAHIR', 'PEKERJAAN', 'NIK', 'ALAMAT'].forEach(function(k){ p[k] = $('po_' + k).value.trim(); });
     p.NIK = p.NIK.replace(/\s/g, '');
     if (!p.NAMA) { toast('Nama wajib diisi', true); return; }
     if (p.NIK && !/^\d{16}$/.test(p.NIK)) { toast('NIK harus 16 angka', true); return; }
-    panggil('apiSimpanPemilikKontrak', [p, namaSaya()], function(r){ DK = r; toast('Data ' + p.LABEL + ' disimpan'); gambarFormSurat(); });
+    panggil('apiSimpanPemilikKontrak', [p, namaSaya()], function(r){ DK = r; toast('Data ' + p.LABEL + ' disimpan'); kembali(); });
   };
 }
 
 
+/* ---------- tab "Surat Kontrak" ---------- */
+function muatTabSurat(){
+  if (DK) { gambarTabSurat(); return; }
+  $('v-surat').innerHTML = '<p class="info">Memuat surat kontrak...</p>';
+  google.script.run.withSuccessHandler(function(d){ DK = d; gambarTabSurat(); })
+    .withFailureHandler(function(e){ $('v-surat').innerHTML = '<div class="panel kosong-teks" style="color:var(--lewat)">Gagal memuat: ' + esc((e && e.message) || e) + '</div>'; })
+    .apiDataKontrak();
+}
+function gambarTabSurat(){
+  var w = $('v-surat'); if (!w || !DK) return;
+  var q = ($('cariSurat') || {}).value || '';
+  var list = DK.surat.filter(function(s){ return cocokCari(q, [s.ID, s.JUDUL, s.PENYEWA, s.OWNER, s.DIBUAT_OLEH].join(' ')); });
+  var kartuOwner = DK.pemilik.map(function(p){
+    var kurang = ['NAMA', 'TEMPAT_LAHIR', 'TGL_LAHIR', 'PEKERJAAN', 'ALAMAT', 'NIK'].filter(function(k){ return !p[k]; }).length;
+    return '<div class="panel" style="padding:12px 14px;flex:1;min-width:240px"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>' + esc(p.LABEL) + '</b>' +
+      '<span class="badge ' + (kurang ? 'b-tempo">Belum lengkap (' + kurang + ')' : 'b-sewa">Lengkap') + '</span></div>' +
+      '<div class="info" style="margin:6px 0 8px">' + esc([p.NAMA, p.NIK ? 'NIK ' + p.NIK : '', p.ALAMAT].filter(ada).join(' • ') || '-') + '</div>' +
+      '<button class="btn ghost kecil" onclick="formPemilikKontrak(\'' + esc(p.KUNCI) + '\', true)">✏️ Ubah data ' + esc(p.LABEL) + '</button></div>';
+  }).join('');
+  var label = {}; DK.pemilik.forEach(function(p){ label[p.KUNCI] = p.LABEL; });
+  w.innerHTML = '<div class="panel" style="padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><div style="flex:1;min-width:220px"><b>Buat surat perjanjian sewa (Word)</b>' +
+      '<div class="info" style="margin:0">Pilih owner, isi data penyewa (KTP), aset (sertifikat), nilai sewa + deposit &amp; periode → unduh file Word siap cetak.</div></div>' +
+      '<button class="btn" onclick="suratKontrak()">📝 Buat surat kontrak baru</button></div>' +
+    '<h2>Data owner (Pihak Pertama)</h2><p class="info" style="margin-top:0">Cukup diisi sekali – dipakai otomatis di setiap surat.</p><div style="display:flex;gap:10px;flex-wrap:wrap">' + kartuOwner + '</div>' +
+    '<h2>Surat yang pernah dibuat (' + DK.surat.length + ')</h2>' +
+    (DK.surat.length ? '<div class="alat"><input type="search" id="cariSurat" placeholder="Cari judul, penyewa, owner..." value="' + esc(q) + '"></div>' : '') +
+    (!DK.surat.length ? '<div class="panel kosong-teks">Belum ada surat. Tekan <b>Buat surat kontrak baru</b>.</div>'
+      : !list.length ? '<div class="panel kosong-teks">Tidak ada surat yang cocok.</div>'
+      : '<div class="tabel-excel rincian"><table><thead><tr><th>NO. SURAT</th><th class="nama">JUDUL</th><th>PENYEWA</th><th>OWNER</th><th>PERIODE SEWA</th><th>DIBUAT</th><th>AKSI</th></tr></thead><tbody>' +
+        list.map(function(s){
+          return '<tr style="cursor:default"><td class="kode">' + esc(s.ID) + '</td><td class="nama">' + esc(s.JUDUL || '-') + '</td><td class="lebar">' + esc(s.PENYEWA) + '</td><td>' + esc(label[s.OWNER] || s.OWNER) + '</td>' +
+            '<td class="tgl">' + esc(tglAngka(s.AWAL) + ' s/d ' + tglAngka(s.AKHIR)) + '</td><td>' + esc(s.WAKTU + ' • ' + s.DIBUAT_OLEH) + '</td>' +
+            '<td><button class="btn kecil" onclick="unduhSuratLagi(\'' + esc(s.ID) + '\')">⬇ Word</button> <button class="btn ghost kecil" onclick="ubahSuratTersimpan(\'' + esc(s.ID) + '\')">✏️ Ubah</button></td></tr>';
+        }).join('') + '</tbody></table></div>');
+  if ($('cariSurat')) $('cariSurat').oninput = function(){ var pos = this.selectionStart; gambarTabSurat(); var c = $('cariSurat'); c.focus(); c.setSelectionRange(pos, pos); };
+}
+function ubahSuratTersimpan(id){ mintaNama(false, function(){ SURAT = isiAwalSurat({}); bukaSuratLama(id); }); }
+/** Unduh ulang surat tersimpan tanpa mengubah catatannya. */
+function unduhSuratLagi(id){
+  var s = DK.surat.filter(function(x){ return x.ID === id; })[0]; if (!s) return;
+  var d; try { d = JSON.parse(s.DATA); } catch (e) { toast('Isi surat tidak terbaca', true); return; }
+  memuat(true);
+  buatDocxKontrak(d).then(function(blob){ memuat(false); unduhBlob(blob, namaFileKontrak(d)); toast('Kontrak diunduh'); })
+    .catch(function(e){ memuat(false); toast((e && e.message) || String(e), true); });
+}
+
+/* ============ MULAI ============ */
 tampilNama();
 gambarPilihLap();
 bukaTab(lsGet('propTab') || 'ringkasan');
