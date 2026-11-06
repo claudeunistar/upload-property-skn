@@ -196,6 +196,7 @@ details.rinci .beda{font-size:12px;color:#4b5758;margin-top:2px;word-break:break
     <button data-v="detail">Detail</button>
     <button data-v="kontrak">Kontrak</button>
     <button data-v="surat">Surat Kontrak</button>
+    <button data-v="pph">PPh</button>
     <button data-v="media">Foto</button>
     <button data-v="laporan">Laporan</button>
     <button data-v="riwayat">Riwayat</button>
@@ -259,6 +260,7 @@ details.rinci .beda{font-size:12px;color:#4b5758;margin-top:2px;word-break:break
   </section>
 
   <section class="view" id="v-surat"></section>
+  <section class="view" id="v-pph"></section>
   <section class="view" id="v-media">
     <div class="panel" id="kotakLinkUpload" style="padding:12px 14px;margin-bottom:12px;display:none"></div>
     <div class="alat">
@@ -407,10 +409,10 @@ function pemilikKontrak(k){
 /* ============ MUAT & NAV ============ */
 function muat(){ panggil('apiMuat', [], terima); }
 function terima(d){
-  S = {aset: d.aset || [], kontrak: d.kontrak || [], media: d.media || [], detailAset: d.detailAset || [], detailUnit: d.detailUnit || [], penyewaUnit: d.penyewaUnit || [], urlApp: d.urlApp || '', hariIni: d.hariIni, batas: Number(d.batasHari) || 90};
+  S = {aset: d.aset || [], kontrak: d.kontrak || [], media: d.media || [], detailAset: d.detailAset || [], detailUnit: d.detailUnit || [], penyewaUnit: d.penyewaUnit || [], pph: d.pph || [], urlApp: d.urlApp || '', hariIni: d.hariIni, batas: Number(d.batasHari) || 90};
   isiFilter(); gambarSemua();
 }
-function gambarSemua(){ gambarRingkasan(); gambarAset(); gambarKontrak(); gambarMedia(); gambarDetail(); }
+function gambarSemua(){ gambarRingkasan(); gambarAset(); gambarKontrak(); gambarMedia(); gambarDetail(); gambarPph(); }
 
 function isiSelect(el, label, vals){
   var cur = el.value;
@@ -430,7 +432,7 @@ function isiFilter(){
 function bukaTab(v){
   document.querySelectorAll('#nav button').forEach(function(b){ b.classList.toggle('on', b.dataset.v === v); });
   document.querySelectorAll('.view').forEach(function(s){ s.classList.toggle('on', s.id === 'v-' + v); });
-  document.querySelector('main').classList.toggle('lebar', (v === 'aset' && modeTampilAset() === 'tabel') || (v === 'kontrak' && modeTampilKontrak() === 'tabel') || v === 'surat');
+  document.querySelector('main').classList.toggle('lebar', (v === 'aset' && modeTampilAset() === 'tabel') || (v === 'kontrak' && modeTampilKontrak() === 'tabel') || v === 'surat' || v === 'pph');
   document.querySelector('main').classList.toggle('sedang', v === 'detail');
   if (v === 'detail' && S.hariIni) gambarDetail();
   lsSet('propTab', v);
@@ -2683,7 +2685,238 @@ function unduhSuratLagi(id){
     .catch(function(e){ memuat(false); toast((e && e.message) || String(e), true); });
 }
 
-/* ============ MULAI ============ */
+/* ============ PPh SEWA (10% dari total nilai sewa 1 kontrak) ============ */
+var TARIF_PPH = 0.10;
+var CARA_PPH = {PENYEWA: 'Dipotong penyewa', PEMILIK: 'Disetor pemilik'};
+function pphOf(kode){ kode = String(kode).toUpperCase(); return (S.pph || []).filter(function(p){ return String(p.KODE).toUpperCase() === kode; })[0] || {}; }
+/** Penyewa badan usaha (PT/CV/bank/...) biasanya memotong PPh sendiri; perorangan -> pemilik yang setor. */
+function caraPphOtomatis(k){ return /(^|\s)(PT|CV|UD|BANK|KOPERASI|YAYASAN|TBK|PERSERO|FIRMA)(\.|\s|$)/i.test(String(k.PENYEWA || '')) ? 'PENYEWA' : 'PEMILIK'; }
+/** Lama sewa dalam tahun (bulan/12); tanggal kosong = 1 tahun. */
+function tahunKontrak(k){
+  var a = tglObj(k.AWAL), b = tglObj(k.AKHIR); if (!a || !b || b <= a) return 1;
+  var bln = (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + (b.getUTCMonth() - a.getUTCMonth()) + (b.getUTCDate() >= a.getUTCDate() - 1 ? 0 : -1);
+  return Math.max(bln, 1) / 12;
+}
+function nilaiHitungKontrak(k){ return Math.round((Number(k.NILAI_SEWA) || 0) * (Number(k.UNIT) || 1) * tahunKontrak(k)); }
+function barisPph(){
+  return S.kontrak.map(function(k){
+    var p = pphOf(k.KODE), as = asetKontrak(k)[0];
+    var nilai = ada(p.NILAI_TOTAL) && Number(p.NILAI_TOTAL) > 0 ? Number(p.NILAI_TOTAL) : nilaiHitungKontrak(k);
+    var cara = p.CARA || caraPphOtomatis(k);
+    return {k: k, p: p, aset: as ? as.NAMA : k.NAMA, pemilik: pemilikKontrak(k) || '-', penyewa: k.PENYEWA || '-', nilai: nilai, manual: ada(p.NILAI_TOTAL) && Number(p.NILAI_TOTAL) > 0,
+      cara: cara, caraOtomatis: !p.CARA, pph: Math.round(nilai * TARIF_PPH), bukti: p.STATUS_BUKTI === 'Sudah', aktif: k.STATUS === 'Aktif'};
+  });
+}
+function filterPph(rows){
+  var q = ($('pCari') || {}).value || '', fs = ($('pStatus') || {}).value, fp = ($('pPemilik') || {}).value, fc = ($('pCara') || {}).value, fb = ($('pBukti') || {}).value;
+  return rows.filter(function(r){
+    if (fs === 'aktif' && !r.aktif) return false;
+    if (fs === 'tidak' && r.aktif) return false;
+    if (fp && r.pemilik !== fp) return false;
+    if (fc && r.cara !== fc) return false;
+    if (fb === 'sudah' && !r.bukti) return false;
+    if (fb === 'belum' && r.bukti) return false;
+    return cocokCari(q, [r.k.KODE, r.aset, r.penyewa, r.pemilik].join(' '));
+  });
+}
+function gambarPph(){
+  var w = $('v-pph'); if (!w || !S.kontrak) return;
+  var semua = barisPph();
+  if (!$('pCari')) {
+    w.innerHTML = '<div class="panel" style="padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><div style="flex:1;min-width:220px"><b>Rekap PPh sewa (10%)</b>' +
+        '<div class="info" style="margin:0">PPh = 10% dari total nilai sewa 1 kontrak (sebelum dipotong PPh). Tiap kontrak: <b>dipotong penyewa</b> (tunggu bukti potong) atau <b>disetor pemilik</b> (unggah bukti setor).</div></div>' +
+        '<button class="btn" onclick="exportExcelPph()">⬇ Export Excel</button></div>' +
+      '<div class="tiles" id="pTiles"></div>' +
+      '<div class="alat" style="margin-top:12px"><input type="search" id="pCari" placeholder="Cari aset, penyewa, kode..."><select id="pStatus"><option value="aktif">Kontrak Aktif</option><option value="">Semua kontrak</option><option value="tidak">Kontrak tidak aktif</option></select></div>' +
+      '<div class="alat"><select id="pPemilik"></select><select id="pCara"><option value="">Semua cara PPh</option><option value="PENYEWA">Dipotong penyewa</option><option value="PEMILIK">Disetor pemilik</option></select>' +
+      '<select id="pBukti"><option value="">Semua bukti</option><option value="belum">Bukti belum ada</option><option value="sudah">Bukti sudah ada</option></select></div>' +
+      '<p class="info" id="pInfo"></p><div id="pTabel"></div><input type="file" id="pFile" accept="application/pdf,image/*" style="display:none">';
+    ['pCari', 'pStatus', 'pPemilik', 'pCara', 'pBukti'].forEach(function(id){ $(id).oninput = $(id).onchange = gambarPph; });
+  }
+  isiSelect($('pPemilik'), 'Semua pemilik', unik(semua.map(function(r){ return r.pemilik; })));
+  var rows = filterPph(semua);
+  var jml = function(list, f){ return list.reduce(function(s, r){ return s + f(r); }, 0); };
+  var py = rows.filter(function(r){ return r.cara === 'PENYEWA'; }), pm = rows.filter(function(r){ return r.cara === 'PEMILIK'; });
+  $('pTiles').innerHTML =
+    tile('', rpSingkat(jml(rows, function(r){ return r.nilai; })), 'Total nilai sewa (' + rows.length + ' kontrak)', "void 0") +
+    tile('', rpSingkat(jml(rows, function(r){ return r.pph; })), 'Total PPh 10%', "void 0") +
+    tile('sewa', rpSingkat(jml(py, function(r){ return r.pph; })), 'PPh dipotong penyewa (' + py.length + ')', "$('pCara').value='PENYEWA';gambarPph()",
+      '✔ ' + py.filter(function(r){ return r.bukti; }).length + ' bukti diterima • ⏳ ' + py.filter(function(r){ return !r.bukti; }).length + ' belum') +
+    tile('pakai', rpSingkat(jml(pm, function(r){ return r.pph; })), 'PPh disetor pemilik (' + pm.length + ')', "$('pCara').value='PEMILIK';gambarPph()",
+      '✔ ' + pm.filter(function(r){ return r.bukti; }).length + ' sudah setor • ⏳ ' + pm.filter(function(r){ return !r.bukti; }).length + ' belum');
+  $('pInfo').textContent = rows.length + ' kontrak • nilai sewa = nilai/tahun/unit × unit × lama sewa (bisa diubah per kontrak lewat ✏️ Atur)';
+  var kolPph = function(r, cara){
+    if (r.cara !== cara) return '<td class="rp" style="color:#b9b3a6">–</td>';
+    var kd = esc(r.k.KODE);
+    return '<td class="rp"><b>' + esc(rpPenuh(r.pph)) + '</b><div style="margin-top:4px">' +
+      (r.bukti ? '<span class="badge b-sewa">✔ ' + (cara === 'PENYEWA' ? 'Bukti potong diterima' : 'Sudah disetor') + '</span>' : '<span class="badge b-tempo">⏳ ' + (cara === 'PENYEWA' ? 'Bukti potong belum' : 'Belum disetor') + '</span>') +
+      '</div><div style="margin-top:4px;white-space:nowrap">' + (r.p.FILE_ID ? '<button class="btn ghost kecil" onclick="lihatBuktiPph(\'' + kd + '\')">📄 Lihat</button> ' : '') +
+      '<button class="btn ghost kecil" onclick="uploadBuktiPph(\'' + kd + '\')">⬆ ' + (r.p.FILE_ID ? 'Ganti' : 'Upload') + ' bukti</button></div></td>';
+  };
+  $('pTabel').innerHTML = !rows.length ? '<div class="panel kosong-teks">Tidak ada kontrak yang cocok.</div>' :
+    '<div class="tabel-excel rincian"><table><thead><tr><th>KODE</th><th class="nama">NAMA ASET</th><th>PEMILIK ASET</th><th>PERIODE SEWA</th><th>NAMA PENYEWA</th><th>NILAI SEWA (Rp)</th>' +
+    '<th>PPh DIPOTONG PENYEWA (10%)</th><th>PPh DISETOR PEMILIK (10%)</th><th>ATUR</th></tr></thead><tbody>' +
+    rows.map(function(r){
+      return '<tr style="cursor:default"><td class="kode">' + esc(r.k.KODE) + (r.aktif ? '' : '<div class="info" style="margin:0">tidak aktif</div>') + '</td><td class="nama">' + esc(r.aset) + '</td><td>' + esc(r.pemilik) + '</td>' +
+        '<td class="tgl">' + esc((ada(r.k.AWAL) ? tglTabel(r.k.AWAL) : '?') + ' s/d ' + (ada(r.k.AKHIR) ? tglTabel(r.k.AKHIR) : '?')) + '</td><td class="lebar">' + esc(r.penyewa) + '</td>' +
+        '<td class="rp">' + esc(rpPenuh(r.nilai)) + (r.manual ? '<div class="info" style="margin:0">diisi manual</div>' : '') + '</td>' +
+        kolPph(r, 'PENYEWA') + kolPph(r, 'PEMILIK') +
+        '<td><button class="btn ghost kecil" onclick="formPph(\'' + esc(r.k.KODE) + '\')">✏️ Atur</button>' + (r.caraOtomatis ? '<div class="info" style="margin:2px 0 0">cara otomatis</div>' : '') + '</td></tr>';
+    }).join('') +
+    '<tr class="total"><td></td><td class="nama">TOTAL</td><td></td><td></td><td></td><td class="rp">' + esc(rpPenuh(jml(rows, function(r){ return r.nilai; }))) + '</td>' +
+    '<td class="rp">' + esc(rpPenuh(jml(py, function(r){ return r.pph; }))) + '</td><td class="rp">' + esc(rpPenuh(jml(pm, function(r){ return r.pph; }))) + '</td><td></td></tr></tbody></table></div>';
+}
+function formPph(kode){
+  mintaNama(false, function(){
+    var r = barisPph().filter(function(x){ return x.k.KODE === kode; })[0]; if (!r) return;
+    var p = r.p, k = r.k;
+    bukaModal('<div class="sheet-head"><h3>PPh ' + esc(k.KODE + ' • ' + r.aset) + '</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+      '<p class="info" style="margin-top:0">Penyewa: <b>' + esc(r.penyewa) + '</b> • ' + esc(fmtTgl(k.AWAL) + ' – ' + fmtTgl(k.AKHIR)) + '</p><div class="form">' +
+      '<label class="full">Cara PPh<select id="pf_CARA"><option value="PENYEWA"' + (r.cara === 'PENYEWA' ? ' selected' : '') + '>Dipotong penyewa (penyewa memberi bukti potong)</option><option value="PEMILIK"' + (r.cara === 'PEMILIK' ? ' selected' : '') + '>Disetor sendiri oleh pemilik</option></select></label>' +
+      '<label class="full">Total nilai sewa 1 kontrak (Rp)<input id="pf_NILAI" inputmode="numeric" value="' + esc(r.manual ? Number(p.NILAI_TOTAL).toLocaleString('id-ID') : '') + '" placeholder="otomatis: ' + esc(nilaiHitungKontrak(k).toLocaleString('id-ID')) + '">' +
+        '<em>Kosongkan = otomatis (' + esc(rpPenuh(k.NILAI_SEWA)) + '/thn/unit × ' + esc(Number(k.UNIT) || 1) + ' unit × ' + esc(String(Math.round(tahunKontrak(k) * 100) / 100).replace('.', ',')) + ' tahun). PPh 10% = <b id="pf_pph"></b></em></label>' +
+      '<label>Status bukti<select id="pf_STATUS"><option value="Belum"' + (p.STATUS_BUKTI === 'Sudah' ? '' : ' selected') + '>Belum ada</option><option value="Sudah"' + (p.STATUS_BUKTI === 'Sudah' ? ' selected' : '') + '>Sudah diterima / disetor</option></select></label>' +
+      '<label>Tanggal bukti<input type="date" id="pf_TGL" value="' + esc(p.TGL_BUKTI || '') + '"></label>' +
+      '<label class="full">No. bukti potong / NTPN<input id="pf_NO" value="' + esc(p.NO_BUKTI || '') + '"></label>' +
+      '<label class="full">Catatan<textarea id="pf_CATATAN">' + esc(p.CATATAN || '') + '</textarea></label></div>' +
+      (p.FILE_ID ? '<p class="info">File bukti: <b>' + esc(p.NAMA_FILE) + '</b> <a href="#" onclick="lihatBuktiPph(\'' + esc(kode) + '\');return false">📄 lihat</a></p>' : '') +
+      '<div class="aksi"><button class="btn" id="pfSimpan">Simpan</button><button class="btn ghost" onclick="uploadBuktiPph(\'' + esc(kode) + '\')">⬆ Upload bukti</button><button class="btn ghost" onclick="tutupModal()">Batal</button></div>');
+    var segar = function(){ var n = angkaRp($('pf_NILAI').value) || nilaiHitungKontrak(k); $('pf_pph').textContent = rpPenuh(Math.round(n * TARIF_PPH)); };
+    $('pf_NILAI').oninput = segar; segar();
+    $('pfSimpan').onclick = function(){
+      panggil('apiSimpanPph', [kode, {CARA: $('pf_CARA').value, NILAI_TOTAL: angkaRp($('pf_NILAI').value) || '', STATUS_BUKTI: $('pf_STATUS').value, TGL_BUKTI: $('pf_TGL').value, NO_BUKTI: $('pf_NO').value, CATATAN: $('pf_CATATAN').value}, namaSaya()],
+        function(d){ terima(d); tutupModal(); toast('PPh ' + kode + ' disimpan'); });
+    };
+  });
+}
+function uploadBuktiPph(kode){
+  mintaNama(false, function(){
+    var inp = $('pFile'); inp.value = '';
+    inp.onchange = function(){
+      var f = inp.files[0]; if (!f) return;
+      var mime = f.type || (/\.pdf$/i.test(f.name) ? 'application/pdf' : /\.(heic|heif)$/i.test(f.name) ? 'image/heic' : '');
+      if (!/^(application\/pdf|image\/)/.test(mime)) { toast('Bukti harus PDF atau foto', true); return; }
+      if (f.size > 10 * 1048576) { toast('File maksimal 10 MB', true); return; }
+      var r = barisPph().filter(function(x){ return x.k.KODE === kode; })[0] || {};
+      var fr = new FileReader();
+      fr.onload = function(){
+        panggil('apiUploadBuktiPph', [kode, {nama: f.name, mime: mime, data: String(fr.result).split(',')[1], cara: r.cara}, namaSaya()],
+          function(d){ terima(d); tutupModal(); toast('Bukti ' + kode + ' tersimpan'); });
+      };
+      fr.readAsDataURL(f);
+    };
+    inp.click();
+  });
+}
+function lihatBuktiPph(kode){
+  panggil('apiLihatBuktiPph', [kode], function(b){
+    var bin = atob(b.data), arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    var url = URL.createObjectURL(new Blob([arr], {type: b.mime}));
+    bukaModal('<div class="sheet-head"><h3>Bukti PPh ' + esc(kode) + '</h3><button class="tutup" onclick="tutupModal()">&times;</button></div>' +
+      '<p class="info" style="margin-top:0">' + esc(b.nama) + '</p>' +
+      (/^image\//.test(b.mime) ? '<img src="' + url + '" style="max-width:100%;border-radius:10px;border:1px solid var(--line)">' : '<div class="panel kosong-teks">File PDF – tekan Buka untuk melihat.</div>') +
+      '<div class="aksi"><a class="btn" href="' + url + '" target="_blank" rel="noopener">Buka</a><a class="btn ghost" href="' + url + '" download="' + esc(b.nama) + '">Unduh</a><button class="btn ghost" onclick="tutupModal()">Tutup</button></div>');
+  });
+}
+
+/* ---------- Export Excel berformat ---------- */
+function muatExcelJs(){
+  if (window.ExcelJS) return Promise.resolve();
+  return new Promise(function(ok, gagal){
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';
+    s.onload = ok; s.onerror = function(){ gagal(new Error('Pustaka Excel gagal dimuat. Cek internet lalu coba lagi.')); };
+    document.head.appendChild(s);
+  });
+}
+function exportExcelPph(){
+  var rows = filterPph(barisPph());
+  if (!rows.length) { toast('Tidak ada data untuk diexport', true); return; }
+  memuat(true);
+  muatExcelJs().then(function(){ return bukuPph(rows); }).then(function(buf){
+    memuat(false);
+    unduhBlob(new Blob([buf], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), 'Rekap PPh Sewa Property - ' + S.hariIni + '.xlsx');
+    toast('Excel diunduh');
+  }).catch(function(e){ memuat(false); toast((e && e.message) || String(e), true); });
+}
+function bukuPph(rows){
+  var wb = new ExcelJS.Workbook(); wb.creator = 'App Property SKN';
+  var HIJAU = 'FF0F3D3E', EMAS = 'FFE0A526', MARUN = 'FF8B1538', ZEBRA = 'FFF7F5F0', GARIS = {style: 'thin', color: {argb: 'FFD9D4C9'}};
+  var kotak = {top: GARIS, left: GARIS, bottom: GARIS, right: GARIS};
+  var tgl = function(s){ var d = tglObj(s); return d ? new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())) : null; };
+  var filterTeks = [($('pStatus') || {}).value === 'aktif' ? 'Kontrak Aktif' : ($('pStatus') || {}).value === 'tidak' ? 'Kontrak tidak aktif' : 'Semua kontrak',
+    ($('pPemilik') || {}).value || 'Semua pemilik', CARA_PPH[($('pCara') || {}).value] || 'Semua cara PPh'].join(' • ');
+  // ---- sheet 1: rincian
+  var ws = wb.addWorksheet('Rekap PPh', {views: [{state: 'frozen', ySplit: 5, xSplit: 3}], pageSetup: {orientation: 'landscape', paperSize: 9, fitToPage: true, fitToWidth: 1, fitToHeight: 0}});
+  var kol = [['NO', 5], ['KODE', 8], ['NAMA ASET', 38], ['PEMILIK ASET', 16], ['MULAI SEWA', 12], ['AKHIR SEWA', 12], ['NAMA PENYEWA', 28], ['NILAI SEWA (Rp)', 17],
+    ['CARA PPh', 17], ['PPh DIPOTONG PENYEWA (Rp)', 18], ['BUKTI POTONG', 15], ['PPh DISETOR PEMILIK (Rp)', 18], ['BUKTI SETOR', 15], ['TGL BUKTI', 12], ['NO. BUKTI / NTPN', 20], ['CATATAN', 30]];
+  ws.columns = kol.map(function(c){ return {width: c[1]}; });
+  var n = kol.length;
+  ws.mergeCells(1, 1, 1, n); ws.getCell(1, 1).value = 'REKAP PPh SEWA PROPERTY';
+  ws.getCell(1, 1).font = {bold: true, size: 16, color: {argb: 'FFFFFFFF'}}; ws.getCell(1, 1).fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: HIJAU}};
+  ws.getCell(1, 1).alignment = {vertical: 'middle', indent: 1}; ws.getRow(1).height = 30;
+  ws.mergeCells(2, 1, 2, n); ws.getCell(2, 1).value = 'PT SATELIT KOMUNIKA NUSANTARA (SKN / UNISTAR)  •  Per ' + fmtTgl(S.hariIni, true) + '  •  ' + filterTeks;
+  ws.getCell(2, 1).font = {italic: true, size: 10, color: {argb: 'FF4B5758'}};
+  ws.mergeCells(3, 1, 3, n); ws.getCell(3, 1).value = 'PPh = 10% dari total nilai sewa 1 kontrak (sebelum dipotong PPh). Tiap kontrak hanya salah satu: dipotong penyewa (bukti potong) atau disetor pemilik (bukti setor).';
+  ws.getCell(3, 1).font = {size: 9, color: {argb: 'FF7A8586'}};
+  var h = ws.getRow(5); h.values = kol.map(function(c){ return c[0]; }); h.height = 32;
+  h.eachCell(function(c, i){
+    c.font = {bold: true, color: {argb: 'FFFFFFFF'}, size: 10};
+    c.fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: i === 10 || i === 11 ? 'FF1F8A4C' : i === 12 || i === 13 ? 'FF6B4FA0' : MARUN}};
+    c.alignment = {horizontal: 'center', vertical: 'middle', wrapText: true}; c.border = kotak;
+  });
+  rows.forEach(function(r, i){
+    var py = r.cara === 'PENYEWA';
+    var row = ws.getRow(6 + i);
+    row.values = [i + 1, r.k.KODE, r.aset, r.pemilik, tgl(r.k.AWAL), tgl(r.k.AKHIR), r.penyewa, r.nilai, CARA_PPH[r.cara],
+      py ? r.pph : null, py ? (r.bukti ? '✔ Diterima' : 'Belum') : '-', py ? null : r.pph, py ? '-' : (r.bukti ? '✔ Sudah' : 'Belum'),
+      tgl(r.p.TGL_BUKTI), r.p.NO_BUKTI || '', [r.aktif ? '' : 'Kontrak tidak aktif', r.manual ? 'Nilai sewa diisi manual' : '', r.p.CATATAN || ''].filter(ada).join('; ')];
+    row.eachCell({includeEmpty: true}, function(c, j){
+      c.border = kotak; c.alignment = {vertical: 'top', wrapText: j === 3 || j === 7 || j === 16, horizontal: [1, 2, 5, 6, 11, 13, 14].indexOf(j) >= 0 ? 'center' : undefined};
+      c.font = {size: 10};
+      if (i % 2) c.fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: ZEBRA}};
+      if (j === 8 || j === 10 || j === 12) c.numFmt = '#,##0';
+      if (j === 5 || j === 6 || j === 14) c.numFmt = 'dd/mm/yyyy';
+    });
+    [[11, py], [13, !py]].forEach(function(x){
+      if (!x[1]) return;
+      var c = row.getCell(x[0]);
+      c.font = {bold: true, size: 10, color: {argb: r.bukti ? 'FF006100' : 'FF9C5700'}};
+      c.fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: r.bukti ? 'FFC6EFCE' : 'FFFFEB9C'}};
+    });
+  });
+  var akhir = 5 + rows.length, t = ws.getRow(akhir + 1);
+  t.getCell(3).value = 'TOTAL (' + rows.length + ' kontrak)';
+  [8, 10, 12].forEach(function(j){ var L = String.fromCharCode(64 + j); t.getCell(j).value = {formula: 'SUM(' + L + '6:' + L + akhir + ')'}; t.getCell(j).numFmt = '#,##0'; });
+  for (var j = 1; j <= n; j++) { var c = t.getCell(j); c.font = {bold: true, size: 11}; c.fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: 'FFFDF6E3'}}; c.border = {top: {style: 'medium', color: {argb: EMAS}}, bottom: {style: 'medium', color: {argb: EMAS}}}; }
+  t.height = 22;
+  ws.autoFilter = {from: {row: 5, column: 1}, to: {row: akhir, column: n}};
+  // ---- sheet 2: ringkasan per pemilik
+  var w2 = wb.addWorksheet('Ringkasan per Pemilik', {views: [{state: 'frozen', ySplit: 3}]});
+  w2.columns = [{width: 22}, {width: 10}, {width: 18}, {width: 18}, {width: 14}, {width: 14}, {width: 18}, {width: 14}, {width: 14}];
+  w2.mergeCells(1, 1, 1, 9); w2.getCell(1, 1).value = 'RINGKASAN PPh PER PEMILIK  •  Per ' + fmtTgl(S.hariIni, true);
+  w2.getCell(1, 1).font = {bold: true, size: 14, color: {argb: 'FFFFFFFF'}}; w2.getCell(1, 1).fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: HIJAU}}; w2.getRow(1).height = 26;
+  var h2 = w2.getRow(3); h2.values = ['PEMILIK', 'KONTRAK', 'NILAI SEWA (Rp)', 'PPh DIPOTONG PENYEWA (Rp)', 'BUKTI DITERIMA', 'BUKTI BELUM', 'PPh DISETOR PEMILIK (Rp)', 'SUDAH SETOR', 'BELUM SETOR']; h2.height = 32;
+  h2.eachCell(function(c){ c.font = {bold: true, color: {argb: 'FFFFFFFF'}, size: 10}; c.fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: MARUN}}; c.alignment = {horizontal: 'center', vertical: 'middle', wrapText: true}; c.border = kotak; });
+  var per = {};
+  rows.forEach(function(r){
+    var g = per[r.pemilik] || (per[r.pemilik] = [r.pemilik, 0, 0, 0, 0, 0, 0, 0, 0]);
+    g[1]++; g[2] += r.nilai;
+    if (r.cara === 'PENYEWA') { g[3] += r.pph; g[r.bukti ? 4 : 5]++; } else { g[6] += r.pph; g[r.bukti ? 7 : 8]++; }
+  });
+  Object.keys(per).sort().forEach(function(nm, i){
+    var row = w2.getRow(4 + i); row.values = per[nm];
+    row.eachCell({includeEmpty: true}, function(c, j){ c.border = kotak; c.font = {size: 10}; if ([3, 4, 7].indexOf(j) >= 0) c.numFmt = '#,##0'; if (j !== 1) c.alignment = {horizontal: [3, 4, 7].indexOf(j) >= 0 ? 'right' : 'center'}; });
+  });
+  var a2 = 3 + Object.keys(per).length, t2 = w2.getRow(a2 + 1);
+  t2.getCell(1).value = 'TOTAL';
+  for (var x = 2; x <= 9; x++) { var L = String.fromCharCode(64 + x); t2.getCell(x).value = {formula: 'SUM(' + L + '4:' + L + a2 + ')'}; t2.getCell(x).numFmt = '#,##0'; if ([3, 4, 7].indexOf(x) < 0) t2.getCell(x).alignment = {horizontal: 'center'}; }
+  t2.eachCell({includeEmpty: true}, function(c){ c.font = {bold: true}; c.fill = {type: 'pattern', pattern: 'solid', fgColor: {argb: 'FFFDF6E3'}}; c.border = {top: {style: 'medium', color: {argb: EMAS}}, bottom: {style: 'medium', color: {argb: EMAS}}}; });
+  return wb.xlsx.writeBuffer();
+}
+
+
 tampilNama();
 gambarPilihLap();
 bukaTab(lsGet('propTab') || 'ringkasan');
